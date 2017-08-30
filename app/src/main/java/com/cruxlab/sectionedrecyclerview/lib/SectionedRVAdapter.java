@@ -12,9 +12,9 @@ public final class SectionedRVAdapter extends RecyclerView.Adapter<RecyclerView.
 
     private int freeType;
     private ArrayList<Integer> sectionToType;
-    private SparseArray<RecyclerView.Adapter<RecyclerView.ViewHolder>> typeToAdapter;
+    private SparseArray<SectionAdapter> typeToAdapter;
 
-    public SectionedRVAdapter() {
+    SectionedRVAdapter() {
         super();
         typeToAdapter = new SparseArray<>();
         sectionToType = new ArrayList<>();
@@ -22,16 +22,23 @@ public final class SectionedRVAdapter extends RecyclerView.Adapter<RecyclerView.
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int type) {
-        //How to pass real viewType for sectionAdapters?
-        return typeToAdapter.get(type).onCreateViewHolder(parent, 0);
+        if (type % 2 == 0) {
+            return typeToAdapter.get(type).onCreateViewHolder(parent);
+        } else {
+            return typeToAdapter.get(type - 1).onCreateHeaderViewHolder(parent);
+        }
     }
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        int section = getSection(position);
-        int type = sectionToType.get(section);
-        int relativePos = getRelativePos(section, position);
-        typeToAdapter.get(type).onBindViewHolder(holder, relativePos);
+        int type = getItemViewType(position);
+        if (type % 2 == 0) {
+            int section = getSection(position);
+            int relativePos = getRelativePos(section, position);
+            typeToAdapter.get(type).onBindViewHolder(holder, relativePos);
+        } else {
+            typeToAdapter.get(type - 1).onBindHeaderViewHolder(holder);
+        }
     }
 
     @Override
@@ -39,37 +46,40 @@ public final class SectionedRVAdapter extends RecyclerView.Adapter<RecyclerView.
         int cnt = 0;
         for (int s = 0; s < getSectionCount(); s++) {
             int type = sectionToType.get(s);
-            cnt += typeToAdapter.get(type).getItemCount();
+            cnt += typeToAdapter.get(type).getItemCount() + 1;
         }
         return cnt;
     }
 
     @Override
     public int getItemViewType(int pos) {
+        checkPosition(pos);
         int section = getSection(pos);
-        return sectionToType.get(section);
+        int type = sectionToType.get(section);
+        if (isHeader(pos)) type++;
+        return type;
     }
 
     public int getSectionCount() {
         return typeToAdapter.size();
     }
 
-    public void addSection(@NonNull RecyclerView.Adapter sectionAdapter) {
+    public void addSection(@NonNull SectionAdapter sectionAdapter) {
         typeToAdapter.put(freeType, sectionAdapter);
         sectionToType.add(freeType);
-        freeType++;
+        freeType += 2;
         notifyDataSetChanged();
     }
 
-    public void insertSection(int section, @NonNull RecyclerView.Adapter sectionAdapter) {
+    public void insertSection(int section, @NonNull SectionAdapter sectionAdapter) {
         checkSection(section);
         typeToAdapter.put(freeType, sectionAdapter);
         sectionToType.add(section, freeType);
-        freeType++;
+        freeType += 2;
         notifyDataSetChanged();
     }
 
-    public void changeSection(int section, @NonNull RecyclerView.Adapter sectionAdapter) {
+    public void changeSection(int section, @NonNull SectionAdapter sectionAdapter) {
         checkSection(section);
         removeSection(section);
         if (section == getSectionCount()) {
@@ -93,12 +103,26 @@ public final class SectionedRVAdapter extends RecyclerView.Adapter<RecyclerView.
         notifyItemRangeChanged(getSectionStartPos(section), getItemCountAfterIncl(section));
     }
 
-    private int getSectionStartPos(int section) {
+    int getSection(int pos) {
+        checkPosition(pos);
+        int section = -1;
+        for (int s = 0, cnt = 0; s < getSectionCount(); s++) {
+            int type = sectionToType.get(s);
+            cnt += typeToAdapter.get(type).getItemCount() + 1;
+            if (pos < cnt) {
+                section = s;
+                break;
+            }
+        }
+        return section;
+    }
+
+    int getSectionStartPos(int section) {
         checkSection(section);
         int pos = 0;
         for (int s = 0; s < section; s++) {
             int type = sectionToType.get(s);
-            pos += typeToAdapter.get(type).getItemCount();
+            pos += typeToAdapter.get(type).getItemCount() + 1;
         }
         return pos;
     }
@@ -108,23 +132,9 @@ public final class SectionedRVAdapter extends RecyclerView.Adapter<RecyclerView.
         checkPosition(pos);
         for (int s = 0; s < section; s++) {
             int type = sectionToType.get(s);
-            pos -= typeToAdapter.get(type).getItemCount();
+            pos -= typeToAdapter.get(type).getItemCount() + 1;
         }
-        return pos;
-    }
-
-    private int getSection(int pos) {
-        checkPosition(pos);
-        int section = -1;
-        for (int s = 0, cnt = 0; s < getSectionCount(); s++) {
-            int type = sectionToType.get(s);
-            cnt += typeToAdapter.get(type).getItemCount();
-            if (pos < cnt) {
-                section = s;
-                break;
-            }
-        }
-        return section;
+        return pos - 1;
     }
 
     private int getItemCountAfterIncl(int section) {
@@ -132,9 +142,20 @@ public final class SectionedRVAdapter extends RecyclerView.Adapter<RecyclerView.
         int cnt = 0;
         for (int s = section; s < getSectionCount(); s++) {
             int type = sectionToType.get(s);
-            cnt += typeToAdapter.get(type).getItemCount();
+            cnt += typeToAdapter.get(type).getItemCount() + 1;
         }
         return cnt;
+    }
+
+    private boolean isHeader(int pos) {
+        checkPosition(pos);
+        for (int s = 0, cnt = 0; s < getSectionCount(); s++) {
+            int type = sectionToType.get(s);
+            if (pos == cnt) return true;
+            if (pos < cnt) return false;
+            cnt += typeToAdapter.get(type).getItemCount() + 1;
+        }
+        return false;
     }
 
     private void checkPosition(int pos) {

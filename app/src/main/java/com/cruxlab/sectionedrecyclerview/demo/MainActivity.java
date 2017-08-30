@@ -10,15 +10,14 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.cruxlab.sectionedrecyclerview.R;
+import com.cruxlab.sectionedrecyclerview.lib.SectionAdapter;
 import com.cruxlab.sectionedrecyclerview.lib.SectionedRV;
-import com.cruxlab.sectionedrecyclerview.lib.SectionedRVAdapter;
 
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
     private SectionedRV srv;
-    private SectionedRVAdapter adapter;
 
     private String[] strings = new String[] {"One", "Two", "Three", "Four", "Five"};
 
@@ -27,17 +26,26 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         srv = findViewById(R.id.srv);
-        adapter = new SectionedRVAdapter();
-        srv.setAdapter(adapter);
         for (int i = 0; i < 20; i++) {
-            adapter.addSection(i % 3 == 0 ? yellowSectionAdapter : i % 3 == 1 ? redSectionAdapter : blueSectionAdapter);
+            srv.getAdapter().addSection(i % 3 == 0 ? yellowSectionAdapter : i % 3 == 1 ? redSectionAdapter : blueSectionAdapter);
         }
     }
 
-    private RecyclerView.Adapter<StringViewHolder> yellowSectionAdapter = new RecyclerView.Adapter<StringViewHolder>() {
+    private SectionAdapter<StringViewHolder> yellowSectionAdapter = new SectionAdapter<StringViewHolder>() {
 
         @Override
-        public StringViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public StringViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.section, parent, false);
+            return new StringViewHolder(view, Color.WHITE);
+        }
+
+        @Override
+        public void onBindHeaderViewHolder(StringViewHolder holder) {
+            holder.bind("YELLOW TEXT");
+        }
+
+        @Override
+        public StringViewHolder onCreateViewHolder(ViewGroup parent) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.section, parent, false);
             return new StringViewHolder(view, Color.YELLOW);
         }
@@ -51,12 +59,24 @@ public class MainActivity extends AppCompatActivity {
         public int getItemCount() {
             return strings.length;
         }
+
     };
 
-    private RecyclerView.Adapter<StringViewHolder> redSectionAdapter = new RecyclerView.Adapter<StringViewHolder>() {
+    private SectionAdapter<StringViewHolder> redSectionAdapter = new SectionAdapter<StringViewHolder>() {
 
         @Override
-        public StringViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public StringViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.section, parent, false);
+            return new StringViewHolder(view, Color.WHITE);
+        }
+
+        @Override
+        public void onBindHeaderViewHolder(StringViewHolder holder) {
+            holder.bind("RED TEXT");
+        }
+
+        @Override
+        public StringViewHolder onCreateViewHolder(ViewGroup parent) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.section, parent, false);
             return new StringViewHolder(view, Color.RED);
         }
@@ -72,10 +92,21 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private RecyclerView.Adapter<StringViewHolder> blueSectionAdapter = new RecyclerView.Adapter<StringViewHolder>() {
+    private SectionAdapter<StringViewHolder> blueSectionAdapter = new SectionAdapter<StringViewHolder>() {
 
         @Override
-        public StringViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public StringViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.section, parent, false);
+            return new StringViewHolder(view, Color.WHITE);
+        }
+
+        @Override
+        public void onBindHeaderViewHolder(StringViewHolder holder) {
+            holder.bind("BLUE TEXT");
+        }
+
+        @Override
+        public StringViewHolder onCreateViewHolder(ViewGroup parent) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.section, parent, false);
             return new StringViewHolder(view, Color.BLUE);
         }
@@ -108,13 +139,13 @@ public class MainActivity extends AppCompatActivity {
             text.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    int section = new Random().nextInt(adapter.getSectionCount());
+                    int section = new Random().nextInt(srv.getAdapter().getSectionCount());
                     if (section % 3 == 0) {
-                        adapter.insertSection(section, yellowSectionAdapter);
+                        srv.getAdapter().insertSection(section, yellowSectionAdapter);
                     } else if (section % 3 == 1) {
-                        adapter.removeSection(section);
+                        srv.getAdapter().removeSection(section);
                     } else {
-                        adapter.changeSection(section, blueSectionAdapter);
+                        srv.getAdapter().changeSection(section, blueSectionAdapter);
                     }
                 }
             });
