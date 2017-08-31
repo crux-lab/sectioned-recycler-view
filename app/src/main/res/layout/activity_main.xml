@@ -7,8 +7,8 @@
     android:layout_height="match_parent"
     tools:context="com.cruxlab.sectionedrecyclerview.demo.MainActivity">
 
-    <com.cruxlab.sectionedrecyclerview.lib.SectionedRV
-        android:id="@+id/srv"
+    <com.cruxlab.sectionedrecyclerview.lib.SectionedRVLayout
+        android:id="@+id/srvl"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"

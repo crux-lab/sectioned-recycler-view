@@ -7,12 +7,11 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.TextView;
 
 import com.cruxlab.sectionedrecyclerview.R;
 import com.cruxlab.sectionedrecyclerview.lib.SectionAdapter;
-import com.cruxlab.sectionedrecyclerview.lib.SectionedRV;
+import com.cruxlab.sectionedrecyclerview.lib.SectionedRVLayout;
 import com.cruxlab.sectionedrecyclerview.lib.SectionedRVAdapter;
 
 import java.util.Random;
@@ -27,8 +26,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        SectionedRV srv = findViewById(R.id.srv);
-        adapter = srv.getAdapter();
+        SectionedRVLayout srvl = findViewById(R.id.srvl);
+        adapter = srvl.getSectionedRVAdapter();
         for (int i = 0; i < 20; i++) {
             adapter.addSection(i % 3 == 0 ? yellowSectionAdapter : i % 3 == 1 ? redSectionAdapter : blueSectionAdapter);
         }

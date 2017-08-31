@@ -11,12 +11,13 @@ import java.util.ArrayList;
 
 public final class SectionedRVAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
+    private SectionedRVHolder holder;
     private int freeType;
     private ArrayList<Integer> sectionToType;
     private SparseArray<SectionAdapter> typeToAdapter;
 
-    SectionedRVAdapter() {
-        super();
+    SectionedRVAdapter(SectionedRVHolder holder) {
+        this.holder = holder;
         typeToAdapter = new SparseArray<>();
         sectionToType = new ArrayList<>();
     }
@@ -72,6 +73,7 @@ public final class SectionedRVAdapter extends RecyclerView.Adapter<RecyclerView.
         sectionToType.add(freeType);
         freeType += 2;
         notifyDataSetChanged();
+        holder.forceUpdateHeaderView();
     }
 
     public void insertSection(int section, @NonNull SectionAdapter sectionAdapter) {
@@ -80,6 +82,7 @@ public final class SectionedRVAdapter extends RecyclerView.Adapter<RecyclerView.
         sectionToType.add(section, freeType);
         freeType += 2;
         notifyDataSetChanged();
+        holder.forceUpdateHeaderView();
     }
 
     public void changeSection(int section, @NonNull SectionAdapter sectionAdapter) {
@@ -90,6 +93,7 @@ public final class SectionedRVAdapter extends RecyclerView.Adapter<RecyclerView.
         } else {
             insertSection(section, sectionAdapter);
         }
+        holder.forceUpdateHeaderView();
     }
 
     public void removeSection(int section) {
@@ -98,12 +102,13 @@ public final class SectionedRVAdapter extends RecyclerView.Adapter<RecyclerView.
         typeToAdapter.remove(type);
         sectionToType.remove(section);
         notifyDataSetChanged();
+        holder.forceUpdateHeaderView();
     }
 
     public void notifySectionChanged(int section) {
         checkSection(section);
-        //Consider using notifyDatasetChanged() for no delay in animation
         notifyItemRangeChanged(getSectionStartPos(section), getItemCountAfterIncl(section));
+        holder.forceUpdateHeaderView();
     }
 
     int getSection(int pos) {
