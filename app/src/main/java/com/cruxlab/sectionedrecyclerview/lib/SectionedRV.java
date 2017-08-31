@@ -14,7 +14,7 @@ public class SectionedRV extends FrameLayout {
     private LinearLayoutManager layoutManager;
     private SectionedRVAdapter adapter;
 
-    private int prevHeaderPos = -1;
+    private int prevTopSection = -1;
 
     private RecyclerView.OnScrollListener onScrollListener = new RecyclerView.OnScrollListener() {
         @Override
@@ -22,15 +22,12 @@ public class SectionedRV extends FrameLayout {
             super.onScrolled(recyclerView, dx, dy);
             int topPos = layoutManager.findFirstVisibleItemPosition();
             int topSection = adapter.getSection(topPos);
-            int headerPos = adapter.getSectionStartPos(topSection);
-            if (prevHeaderPos != headerPos) {
-                View view = layoutManager.findViewByPosition(headerPos);
-                if (view == null) return;
+            if (prevTopSection != topSection) {
+                prevTopSection = topSection;
                 if (getChildCount() > 1) {
                     removeViewAt(1);
                 }
-                prevHeaderPos = headerPos;
-                layoutManager.removeView(view);
+                View view = adapter.getHeaderView(recyclerView, topSection);
                 addView(view);
             }
         }

@@ -4,6 +4,7 @@ package com.cruxlab.sectionedrecyclerview.lib;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.SparseArray;
+import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
@@ -22,22 +23,24 @@ public final class SectionedRVAdapter extends RecyclerView.Adapter<RecyclerView.
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int type) {
-        if (type % 2 == 0) {
-            return typeToAdapter.get(type).onCreateViewHolder(parent);
+        if (isTypeHeader(type)) {
+            type--;
+            return typeToAdapter.get(type).onCreateHeaderViewHolder(parent);
         } else {
-            return typeToAdapter.get(type - 1).onCreateHeaderViewHolder(parent);
+            return typeToAdapter.get(type).onCreateViewHolder(parent);
         }
     }
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         int type = getItemViewType(position);
-        if (type % 2 == 0) {
+        if (isTypeHeader(type)) {
+            type--;
+            typeToAdapter.get(type).onBindHeaderViewHolder(holder);
+        } else {
             int section = getSection(position);
             int relativePos = getRelativePos(section, position);
             typeToAdapter.get(type).onBindViewHolder(holder, relativePos);
-        } else {
-            typeToAdapter.get(type - 1).onBindHeaderViewHolder(holder);
         }
     }
 
@@ -127,6 +130,14 @@ public final class SectionedRVAdapter extends RecyclerView.Adapter<RecyclerView.
         return pos;
     }
 
+    View getHeaderView(ViewGroup parent, int section) {
+        int type = sectionToType.get(section);
+        SectionAdapter adapter = typeToAdapter.get(type);
+        RecyclerView.ViewHolder vh = adapter.onCreateHeaderViewHolder(parent);
+        adapter.onBindHeaderViewHolder(vh);
+        return vh.itemView;
+    }
+
     private int getRelativePos(int section, int pos) {
         checkSection(section);
         checkPosition(pos);
@@ -157,6 +168,11 @@ public final class SectionedRVAdapter extends RecyclerView.Adapter<RecyclerView.
         }
         return false;
     }
+
+    private boolean isTypeHeader(int type) {
+        return type % 2 != 0;
+    }
+
 
     private void checkPosition(int pos) {
         if (pos < 0 || pos >= getItemCount()) {
