@@ -65,7 +65,7 @@ public class SectionedRVLayout extends FrameLayout implements SectionedRVHolder 
         }
     }
 
-    public SectionedRVAdapter getSectionedRVAdapter() {
+    public SectionManager getSectionManager() {
         return adapter;
     }
 
