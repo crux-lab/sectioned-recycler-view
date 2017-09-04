@@ -1,5 +1,7 @@
 package com.cruxlab.sectionedrecyclerview.lib;
 
+import android.view.View;
+
 abstract class Checker {
 
     static void checkPosition(int pos, int itemCount) {
@@ -20,6 +22,7 @@ abstract class Checker {
         }
     }
 
+    //TODO: fix when inserting/removing
     static void checkPosRange(int startPos, int cnt, int itemCount) {
         checkPosition(startPos, itemCount);
         if (cnt <= 0) {
@@ -28,6 +31,24 @@ abstract class Checker {
         int endPos = startPos + cnt - 1;
         if (endPos >= itemCount) {
             throw new IllegalArgumentException("Position cnt " +  cnt + " from start position " + startPos + " is out of range. Current item count is " +  itemCount + ".");
+        }
+    }
+
+    static void checkItemView(View itemView) {
+        if (itemView == null) {
+            throw new IllegalArgumentException("ItemView may not be null when creating SectionAdapter.ViewHolder.");
+        }
+    }
+
+    static void checkViewHolder(SectionedRVAdapter.ViewHolder viewHolder) {
+        if (viewHolder == null) {
+            throw new IllegalStateException("This SectionAdapter.ViewHolder hasn't been used in any SectionedRV, so no SectionedRVAdapter.ViewHolder has been set.");
+        }
+    }
+
+    static void checkSectionPositionProvider(SectionPositionProvider sectionPositionProvider) {
+        if (sectionPositionProvider == null) {
+            throw new IllegalStateException("This SectionAdapter.ViewHolder hasn't been used in any SectionedRV, so no SectionPositionProvider has been set.");
         }
     }
 

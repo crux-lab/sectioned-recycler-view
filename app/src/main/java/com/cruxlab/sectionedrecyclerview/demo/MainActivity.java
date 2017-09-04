@@ -3,7 +3,6 @@ package com.cruxlab.sectionedrecyclerview.demo;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +12,9 @@ import com.cruxlab.sectionedrecyclerview.R;
 import com.cruxlab.sectionedrecyclerview.lib.SectionAdapter;
 import com.cruxlab.sectionedrecyclerview.lib.SectionManager;
 import com.cruxlab.sectionedrecyclerview.lib.SectionedRVLayout;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,170 +31,132 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private SectionAdapter<StringViewHolder> getYellowSectionAdapter() {
-        return new SectionAdapter<StringViewHolder>() {
-
-            private int cnt = 5;
-            private String[] strings = new String[] {"One", "Two", "Three", "Four", "Five"};
-
-            @Override
-            public StringViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
-                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.section, parent, false);
-                return new StringViewHolder(view, Color.WHITE);
-            }
+    private BaseColorAdapter getYellowSectionAdapter() {
+        return new BaseColorAdapter() {
 
             @Override
             public void onBindHeaderViewHolder(StringViewHolder holder) {
-                holder.bind("YELLOW TEXT " + cnt + " ----- click on item to change its text");
+                holder.bind("YELLOW TEXT cnt: " + strings.size());
             }
 
             @Override
             public StringViewHolder onCreateViewHolder(ViewGroup parent) {
                 View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.section, parent, false);
-                return new StringViewHolder(view, Color.YELLOW);
-            }
-
-            @Override
-            public void onBindViewHolder(StringViewHolder holder, final int position) {
-                holder.bind(strings[position % strings.length]);
-                holder.bind(strings[position % strings.length]);
-                holder.itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        strings[position % strings.length] += " changed";
-                        notifyItemChanged(position);
-                    }
-                });
-            }
-
-            @Override
-            public int getItemCount() {
-                return cnt;
+                return new StringViewHolder(view, Color.YELLOW, this);
             }
 
         };
     }
 
-    private SectionAdapter<StringViewHolder> getRedSectionAdapter() {
-        return new SectionAdapter<StringViewHolder>() {
-
-            private int cnt = 5;
-            private String[] strings = new String[] {"One", "Two", "Three", "Four", "Five"};
-
-            @Override
-            public StringViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
-                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.section, parent, false);
-                return new StringViewHolder(view, Color.WHITE);
-            }
+    private BaseColorAdapter getRedSectionAdapter() {
+        return new BaseColorAdapter() {
 
             @Override
             public void onBindHeaderViewHolder(StringViewHolder holder) {
-                holder.bind("RED TEXT " + cnt + " ----- click ro remove item");
-                holder.itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        if (cnt > 0) {
-                            notifyItemRemoved(cnt - 1);
-                            notifyHeaderChanged();
-                            cnt--;
-                        }
-                    }
-                });
+                holder.bind("RED TEXT cnt: " + strings.size());
             }
 
             @Override
             public StringViewHolder onCreateViewHolder(ViewGroup parent) {
                 View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.section, parent, false);
-                return new StringViewHolder(view, Color.RED);
+                return new StringViewHolder(view, Color.RED, this);
             }
 
-            @Override
-            public void onBindViewHolder(StringViewHolder holder, int position) {
-                holder.bind(strings[position % strings.length]);
-                holder.itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        if (cnt > 0) {
-                            notifyItemRemoved(cnt - 1);
-                            notifyHeaderChanged();
-                            cnt--;
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public int getItemCount() {
-                return cnt;
-            }
         };
     }
 
-    private SectionAdapter<StringViewHolder> getBlueSectionAdapter() {
-        return new SectionAdapter<StringViewHolder>() {
-
-            private int cnt = 5;
-            private String[] strings = new String[] {"One", "Two", "Three", "Four", "Five"};
-
-            @Override
-            public StringViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
-                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.section, parent, false);
-                return new StringViewHolder(view, Color.WHITE);
-            }
+    private BaseColorAdapter getBlueSectionAdapter() {
+        return new BaseColorAdapter() {
 
             @Override
             public void onBindHeaderViewHolder(StringViewHolder holder) {
-                holder.bind("BLUE TEXT " + cnt + " ----- click to add item");
-                holder.itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        notifyItemInserted(cnt);
-                        notifyHeaderChanged();
-                        cnt++;
-                    }
-                });
+                holder.bind("BLUE TEXT cnt: " + strings.size());
             }
 
             @Override
             public StringViewHolder onCreateViewHolder(ViewGroup parent) {
                 View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.section, parent, false);
-                return new StringViewHolder(view, Color.BLUE);
-            }
-
-            @Override
-            public void onBindViewHolder(StringViewHolder holder, int position) {
-                holder.bind(strings[position % strings.length]);
-                holder.itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        notifyItemInserted(cnt);
-                        notifyHeaderChanged();
-                        cnt++;
-                    }
-                });
-            }
-
-            @Override
-            public int getItemCount() {
-                return cnt;
+                return new StringViewHolder(view, Color.BLUE, this);
             }
         };
     }
 
-    private class StringViewHolder extends RecyclerView.ViewHolder {
+    private abstract class BaseColorAdapter extends SectionAdapter<StringViewHolder> {
 
+        public ArrayList<String> strings = new ArrayList<>(Arrays.asList("One", "Two", "Three", "Four", "Five"));
+
+        @Override
+        public StringViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.section, parent, false);
+            return new StringViewHolder(view, Color.WHITE, this);
+        }
+
+        @Override
+        public void onBindViewHolder(StringViewHolder holder, int position) {
+            holder.bind(strings.get(position % strings.size()));
+        }
+
+        @Override
+        public int getItemCount() {
+            return strings.size();
+        }
+
+        public void duplicateString(int pos) {
+            strings.add(pos, strings.get(pos));
+            notifyItemInserted(pos + 1);
+            notifyHeaderChanged();
+        }
+
+        public void removeString(int pos) {
+            strings.remove(pos);
+            notifyItemRemoved(pos);
+            notifyHeaderChanged();
+        }
+
+        public void changeString(int pos) {
+            strings.set(pos, strings.get(pos) + " changed");
+            notifyItemChanged(pos);
+        }
+
+    }
+
+    private class StringViewHolder extends SectionAdapter.ViewHolder {
+
+        private BaseColorAdapter adapter;
         private TextView text;
         private int color;
 
-        public StringViewHolder(View itemView, int color) {
+        public StringViewHolder(View itemView, int color, BaseColorAdapter adapter) {
             super(itemView);
             this.color = color;
+            this.adapter = adapter;
             this.text = itemView.findViewById(R.id.tv_text);
         }
 
         public void bind(final String string) {
             text.setText(string);
             text.setBackgroundColor(color);
+            text.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    switch (color) {
+                        case Color.RED: {
+                            int sectionPos = getSectionPosition();
+                            adapter.removeString(sectionPos);
+                            break;
+                        }
+                        case Color.BLUE: {
+                            int sectionPos = getSectionPosition();
+                            adapter.duplicateString(sectionPos);
+                            break;
+                        }
+                        case Color.YELLOW: {
+                            int sectionPos = getSectionPosition();
+                            adapter.changeString(sectionPos);
+                        }
+                    }
+                }
+            });
         }
     }
 

@@ -1,14 +1,13 @@
 package com.cruxlab.sectionedrecyclerview.lib;
 
-import android.support.v7.widget.RecyclerView;
+import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.List;
 
-public abstract class SectionAdapter<VH extends RecyclerView.ViewHolder> {
+public abstract class SectionAdapter<VH extends SectionAdapter.ViewHolder> {
 
-    private SectionItemManager itemManager;
-
+    SectionItemManager itemManager;
     int section;
 
     public abstract int getItemCount();
@@ -47,7 +46,7 @@ public abstract class SectionAdapter<VH extends RecyclerView.ViewHolder> {
 
     public final void notifyItemRemoved(int pos) {
         Checker.checkItemManager(itemManager);
-        Checker.checkPosition(pos, getItemCount());
+        Checker.checkPosition(pos, getItemCount() + 1);
         itemManager.notifyRemoved(section, pos);
     }
 
@@ -110,8 +109,31 @@ public abstract class SectionAdapter<VH extends RecyclerView.ViewHolder> {
         itemManager.notifyHeaderChanged(section);
     }
 
+    public final int getSection() {
+        return section;
+    }
+
     void setItemManager(SectionItemManager itemManager) {
         this.itemManager = itemManager;
     }
 
+    public abstract static class ViewHolder {
+
+        public final View itemView;
+        SectionedRVAdapter.ViewHolder viewHolder;
+        SectionPositionProvider sectionPositionProvider;
+
+        public ViewHolder(View itemView) {
+            Checker.checkItemView(itemView);
+            this.itemView = itemView;
+        }
+
+        public final int getSectionPosition() throws IllegalStateException {
+            Checker.checkViewHolder(viewHolder);
+            Checker.checkSectionPositionProvider(sectionPositionProvider);
+            int adapterPos = viewHolder.getAdapterPosition();
+            return sectionPositionProvider.getSectionPos(adapterPos);
+        }
+
+    }
 }
