@@ -42,13 +42,13 @@ abstract class Checker {
 
     static void checkViewHolder(SectionedRVAdapter.ViewHolder viewHolder) {
         if (viewHolder == null) {
-            throw new IllegalStateException("This SectionAdapter.ViewHolder hasn't been used in any SectionedRV, so no SectionedRVAdapter.ViewHolder has been set.");
+            throw new IllegalStateException("This SectionAdapter.ItemViewHolder hasn't been used in any SectionedRV, so no SectionedRVAdapter.ViewHolder has been set.");
         }
     }
 
     static void checkSectionPositionProvider(SectionPositionProvider sectionPositionProvider) {
         if (sectionPositionProvider == null) {
-            throw new IllegalStateException("This SectionAdapter.ViewHolder hasn't been used in any SectionedRV, so no SectionPositionProvider has been set.");
+            throw new IllegalStateException("This SectionAdapter.ItemViewHolder hasn't been used in any SectionedRV, so no SectionPositionProvider has been set.");
         }
     }
 

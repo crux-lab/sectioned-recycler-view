@@ -5,7 +5,7 @@ import android.view.ViewGroup;
 
 import java.util.List;
 
-public abstract class SectionAdapter<VH extends SectionAdapter.ViewHolder> {
+public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder, HVH extends SectionAdapter.ViewHolder> {
 
     SectionItemManager itemManager;
     int section;
@@ -16,9 +16,9 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ViewHolder> {
 
     public abstract void onBindViewHolder(VH holder, int position);
 
-    public abstract VH onCreateHeaderViewHolder(ViewGroup parent);
+    public abstract HVH onCreateHeaderViewHolder(ViewGroup parent);
 
-    public abstract void onBindHeaderViewHolder(VH holder);
+    public abstract void onBindHeaderViewHolder(HVH holder);
 
     public final void notifyItemInserted(int pos) {
         Checker.checkItemManager(itemManager);
@@ -120,20 +120,31 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ViewHolder> {
     public abstract static class ViewHolder {
 
         public final View itemView;
-        SectionedRVAdapter.ViewHolder viewHolder;
-        SectionPositionProvider sectionPositionProvider;
 
         public ViewHolder(View itemView) {
             Checker.checkItemView(itemView);
             this.itemView = itemView;
         }
 
-        public final int getSectionPosition() throws IllegalStateException {
+    }
+
+    public abstract static class ItemViewHolder extends ViewHolder {
+
+        SectionedRVAdapter.ViewHolder viewHolder;
+        SectionPositionProvider sectionPositionProvider;
+
+        public ItemViewHolder(View itemView) {
+            super(itemView);
+        }
+
+        public final int getSectionPosition() {
             Checker.checkViewHolder(viewHolder);
             Checker.checkSectionPositionProvider(sectionPositionProvider);
             int adapterPos = viewHolder.getAdapterPosition();
+            if (adapterPos == -1) return -1;
             return sectionPositionProvider.getSectionPos(adapterPos);
         }
 
     }
+
 }

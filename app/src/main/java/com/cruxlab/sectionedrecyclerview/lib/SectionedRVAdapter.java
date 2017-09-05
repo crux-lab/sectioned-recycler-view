@@ -24,27 +24,27 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
 
     @Override
     public SectionedRVAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int type) {
-        SectionAdapter.ViewHolder sectionAdapterVH;
         if (isTypeHeader(type)) {
-            sectionAdapterVH = typeToAdapter.get(type - 1).onCreateHeaderViewHolder(parent);
+            SectionAdapter.ViewHolder headerViewHolder = typeToAdapter.get(type - 1).onCreateHeaderViewHolder(parent);
+            return new ViewHolder(headerViewHolder);
         } else {
-            sectionAdapterVH = typeToAdapter.get(type).onCreateViewHolder(parent);
+            SectionAdapter.ItemViewHolder itemViewHolder = typeToAdapter.get(type).onCreateViewHolder(parent);
+            ViewHolder viewHolder = new ViewHolder(itemViewHolder);
+            itemViewHolder.viewHolder = viewHolder;
+            itemViewHolder.sectionPositionProvider = this;
+            return viewHolder;
         }
-        ViewHolder viewHolder = new ViewHolder(sectionAdapterVH);
-        sectionAdapterVH.viewHolder = viewHolder;
-        sectionAdapterVH.sectionPositionProvider = this;
-        return viewHolder;
     }
 
     @Override
     public void onBindViewHolder(SectionedRVAdapter.ViewHolder viewHolder, int position) {
         int type = getItemViewType(position);
         if (isTypeHeader(type)) {
-            typeToAdapter.get(type - 1).onBindHeaderViewHolder(viewHolder.sectionAdapterVH);
+            typeToAdapter.get(type - 1).onBindHeaderViewHolder(viewHolder.headerViewHolder);
         } else {
             int section = getSection(position);
             int sectionPos = getSectionPos(section, position);
-            typeToAdapter.get(type).onBindViewHolder(viewHolder.sectionAdapterVH, sectionPos);
+            typeToAdapter.get(type).onBindViewHolder(viewHolder.itemViewHolder, sectionPos);
         }
     }
 
@@ -85,8 +85,8 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
 
     @Override
     public void insertSection(int section, @NonNull SectionAdapter sectionAdapter) {
-        Checker.checkSection(section, getSectionCount());
-        sectionAdapter.section = getSectionCount();
+        Checker.checkSection(section, getSectionCount() + 1);
+        sectionAdapter.section = section;
         sectionAdapter.setItemManager(this);
         typeToAdapter.put(freeType, sectionAdapter);
         sectionToType.add(section, freeType);
@@ -113,7 +113,7 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
 
     @Override
     public void removeSection(int section) {
-        Checker.checkSection(section, getSectionCount());
+        Checker.checkSection(section, getSectionCount() + 1);
         int remType = sectionToType.get(section);
         typeToAdapter.remove(remType);
         sectionToType.remove(section);
@@ -142,9 +142,9 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
     View getHeaderView(ViewGroup parent, int section) {
         int type = sectionToType.get(section);
         SectionAdapter adapter = typeToAdapter.get(type);
-        SectionAdapter.ViewHolder vh = adapter.onCreateHeaderViewHolder(parent);
-        adapter.onBindHeaderViewHolder(vh);
-        return vh.itemView;
+        SectionAdapter.ViewHolder headerViewHolder = adapter.onCreateHeaderViewHolder(parent);
+        adapter.onBindHeaderViewHolder(headerViewHolder);
+        return headerViewHolder.itemView;
     }
 
     private int getHeaderPos(int section) {
@@ -208,7 +208,7 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
     @Override
     public void notifyInserted(int section, int pos) {
         int adapterPos = getAdapterPos(section, pos);
-        Checker.checkPosition(adapterPos, getItemCount());
+        Checker.checkPosition(adapterPos, getItemCount() + 1);
         notifyItemInserted(adapterPos);
         holder.forceUpdateHeaderView();
     }
@@ -216,7 +216,7 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
     @Override
     public void notifyRemoved(int section, int pos) {
         int adapterPos = getAdapterPos(section, pos);
-        Checker.checkPosition(adapterPos, getItemCount());
+        Checker.checkPosition(adapterPos, getItemCount() + 1);
         notifyItemRemoved(adapterPos);
         holder.forceUpdateHeaderView();
     }
@@ -271,11 +271,17 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
-        SectionAdapter.ViewHolder sectionAdapterVH;
+        SectionAdapter.ItemViewHolder itemViewHolder;
+        SectionAdapter.ViewHolder headerViewHolder;
 
-        public ViewHolder(SectionAdapter.ViewHolder sectionAdapterVH) {
-            super(sectionAdapterVH.itemView);
-            this.sectionAdapterVH = sectionAdapterVH;
+        public ViewHolder(SectionAdapter.ItemViewHolder itemViewHolder) {
+            super(itemViewHolder.itemView);
+            this.itemViewHolder = itemViewHolder;
+        }
+
+        public ViewHolder(SectionAdapter.ViewHolder headerViewHolder) {
+            super(headerViewHolder.itemView);
+            this.headerViewHolder = headerViewHolder;
         }
 
     }
