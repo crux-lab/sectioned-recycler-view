@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public MainActivity.ItemViewHolder onCreateViewHolder(ViewGroup parent) {
+        public MainActivity.ItemViewHolder onCreateViewHolder(ViewGroup parent, short type) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.view_holder_view, parent, false);
             return new MainActivity.ItemViewHolder(view, this);
         }

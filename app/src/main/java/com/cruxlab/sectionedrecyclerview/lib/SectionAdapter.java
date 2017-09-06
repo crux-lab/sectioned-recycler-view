@@ -12,13 +12,17 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder, H
 
     public abstract int getItemCount();
 
-    public abstract VH onCreateViewHolder(ViewGroup parent);
+    public abstract VH onCreateViewHolder(ViewGroup parent, short type);
 
     public abstract void onBindViewHolder(VH holder, int position);
 
     public abstract HVH onCreateHeaderViewHolder(ViewGroup parent);
 
     public abstract void onBindHeaderViewHolder(HVH holder);
+
+    public short getItemViewType(int position) {
+        return 0;
+    }
 
     public final void notifyItemInserted(int pos) {
         Checker.checkItemManager(itemManager);

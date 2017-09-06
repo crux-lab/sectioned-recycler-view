@@ -12,8 +12,8 @@ import java.util.ArrayList;
 final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.ViewHolder> implements SectionManager, SectionItemManager, SectionPositionProvider {
 
     private SectionedRVHolder holder;
-    private int freeType;
-    private ArrayList<Integer> sectionToType;
+    private short freeType = 1;
+    private ArrayList<Short> sectionToType;
     private SparseArray<SectionAdapter> typeToAdapter;
 
     SectionedRVAdapter(SectionedRVHolder holder) {
@@ -24,11 +24,15 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
 
     @Override
     public SectionedRVAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int type) {
-        if (isTypeHeader(type)) {
-            SectionAdapter.ViewHolder headerViewHolder = typeToAdapter.get(type - 1).onCreateHeaderViewHolder(parent);
+        short sectionType = (short) (type >> 16);
+        short itemType = (short) type;
+        if (isTypeHeader(sectionType)) {
+            SectionAdapter adapter = typeToAdapter.get(-sectionType);
+            SectionAdapter.ViewHolder headerViewHolder = adapter.onCreateHeaderViewHolder(parent);
             return new ViewHolder(headerViewHolder);
         } else {
-            SectionAdapter.ItemViewHolder itemViewHolder = typeToAdapter.get(type).onCreateViewHolder(parent);
+            SectionAdapter adapter = typeToAdapter.get(sectionType);
+            SectionAdapter.ItemViewHolder itemViewHolder = adapter.onCreateViewHolder(parent, itemType);
             ViewHolder viewHolder = new ViewHolder(itemViewHolder);
             itemViewHolder.viewHolder = viewHolder;
             itemViewHolder.sectionPositionProvider = this;
@@ -39,12 +43,15 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
     @Override
     public void onBindViewHolder(SectionedRVAdapter.ViewHolder viewHolder, int position) {
         int type = getItemViewType(position);
-        if (isTypeHeader(type)) {
-            typeToAdapter.get(type - 1).onBindHeaderViewHolder(viewHolder.headerViewHolder);
+        short sectionType = (short) (type >> 16);
+        if (isTypeHeader(sectionType)) {
+            SectionAdapter adapter = typeToAdapter.get(-sectionType);
+            adapter.onBindHeaderViewHolder(viewHolder.headerViewHolder);
         } else {
             int section = getSection(position);
             int sectionPos = getSectionPos(section, position);
-            typeToAdapter.get(type).onBindViewHolder(viewHolder.itemViewHolder, sectionPos);
+            SectionAdapter adapter = typeToAdapter.get(sectionType);
+            adapter.onBindViewHolder(viewHolder.itemViewHolder, sectionPos);
         }
     }
 
@@ -52,8 +59,8 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
     public int getItemCount() {
         int cnt = 0;
         for (int s = 0; s < getSectionCount(); s++) {
-            int type = sectionToType.get(s);
-            cnt += typeToAdapter.get(type).getItemCount() + 1;
+            int sectionType = sectionToType.get(s);
+            cnt += typeToAdapter.get(sectionType).getItemCount() + 1;
         }
         return cnt;
     }
@@ -62,9 +69,10 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
     public int getItemViewType(int pos) {
         Checker.checkPosition(pos, getItemCount());
         int section = getSection(pos);
-        int type = sectionToType.get(section);
-        if (isHeader(pos)) type++;
-        return type;
+        short sectionType = sectionToType.get(section);
+        short itemType = typeToAdapter.get(sectionType).getItemViewType(pos);
+        if (isHeader(pos)) sectionType *= -1;
+        return (sectionType << 16) + itemType;
     }
 
     @Override
@@ -78,7 +86,7 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
         sectionAdapter.setItemManager(this);
         typeToAdapter.put(freeType, sectionAdapter);
         sectionToType.add(freeType);
-        freeType += 2;
+        freeType++;
         notifyDataSetChanged();
         holder.forceUpdateHeaderView();
     }
@@ -90,10 +98,10 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
         sectionAdapter.setItemManager(this);
         typeToAdapter.put(freeType, sectionAdapter);
         sectionToType.add(section, freeType);
-        freeType += 2;
+        freeType++;
         for (int s = section + 1; s < getSectionCount(); s++) {
-            int type = sectionToType.get(s);
-            typeToAdapter.get(type).section = s;
+            int sectionType = sectionToType.get(s);
+            typeToAdapter.get(sectionType).section = s;
         }
         notifyDataSetChanged();
         holder.forceUpdateHeaderView();
@@ -114,12 +122,12 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
     @Override
     public void removeSection(int section) {
         Checker.checkSection(section, getSectionCount() + 1);
-        int remType = sectionToType.get(section);
-        typeToAdapter.remove(remType);
+        int remSectionType = sectionToType.get(section);
+        typeToAdapter.remove(remSectionType);
         sectionToType.remove(section);
         for (int s = section; s < getSectionCount(); s++) {
-            int type = sectionToType.get(s);
-            typeToAdapter.get(type).section = s;
+            int sectionType = sectionToType.get(s);
+            typeToAdapter.get(sectionType).section = s;
         }
         notifyDataSetChanged();
         holder.forceUpdateHeaderView();
@@ -129,8 +137,8 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
         Checker.checkPosition(pos, getItemCount());
         int section = -1;
         for (int s = 0, cnt = 0; s < getSectionCount(); s++) {
-            int type = sectionToType.get(s);
-            cnt += typeToAdapter.get(type).getItemCount() + 1;
+            int sectionType = sectionToType.get(s);
+            cnt += typeToAdapter.get(sectionType).getItemCount() + 1;
             if (pos < cnt) {
                 section = s;
                 break;
@@ -140,8 +148,8 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
     }
 
     View getHeaderView(ViewGroup parent, int section) {
-        int type = sectionToType.get(section);
-        SectionAdapter adapter = typeToAdapter.get(type);
+        int sectionType = sectionToType.get(section);
+        SectionAdapter adapter = typeToAdapter.get(sectionType);
         SectionAdapter.ViewHolder headerViewHolder = adapter.onCreateHeaderViewHolder(parent);
         adapter.onBindHeaderViewHolder(headerViewHolder);
         return headerViewHolder.itemView;
@@ -151,8 +159,8 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
         Checker.checkSection(section, getSectionCount());
         int pos = 0;
         for (int s = 0; s < section; s++) {
-            int type = sectionToType.get(s);
-            pos += typeToAdapter.get(type).getItemCount() + 1;
+            int sectionType = sectionToType.get(s);
+            pos += typeToAdapter.get(sectionType).getItemCount() + 1;
         }
         return pos;
     }
@@ -161,8 +169,8 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
         Checker.checkSection(section, getSectionCount());
         Checker.checkPosition(pos, getItemCount());
         for (int s = 0; s < section; s++) {
-            int type = sectionToType.get(s);
-            pos -= typeToAdapter.get(type).getItemCount() + 1;
+            int sectionType = sectionToType.get(s);
+            pos -= typeToAdapter.get(sectionType).getItemCount() + 1;
         }
         return pos - 1;
     }
@@ -172,8 +180,8 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
         Checker.checkPosition(pos, getItemCount());
         int cnt = 0;
         for (int s = 0; s < section; s++) {
-            int type = sectionToType.get(s);
-            cnt += typeToAdapter.get(type).getItemCount() + 1;
+            int sectionType = sectionToType.get(s);
+            cnt += typeToAdapter.get(sectionType).getItemCount() + 1;
         }
         return cnt + 1 + pos;
     }
@@ -181,16 +189,16 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
     private boolean isHeader(int pos) {
         Checker.checkPosition(pos, getItemCount());
         for (int s = 0, cnt = 0; s < getSectionCount(); s++) {
-            int type = sectionToType.get(s);
+            int sectionType = sectionToType.get(s);
             if (pos == cnt) return true;
             if (pos < cnt) return false;
-            cnt += typeToAdapter.get(type).getItemCount() + 1;
+            cnt += typeToAdapter.get(sectionType).getItemCount() + 1;
         }
         return false;
     }
 
     private boolean isTypeHeader(int type) {
-        return type % 2 != 0;
+        return type < 0;
     }
 
     @Override
