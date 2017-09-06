@@ -13,19 +13,22 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
 
     private SectionedRVHolder holder;
     private short freeType = 1;
+
+    private ArrayList<Short> sectionToPosSum;
     private ArrayList<Short> sectionToType;
     private SparseArray<SectionAdapter> typeToAdapter;
 
     SectionedRVAdapter(SectionedRVHolder holder) {
         this.holder = holder;
-        typeToAdapter = new SparseArray<>();
+        sectionToPosSum = new ArrayList<>();
         sectionToType = new ArrayList<>();
+        typeToAdapter = new SparseArray<>();
     }
 
     @Override
     public SectionedRVAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int type) {
-        short sectionType = (short) (type >> 16);
-        short itemType = (short) type;
+        short sectionType = (short) (type);
+        short itemType = (short) (type >> 16);
         if (isTypeHeader(sectionType)) {
             SectionAdapter adapter = typeToAdapter.get(-sectionType);
             SectionAdapter.ViewHolder headerViewHolder = adapter.onCreateHeaderViewHolder(parent);
@@ -43,13 +46,12 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
     @Override
     public void onBindViewHolder(SectionedRVAdapter.ViewHolder viewHolder, int position) {
         int type = getItemViewType(position);
-        short sectionType = (short) (type >> 16);
+        short sectionType = (short) (type);
         if (isTypeHeader(sectionType)) {
             SectionAdapter adapter = typeToAdapter.get(-sectionType);
             adapter.onBindHeaderViewHolder(viewHolder.headerViewHolder);
         } else {
-            int section = getSection(position);
-            int sectionPos = getSectionPos(section, position);
+            int sectionPos = getSectionPos(position);
             SectionAdapter adapter = typeToAdapter.get(sectionType);
             adapter.onBindViewHolder(viewHolder.itemViewHolder, sectionPos);
         }
@@ -70,9 +72,11 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
         Checker.checkPosition(pos, getItemCount());
         int section = getSection(pos);
         short sectionType = sectionToType.get(section);
-        short itemType = typeToAdapter.get(sectionType).getItemViewType(pos);
+        int sectionPos = getSectionPos(pos);
+        SectionAdapter adapter = typeToAdapter.get(sectionType);
+        short itemType = adapter.getItemViewType(sectionPos);
         if (isHeader(pos)) sectionType *= -1;
-        return (sectionType << 16) + itemType;
+        return (itemType << 16) + sectionType;
     }
 
     @Override
