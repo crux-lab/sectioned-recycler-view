@@ -5,11 +5,11 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 import com.cruxlab.sectionedrecyclerview.R;
 
-public class SectionedRVLayout extends FrameLayout implements SectionedRVHolder {
+public class SectionedRVLayout extends RelativeLayout implements SectionedRVHolder {
 
     private RecyclerView sectionedRV;
     private LinearLayoutManager layoutManager;
@@ -52,22 +52,29 @@ public class SectionedRVLayout extends FrameLayout implements SectionedRVHolder 
     }
 
     private void updateHeaderView() {
-        int topPos = layoutManager.findFirstVisibleItemPosition();
-        if (topPos < 0 || topPos >= adapter.getItemCount()) {
-            if (getChildCount() > 1) {
-                removeViewAt(1);
+        post(new Runnable() {
+            public void run() {
+                int topPos = layoutManager.findFirstVisibleItemPosition();
+                if (topPos < 0 || topPos >= adapter.getItemCount()) {
+                    if (getChildCount() > 1) {
+                        removeViewAt(1);
+                    }
+                    return;
+                }
+                int topSection = adapter.getSection(topPos);
+                if (prevTopSection != topSection) {
+                    prevTopSection = topSection;
+                    if (getChildCount() > 1) {
+                        removeViewAt(1);
+                    }
+                    View view = adapter.getHeaderView(sectionedRV, topSection);
+                    RelativeLayout.LayoutParams newParams = new RelativeLayout.LayoutParams(view.getLayoutParams());
+                    newParams.addRule(RelativeLayout.ALIGN_BOTTOM);
+                    view.setLayoutParams(newParams);
+                    addView(view);
+                }
             }
-            return;
-        }
-        int topSection = adapter.getSection(topPos);
-        if (prevTopSection != topSection) {
-            prevTopSection = topSection;
-            if (getChildCount() > 1) {
-                removeViewAt(1);
-            }
-            View view = adapter.getHeaderView(sectionedRV, topSection);
-            addView(view);
-        }
+        });
     }
 
     public SectionManager getSectionManager() {
