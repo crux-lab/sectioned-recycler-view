@@ -53,7 +53,7 @@ public class SectionedRVLayout extends FrameLayout implements SectionedRVHolder 
 
     private void updateHeaderView() {
         int topPos = layoutManager.findFirstVisibleItemPosition();
-        if (topPos < 0 || adapter.getItemCount() == 0) {
+        if (topPos < 0 || topPos >= adapter.getItemCount()) {
             if (getChildCount() > 1) {
                 removeViewAt(1);
             }
