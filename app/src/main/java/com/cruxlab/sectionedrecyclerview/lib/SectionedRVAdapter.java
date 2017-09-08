@@ -84,12 +84,14 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
     public void addSection(@NonNull SectionAdapter sectionAdapter) {
         sectionAdapter.section = getSectionCount();
         sectionAdapter.setItemManager(this);
-        int posSum = (getSectionCount() > 0 ? sectionToPosSum.get(getSectionCount() - 1) : 0) + sectionAdapter.getItemCount() + 1;
+        int start = getItemCount();
+        int cnt = sectionAdapter.getItemCount() + 1;
+        int posSum = getItemCount() + cnt;
         typeToAdapter.put(freeType, sectionAdapter);
         sectionToType.add(freeType);
         sectionToPosSum.add(posSum);
         freeType++;
-        notifyDataSetChanged();
+        notifyItemRangeInserted(start, cnt);
         holder.forceUpdateHeaderView();
     }
 
@@ -98,14 +100,15 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
         Checker.checkSection(section, getSectionCount() + 1);
         sectionAdapter.section = section;
         sectionAdapter.setItemManager(this);
-        int posCnt = sectionAdapter.getItemCount() + 1;
-        int posSum = (section > 0 ? sectionToPosSum.get(section - 1) : 0) + posCnt;
+        int start = getHeaderPos(section);
+        int cnt = sectionAdapter.getItemCount() + 1;
+        int posSum = (section > 0 ? sectionToPosSum.get(section - 1) : 0) + cnt;
         typeToAdapter.put(freeType, sectionAdapter);
         sectionToType.add(section, freeType);
         sectionToPosSum.add(section, posSum);
         freeType++;
-        updatePosSum(section + 1, posCnt, true);
-        notifyDataSetChanged();
+        updatePosSum(section + 1, cnt, true);
+        notifyItemRangeInserted(start, cnt);
         holder.forceUpdateHeaderView();
     }
 
@@ -124,13 +127,21 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
     @Override
     public void removeSection(int section) {
         Checker.checkSection(section, getSectionCount() + 1);
-        int remSectionType = sectionToType.get(section);
-        int remSum = typeToAdapter.get(remSectionType).getItemCount() + 1;
-        typeToAdapter.remove(remSectionType);
+        int sectionType = sectionToType.get(section);
+        int cnt = getSectionItemCount(section) + 1;
+        int start = getHeaderPos(section);
+        typeToAdapter.remove(sectionType);
         sectionToType.remove(section);
         sectionToPosSum.remove(section);
-        updatePosSum(section, -remSum, true);
-        notifyDataSetChanged();
+        updatePosSum(section, -cnt, true);
+        notifyItemRangeRemoved(start, cnt);
+        holder.forceUpdateHeaderView();
+    }
+
+    @Override
+    public void updateSection(int section) {
+        Checker.checkSection(section, getSectionCount());
+        notifyItemRangeChanged(getHeaderPos(section), getSectionItemCount(section));
         holder.forceUpdateHeaderView();
     }
 
@@ -160,7 +171,7 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
     }
 
     private int getHeaderPos(int section) {
-        Checker.checkSection(section, getSectionCount());
+        Checker.checkSection(section, getSectionCount() + 1);
         return section > 0 ? sectionToPosSum.get(section - 1) : 0;
     }
 
@@ -185,16 +196,16 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
         return type < 0;
     }
 
+    private int getSectionItemCount(int section) {
+        Checker.checkSection(section, getSectionCount());
+        return sectionToPosSum.get(section) - (section > 0 ? sectionToPosSum.get(section - 1) : 0) - 1;
+    }
+
+
     @Override
     public int getSectionPos(int adapterPos) {
         int section = getSection(adapterPos);
         return getSectionItemPos(section, adapterPos);
-    }
-
-    @Override
-    public void notifyChanged(int section) {
-        notifyDataSetChanged();
-        holder.forceUpdateHeaderView();
     }
 
     @Override

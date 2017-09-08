@@ -9,5 +9,6 @@ public interface SectionManager {
     void insertSection(int section, @NonNull SectionAdapter sectionAdapter);
     void replaceSection(int section, @NonNull SectionAdapter sectionAdapter);
     void removeSection(int section);
+    void updateSection(int section);
 
 }

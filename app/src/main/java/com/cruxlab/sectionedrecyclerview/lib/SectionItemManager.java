@@ -2,7 +2,6 @@ package com.cruxlab.sectionedrecyclerview.lib;
 
 public interface SectionItemManager {
 
-    void notifyChanged(int section);
     void notifyInserted(int section, int pos);
     void notifyRemoved(int section, int pos);
     void notifyChanged(int section, int pos);

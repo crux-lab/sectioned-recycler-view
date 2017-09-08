@@ -157,6 +157,10 @@ public class MainActivity extends AppCompatActivity {
                     DemoSectionAdapter duplicatedAdapter = new DemoSectionAdapter(adapter.color);
                     duplicatedAdapter.strings = new ArrayList<>(adapter.strings);
                     sectionManager.insertSection(section + 1, duplicatedAdapter);
+                    //For mandatory update section in headers
+                    for (int s = section + 1 ; s < sectionManager.getSectionCount(); s++) {
+                        sectionManager.updateSection(s);
+                    }
                 }
             });
             btnChange.setOnClickListener(new View.OnClickListener() {
@@ -174,6 +178,10 @@ public class MainActivity extends AppCompatActivity {
                 public void onClick(View view) {
                     int section = adapter.getSection();
                     sectionManager.removeSection(section);
+                    //For mandatory update section in headers
+                    for (int s = section; s < sectionManager.getSectionCount(); s++) {
+                        sectionManager.updateSection(s);
+                    }
                 }
             });
         }

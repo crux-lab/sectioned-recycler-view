@@ -96,11 +96,6 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder, H
         itemManager.notifyRangeChanged(section, startPos, cnt);
     }
 
-    public final void notifySectionChanged() {
-        Checker.checkItemManager(itemManager);
-        itemManager.notifyChanged(section);
-    }
-
     public final void notifyItemMoved(int fromPos, int toPos) {
         Checker.checkItemManager(itemManager);
         Checker.checkPosition(fromPos, getItemCount());
