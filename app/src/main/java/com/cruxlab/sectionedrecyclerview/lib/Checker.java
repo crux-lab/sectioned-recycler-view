@@ -52,4 +52,10 @@ abstract class Checker {
         }
     }
 
+    static void checkAdapterType(SectionAdapter adapter, int type) {
+        if (adapter == null) {
+            throw new IllegalArgumentException("SectionAdapter with type " + type + " is not in the SectionedRV.");
+        }
+    }
+
 }
