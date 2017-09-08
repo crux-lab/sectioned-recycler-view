@@ -155,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onClick(View view) {
                     int section = adapter.getSection();
                     DemoSectionAdapter duplicatedAdapter = new DemoSectionAdapter(adapter.color);
-                    duplicatedAdapter.strings = adapter.strings;
+                    duplicatedAdapter.strings = new ArrayList<>(adapter.strings);
                     sectionManager.insertSection(section + 1, duplicatedAdapter);
                 }
             });
@@ -163,8 +163,10 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view) {
                     int section = adapter.getSection();
-                    sectionManager.replaceSection(section, new DemoSectionAdapter(adapter.color == Color.YELLOW ?
-                            Color.RED : adapter.color == Color.RED ? Color.BLUE : Color.YELLOW));
+                    DemoSectionAdapter newAdapter = new DemoSectionAdapter(adapter.color == Color.YELLOW ?
+                            Color.RED : adapter.color == Color.RED ? Color.BLUE : Color.YELLOW);
+                    newAdapter.strings = new ArrayList<>(adapter.strings);
+                    sectionManager.replaceSection(section, newAdapter);
                 }
             });
             btnRemove.setOnClickListener(new View.OnClickListener() {
