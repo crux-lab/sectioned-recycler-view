@@ -156,14 +156,14 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
         }
     }
 
-    private int getSection(int pos) {
+    int getSection(int pos) {
         Checker.checkPosition(pos, getItemCount());
         int section = Collections.binarySearch(sectionToPosSum, pos);
         return section >= 0 ? section + 1 : -(section + 1);
     }
 
-    int getSectionType(int pos) {
-        int section = getSection(pos);
+    int getSectionType(int section) {
+        Checker.checkSection(section, getSectionCount());
         return sectionToType.get(section);
     }
 
@@ -175,7 +175,7 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
         return headerViewHolder.itemView;
     }
 
-    private int getHeaderPos(int section) {
+    int getHeaderPos(int section) {
         Checker.checkSection(section, getSectionCount() + 1);
         return section > 0 ? sectionToPosSum.get(section - 1) : 0;
     }
@@ -192,7 +192,7 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
         return (section > 0 ? sectionToPosSum.get(section - 1) : 0) + sectionPos + 1;
     }
 
-    private boolean isHeader(int pos) {
+    boolean isHeader(int pos) {
         Checker.checkPosition(pos, getItemCount());
         return pos == 0 || Collections.binarySearch(sectionToPosSum, pos) >= 0;
     }

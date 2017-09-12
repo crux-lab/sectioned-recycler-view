@@ -16,6 +16,7 @@ public class SectionedRVLayout extends RelativeLayout {
     private SectionedRVAdapter adapter;
 
     private int prevTopSectionType = -1;
+    private int nextHeaderPos = -1;
 
     private RecyclerView.OnScrollListener onScrollListener = new RecyclerView.OnScrollListener() {
         @Override
@@ -39,29 +40,59 @@ public class SectionedRVLayout extends RelativeLayout {
         public void checkIsHeaderViewChanged() {
             post(new Runnable() {
                 public void run() {
-                    int topPos = layoutManager.findFirstVisibleItemPosition();
-                    if (topPos < 0 || topPos >= adapter.getItemCount()) {
-                        if (getChildCount() > 1) {
-                            removeViewAt(1);
-                        }
+                    int firstVisPos = layoutManager.findFirstVisibleItemPosition();
+                    if (firstVisPos < 0 || firstVisPos >= adapter.getItemCount()) {
+                        removeHeaderView();
                         return;
                     }
-                    int topSectionType = adapter.getSectionType(topPos);
+                    int topSection = adapter.getSection(firstVisPos);
+                    int topSectionType = adapter.getSectionType(topSection);
                     if (prevTopSectionType != topSectionType) {
                         prevTopSectionType = topSectionType;
-                        if (getChildCount() > 1) {
-                            removeViewAt(1);
-                        }
-                        View view = adapter.getHeaderView(sectionedRV, topSectionType);
-                        RelativeLayout.LayoutParams newParams = new RelativeLayout.LayoutParams(view.getLayoutParams());
-                        newParams.addRule(RelativeLayout.ALIGN_BOTTOM);
-                        view.setLayoutParams(newParams);
-                        addView(view);
+                        View headerView = adapter.getHeaderView(sectionedRV, topSectionType);
+                        nextHeaderPos = topSection < (adapter.getSectionCount() - 1) ?
+                                adapter.getHeaderPos(topSection + 1) : -1;
+                        addHeaderView(headerView);
+                    } else if (getChildCount() > 1) {
+                        View headerView = getChildAt(1);
+                        headerView.setTranslationY(calcTranslation(headerView.getHeight()));
                     }
                 }
             });
         }
     };
+
+    private void removeHeaderView() {
+        if (getChildCount() > 1) {
+            removeViewAt(1);
+        }
+    }
+
+    private void addHeaderView(final View view) {
+        removeHeaderView();
+        RelativeLayout.LayoutParams newParams = new RelativeLayout.LayoutParams(view.getLayoutParams());
+        newParams.addRule(RelativeLayout.ALIGN_BOTTOM);
+        view.setLayoutParams(newParams);
+        view.setVisibility(INVISIBLE);
+        addView(view);
+        view.post(new Runnable() {
+            @Override
+            public void run() {
+                view.setTranslationY(calcTranslation(view.getHeight()));
+                view.setVisibility(VISIBLE);
+            }
+        });
+    }
+
+    private int calcTranslation(int headerHeight) {
+        View nextHeaderView = layoutManager.findViewByPosition(nextHeaderPos);
+        if (nextHeaderView != null) {
+            int topOffset = nextHeaderView.getTop() - getTop();
+            int offset = headerHeight - topOffset;
+            if (offset > 0) return -offset;
+        }
+        return 0;
+    }
 
     public SectionedRVLayout(Context context) {
         super(context);

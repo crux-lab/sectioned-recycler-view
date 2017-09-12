@@ -136,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
         private TextView text;
         private int color;
         private ImageButton btnDuplicate, btnChange, btnRemove;
+        private boolean isRemoved;
 
         public HeaderViewHolder(View itemView, int color, DemoSectionAdapter adapter) {
             super(itemView);
@@ -176,6 +177,8 @@ public class MainActivity extends AppCompatActivity {
             btnRemove.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    if (isRemoved) return;
+                    isRemoved = true;
                     int section = adapter.getSection();
                     sectionManager.removeSection(section);
                     //For mandatory update section in headers
