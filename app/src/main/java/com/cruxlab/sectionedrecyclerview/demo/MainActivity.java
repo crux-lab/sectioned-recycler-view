@@ -28,7 +28,9 @@ public class MainActivity extends AppCompatActivity {
         SectionedRVLayout srvl = findViewById(R.id.srvl);
         sectionManager = srvl.getSectionManager();
         for (int i = 0; i < 20; i++) {
-            sectionManager.addSection(new DemoSectionAdapter(i % 3 == 0 ? Color.YELLOW : i % 3 == 1 ? Color.RED : Color.BLUE));
+            SectionAdapter adapter = new DemoSectionAdapter(i % 3 == 0 ? Color.YELLOW : i % 3 == 1 ? Color.RED : Color.BLUE);
+            sectionManager.addSection(adapter);
+            adapter.changeHeaderVisibility(i % 4 == 0);
         }
     }
 
@@ -65,6 +67,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
+        public boolean hasHeader() {
+            return true;
+        }
+
+        @Override
         public int getItemCount() {
             return strings.size();
         }
@@ -92,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
 
         private TextView text;
         private DemoSectionAdapter adapter;
-        private ImageButton btnDuplicate, btnChange, btnRemove;
+        private ImageButton btnDuplicate, btnChange, btnRemove, btnHeader;
 
         public ItemViewHolder(View itemView, DemoSectionAdapter adapter) {
             super(itemView);
@@ -101,6 +108,8 @@ public class MainActivity extends AppCompatActivity {
             this.btnDuplicate = itemView.findViewById(R.id.ibtn_duplicate);
             this.btnChange = itemView.findViewById(R.id.ibtn_change);
             this.btnRemove = itemView.findViewById(R.id.ibtn_remove);
+            this.btnHeader = itemView.findViewById(R.id.ibtn_header);
+            if (!adapter.hasHeader()) btnHeader.setVisibility(View.GONE);
         }
 
         public void bind(final String string) {
@@ -127,6 +136,12 @@ public class MainActivity extends AppCompatActivity {
                     adapter.removeString(sectionPos);
                 }
             });
+            btnHeader.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    adapter.changeHeaderVisibility(true);
+                }
+            });
         }
     }
 
@@ -135,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
         private DemoSectionAdapter adapter;
         private TextView text;
         private int color;
-        private ImageButton btnDuplicate, btnChange, btnRemove;
+        private ImageButton btnDuplicate, btnChange, btnRemove, btnHeader;
         private boolean isRemoved;
 
         public HeaderViewHolder(View itemView, int color, DemoSectionAdapter adapter) {
@@ -146,6 +161,8 @@ public class MainActivity extends AppCompatActivity {
             this.btnDuplicate = itemView.findViewById(R.id.ibtn_duplicate);
             this.btnChange = itemView.findViewById(R.id.ibtn_change);
             this.btnRemove = itemView.findViewById(R.id.ibtn_remove);
+            this.btnHeader = itemView.findViewById(R.id.ibtn_header);
+            if (!adapter.hasHeader()) btnHeader.setVisibility(View.GONE);
         }
 
         public void bind(final String string) {
@@ -185,6 +202,12 @@ public class MainActivity extends AppCompatActivity {
                     for (int s = section; s < sectionManager.getSectionCount(); s++) {
                         sectionManager.updateSection(s);
                     }
+                }
+            });
+            btnHeader.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    adapter.changeHeaderVisibility(false);
                 }
             });
         }

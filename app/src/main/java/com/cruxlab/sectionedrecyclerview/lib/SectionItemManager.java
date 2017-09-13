@@ -10,5 +10,7 @@ public interface SectionItemManager {
     void notifyRangeChanged(int section, int startPos, int cnt);
     void notifyMoved(int section, int fromPos, int toPos);
     void notifyHeaderChanged(int section);
+    void notifyHeaderVisibilityChanged(int section, boolean show);
+    boolean isHeaderShown(int section);
 
 }

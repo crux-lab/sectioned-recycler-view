@@ -16,9 +16,17 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder, H
 
     public abstract void onBindViewHolder(VH holder, int position);
 
-    public abstract HVH onCreateHeaderViewHolder(ViewGroup parent);
+    public HVH onCreateHeaderViewHolder(ViewGroup parent) {
+        throw new RuntimeException("SectionAdapter method onCreateHeaderViewHolder() hasn't been overridden.");
+    };
 
-    public abstract void onBindHeaderViewHolder(HVH holder);
+    public void onBindHeaderViewHolder(HVH holder) {
+        throw new RuntimeException("SectionAdapter method onBindHeaderViewHolder() hasn't been overridden.");
+    }
+
+    public boolean hasHeader() {
+        return false;
+    }
 
     public short getItemViewType(int position) {
         return 0;
@@ -106,6 +114,18 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder, H
     public final void notifyHeaderChanged() {
         Checker.checkItemManager(itemManager);
         itemManager.notifyHeaderChanged(section);
+    }
+
+    public final void changeHeaderVisibility(boolean show) {
+        Checker.checkItemManager(itemManager);
+        Checker.checkHeader(hasHeader());
+        itemManager.notifyHeaderVisibilityChanged(section, show);
+    }
+
+    public final boolean isHeaderShown() {
+        Checker.checkItemManager(itemManager);
+        Checker.checkHeader(hasHeader());
+        return itemManager.isHeaderShown(section);
     }
 
     public final int getSection() {

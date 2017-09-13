@@ -58,4 +58,10 @@ abstract class Checker {
         }
     }
 
+    static void checkHeader(boolean hasHeader) {
+        if (!hasHeader) {
+            throw new IllegalStateException("Could not change header visibility, because hasHeader() returns false.");
+        }
+    }
+
 }

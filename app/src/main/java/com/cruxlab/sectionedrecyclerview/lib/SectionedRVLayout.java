@@ -49,10 +49,13 @@ public class SectionedRVLayout extends RelativeLayout {
                     int topSectionType = adapter.getSectionType(topSection);
                     if (prevTopSectionType != topSectionType) {
                         prevTopSectionType = topSectionType;
-                        View headerView = adapter.getHeaderView(sectionedRV, topSectionType);
+                        View headerView = adapter.getHeaderView(sectionedRV, topSection);
                         nextHeaderPos = topSection < (adapter.getSectionCount() - 1) ?
-                                adapter.getHeaderPos(topSection + 1) : -1;
-                        addHeaderView(headerView);
+                                adapter.getFirstPos(topSection + 1) : -1;
+                        removeHeaderView();
+                        if (headerView != null) {
+                            addHeaderView(headerView);
+                        }
                     } else if (getChildCount() > 1) {
                         View headerView = getChildAt(1);
                         headerView.setTranslationY(calcTranslation(headerView.getHeight()));
@@ -69,7 +72,6 @@ public class SectionedRVLayout extends RelativeLayout {
     }
 
     private void addHeaderView(final View view) {
-        removeHeaderView();
         RelativeLayout.LayoutParams newParams = new RelativeLayout.LayoutParams(view.getLayoutParams());
         newParams.addRule(RelativeLayout.ALIGN_BOTTOM);
         view.setLayoutParams(newParams);
