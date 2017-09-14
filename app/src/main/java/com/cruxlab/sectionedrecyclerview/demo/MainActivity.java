@@ -13,6 +13,7 @@ import com.cruxlab.sectionedrecyclerview.R;
 import com.cruxlab.sectionedrecyclerview.lib.SectionAdapter;
 import com.cruxlab.sectionedrecyclerview.lib.SectionManager;
 import com.cruxlab.sectionedrecyclerview.lib.SectionedRVLayout;
+import com.cruxlab.sectionedrecyclerview.lib.SimpleSectionAdapter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,9 +29,11 @@ public class MainActivity extends AppCompatActivity {
         SectionedRVLayout srvl = findViewById(R.id.srvl);
         sectionManager = srvl.getSectionManager();
         for (int i = 0; i < 20; i++) {
-            SectionAdapter adapter = new DemoSectionAdapter(i % 3 == 0 ? Color.YELLOW : i % 3 == 1 ? Color.RED : Color.BLUE);
-            sectionManager.addSection(adapter);
-            adapter.changeHeaderVisibility(i % 4 == 0);
+            if (i % 3 != 2) {
+                sectionManager.addSection(new DemoSectionAdapter(i % 3 == 0 ? Color.YELLOW : i % 3 == 1 ? Color.RED : Color.BLUE, i % 3 == 0));
+            } else {
+                sectionManager.addSection(new SimpleDemoSectionAdapter());
+            }
         }
     }
 
@@ -39,7 +42,8 @@ public class MainActivity extends AppCompatActivity {
         public ArrayList<String> strings = new ArrayList<>(Arrays.asList("One", "Two", "Three", "Four", "Five"));
         public int color;
 
-        DemoSectionAdapter(int color) {
+        DemoSectionAdapter(int color, boolean isHeaderVisible) {
+            super(isHeaderVisible);
             this.color = color;
         }
 
@@ -55,7 +59,6 @@ public class MainActivity extends AppCompatActivity {
             return new MainActivity.ItemViewHolder(view, this);
         }
 
-
         @Override
         public void onBindViewHolder(MainActivity.ItemViewHolder holder, int position) {
             holder.bind(strings.get(position % strings.size()));
@@ -64,11 +67,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onBindHeaderViewHolder(MainActivity.HeaderViewHolder holder) {
             holder.bind("Section " + getSection() + ", item count: " + getItemCount());
-        }
-
-        @Override
-        public boolean hasHeader() {
-            return true;
         }
 
         @Override
@@ -95,10 +93,47 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private class SimpleDemoSectionAdapter extends SimpleSectionAdapter<ItemViewHolder> {
+
+        public ArrayList<String> strings = new ArrayList<>(Arrays.asList("Apple", "Orange", "Watermelon"));
+
+        @Override
+        public MainActivity.ItemViewHolder onCreateViewHolder(ViewGroup parent, short type) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.view_holder_view, parent, false);
+            return new MainActivity.ItemViewHolder(view, this);
+        }
+        @Override
+        public void onBindViewHolder(MainActivity.ItemViewHolder holder, int position) {
+            holder.bind(strings.get(position % strings.size()));
+        }
+
+        @Override
+        public int getItemCount() {
+            return strings.size();
+        }
+
+        public void duplicateString(int pos) {
+            strings.add(pos + 1, strings.get(pos));
+            notifyItemInserted(pos + 1);
+        }
+
+        public void removeString(int pos) {
+            strings.remove(pos);
+            notifyItemRemoved(pos);
+        }
+
+        public void changeString(int pos) {
+            strings.set(pos, strings.get(pos) + " changed");
+            notifyItemChanged(pos);
+        }
+
+    }
+
     private class ItemViewHolder extends SectionAdapter.ItemViewHolder {
 
         private TextView text;
         private DemoSectionAdapter adapter;
+        private SimpleDemoSectionAdapter simpleAdapter;
         private ImageButton btnDuplicate, btnChange, btnRemove, btnHeader;
 
         public ItemViewHolder(View itemView, DemoSectionAdapter adapter) {
@@ -109,7 +144,16 @@ public class MainActivity extends AppCompatActivity {
             this.btnChange = itemView.findViewById(R.id.ibtn_change);
             this.btnRemove = itemView.findViewById(R.id.ibtn_remove);
             this.btnHeader = itemView.findViewById(R.id.ibtn_header);
-            if (!adapter.hasHeader()) btnHeader.setVisibility(View.GONE);
+        }
+
+        public ItemViewHolder(View itemView, SimpleDemoSectionAdapter simpleAdapter) {
+            super(itemView);
+            this.simpleAdapter = simpleAdapter;
+            this.text = itemView.findViewById(R.id.tv_text);
+            this.btnDuplicate = itemView.findViewById(R.id.ibtn_duplicate);
+            this.btnChange = itemView.findViewById(R.id.ibtn_change);
+            this.btnRemove = itemView.findViewById(R.id.ibtn_remove);
+            this.btnHeader = itemView.findViewById(R.id.ibtn_header);
         }
 
         public void bind(final String string) {
@@ -118,14 +162,22 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view) {
                     int sectionPos = getSectionPosition();
-                    adapter.duplicateString(sectionPos);
+                    if (adapter != null) {
+                        adapter.duplicateString(sectionPos);
+                    } else {
+                        simpleAdapter.duplicateString(sectionPos);
+                    }
                 }
             });
             btnChange.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     int sectionPos = getSectionPosition();
-                    adapter.changeString(sectionPos);
+                    if (adapter != null) {
+                        adapter.changeString(sectionPos);
+                    } else {
+                        simpleAdapter.changeString(sectionPos);
+                    }
                 }
             });
             btnRemove.setOnClickListener(new View.OnClickListener() {
@@ -133,15 +185,27 @@ public class MainActivity extends AppCompatActivity {
                 public void onClick(View view) {
                     int sectionPos = getSectionPosition();
                     if (sectionPos == -1) return;
-                    adapter.removeString(sectionPos);
+                    if (adapter != null) {
+                        adapter.removeString(sectionPos);
+                    } else {
+                        simpleAdapter.removeString(sectionPos);
+                    }
                 }
             });
             btnHeader.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    adapter.changeHeaderVisibility(true);
+                    if (adapter != null) {
+                        adapter.updateHeaderVisibility(!adapter.isHeaderVisible());
+                        adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+                    }
                 }
             });
+            if (adapter != null) {
+                btnHeader.setImageResource(adapter.isHeaderVisible() ? R.drawable.ic_visibility : R.drawable.ic_visibility_off);
+            } else {
+                btnHeader.setVisibility(View.GONE);
+            }
         }
     }
 
@@ -162,7 +226,6 @@ public class MainActivity extends AppCompatActivity {
             this.btnChange = itemView.findViewById(R.id.ibtn_change);
             this.btnRemove = itemView.findViewById(R.id.ibtn_remove);
             this.btnHeader = itemView.findViewById(R.id.ibtn_header);
-            if (!adapter.hasHeader()) btnHeader.setVisibility(View.GONE);
         }
 
         public void bind(final String string) {
@@ -172,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view) {
                     int section = adapter.getSection();
-                    DemoSectionAdapter duplicatedAdapter = new DemoSectionAdapter(adapter.color);
+                    DemoSectionAdapter duplicatedAdapter = new DemoSectionAdapter(adapter.color, adapter.isHeaderVisible());
                     duplicatedAdapter.strings = new ArrayList<>(adapter.strings);
                     sectionManager.insertSection(section + 1, duplicatedAdapter);
                     //For mandatory update section in headers
@@ -186,7 +249,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onClick(View view) {
                     int section = adapter.getSection();
                     DemoSectionAdapter newAdapter = new DemoSectionAdapter(adapter.color == Color.YELLOW ?
-                            Color.RED : adapter.color == Color.RED ? Color.BLUE : Color.YELLOW);
+                            Color.RED : adapter.color == Color.RED ? Color.BLUE : Color.YELLOW, adapter.isHeaderVisible());
                     newAdapter.strings = new ArrayList<>(adapter.strings);
                     sectionManager.replaceSection(section, newAdapter);
                 }
@@ -204,12 +267,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             });
-            btnHeader.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    adapter.changeHeaderVisibility(false);
-                }
-            });
+            btnHeader.setVisibility(View.GONE);
         }
     }
 

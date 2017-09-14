@@ -9,6 +9,11 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder, H
 
     SectionItemManager itemManager;
     int section;
+    private boolean isHeaderVisible;
+
+    public SectionAdapter(boolean isHeaderVisible) {
+        this.isHeaderVisible = isHeaderVisible;
+    }
 
     public abstract int getItemCount();
 
@@ -16,20 +21,23 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder, H
 
     public abstract void onBindViewHolder(VH holder, int position);
 
-    public HVH onCreateHeaderViewHolder(ViewGroup parent) {
-        throw new RuntimeException("SectionAdapter method onCreateHeaderViewHolder() hasn't been overridden.");
-    };
+    public abstract HVH onCreateHeaderViewHolder(ViewGroup parent);
 
-    public void onBindHeaderViewHolder(HVH holder) {
-        throw new RuntimeException("SectionAdapter method onBindHeaderViewHolder() hasn't been overridden.");
-    }
-
-    public boolean hasHeader() {
-        return false;
-    }
+    public abstract void onBindHeaderViewHolder(HVH holder);
 
     public short getItemViewType(int position) {
         return 0;
+    }
+
+    public void updateHeaderVisibility(boolean visible) {
+        Checker.checkItemManager(itemManager);
+        if (visible == isHeaderVisible) return;
+        isHeaderVisible = visible;
+        itemManager.notifyHeaderVisibilityChanged(section, visible);
+    }
+
+    public boolean isHeaderVisible() {
+        return isHeaderVisible;
     }
 
     public final void notifyItemInserted(int pos) {
@@ -111,21 +119,9 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder, H
         itemManager.notifyMoved(section, fromPos, toPos);
     }
 
-    public final void notifyHeaderChanged() {
+    public void notifyHeaderChanged() {
         Checker.checkItemManager(itemManager);
         itemManager.notifyHeaderChanged(section);
-    }
-
-    public final void changeHeaderVisibility(boolean show) {
-        Checker.checkItemManager(itemManager);
-        Checker.checkHeader(hasHeader());
-        itemManager.notifyHeaderVisibilityChanged(section, show);
-    }
-
-    public final boolean isHeaderShown() {
-        Checker.checkItemManager(itemManager);
-        Checker.checkHeader(hasHeader());
-        return itemManager.isHeaderShown(section);
     }
 
     public final int getSection() {
@@ -147,7 +143,7 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder, H
 
     }
 
-    public abstract static class ItemViewHolder extends ViewHolder {
+    public abstract static class ItemViewHolder extends SectionAdapter.ViewHolder {
 
         SectionedRVAdapter.ViewHolder viewHolder;
         SectionPositionProvider sectionPositionProvider;
