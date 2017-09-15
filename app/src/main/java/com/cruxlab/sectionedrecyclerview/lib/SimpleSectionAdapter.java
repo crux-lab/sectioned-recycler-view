@@ -16,7 +16,7 @@ public abstract class SimpleSectionAdapter<VH extends SectionAdapter.ItemViewHol
     @Override
     public final SectionAdapter.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
         throw new RuntimeException("SimpleSectionAdapter doesn't have header, so it should not call method onCreateHeaderViewHolder().");
-    };
+    }
 
     @Override
     public final void onBindHeaderViewHolder(SectionAdapter.ViewHolder holder) {
@@ -29,7 +29,7 @@ public abstract class SimpleSectionAdapter<VH extends SectionAdapter.ItemViewHol
     }
 
     @Override
-    public void notifyHeaderChanged() {
+    public final void notifyHeaderChanged() {
         throw new RuntimeException("SimpleSectionAdapter doesn't have header, so it should not call method notifyHeaderChanged().");
     }
 

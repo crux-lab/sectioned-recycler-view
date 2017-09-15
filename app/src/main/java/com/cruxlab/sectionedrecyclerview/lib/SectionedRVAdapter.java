@@ -8,7 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.List;
 
 final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.ViewHolder> implements SectionManager, SectionItemManager, SectionPositionProvider {
 
@@ -158,9 +158,36 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
 
     int getSection(int adapterPos) {
         Checker.checkPosition(adapterPos, getItemCount());
-        //TODO: implement upper binary search
-        int section = Collections.binarySearch(sectionToPosSum, adapterPos);
-        return section >= 0 ? section + 1 : -(section + 1);
+        return upperBoundBinarySearch(sectionToPosSum, adapterPos);
+    }
+
+    //Finds first pos where val greater than key (where key value should be inserted (after other equal ones))
+    private static int upperBoundBinarySearch(List<Integer> list, int key) {
+        int l = 0, r = list.size() - 1;
+        while (true) {
+            if (l == r) {
+                if (key < list.get(l)) {
+                    return l;
+                } else {
+                    return l + 1;
+                }
+            }
+            if (l + 1 == r) {
+                if (key < list.get(l)) {
+                    return l;
+                } else if (key < list.get(r)) {
+                    return r;
+                } else {
+                    return r + 1;
+                }
+            }
+            int m = (l + r) / 2;
+            if (key < list.get(m)) {
+                r = m;
+            } else {
+                l = m + 1;
+            }
+        }
     }
 
     int getSectionType(int section) {
