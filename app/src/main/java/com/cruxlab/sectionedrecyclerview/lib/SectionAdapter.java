@@ -7,12 +7,14 @@ import java.util.List;
 
 public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder, HVH extends SectionAdapter.ViewHolder> {
 
-    SectionItemManager itemManager;
     int section;
+    SectionItemManager itemManager;
     private boolean isHeaderVisible;
+    private boolean isHeaderPinned;
 
-    public SectionAdapter(boolean isHeaderVisible) {
+    public SectionAdapter(boolean isHeaderVisible, boolean isHeaderPinned) {
         this.isHeaderVisible = isHeaderVisible;
+        this.isHeaderPinned = isHeaderPinned;
     }
 
     public abstract int getItemCount();
@@ -36,8 +38,19 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder, H
         itemManager.notifyHeaderVisibilityChanged(section, visible);
     }
 
+    public void updateHeaderPinnedState(boolean pinned) {
+        Checker.checkItemManager(itemManager);
+        if (pinned == isHeaderPinned) return;
+        isHeaderPinned = pinned;
+        itemManager.notifyHeaderPinnedStateChanged(section, pinned);
+    }
+
     public boolean isHeaderVisible() {
         return isHeaderVisible;
+    }
+
+    public boolean isHeaderPinned() {
+        return isHeaderPinned;
     }
 
     public final void notifyItemInserted(int pos) {

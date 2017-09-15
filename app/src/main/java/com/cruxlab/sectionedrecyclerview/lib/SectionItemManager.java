@@ -11,5 +11,6 @@ public interface SectionItemManager {
     void notifyMoved(int section, int fromPos, int toPos);
     void notifyHeaderChanged(int section);
     void notifyHeaderVisibilityChanged(int section, boolean visible);
+    void notifyHeaderPinnedStateChanged(int section, boolean pinned);
 
 }

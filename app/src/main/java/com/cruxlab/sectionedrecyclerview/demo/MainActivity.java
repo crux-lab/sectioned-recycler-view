@@ -29,8 +29,9 @@ public class MainActivity extends AppCompatActivity {
         SectionedRVLayout srvl = findViewById(R.id.srvl);
         sectionManager = srvl.getSectionManager();
         for (int i = 0; i < 20; i++) {
-            if (i % 3 != 2) {
-                sectionManager.addSection(new DemoSectionAdapter(i % 3 == 0 ? Color.YELLOW : i % 3 == 1 ? Color.RED : Color.BLUE, i % 3 == 0));
+            if (i % 4 != 3) {
+                sectionManager.addSection(new DemoSectionAdapter((i % 4 == 0) ? Color.YELLOW : (i % 4 == 1) ? Color.RED : Color.BLUE,
+                        (i % 4 == 0) || (i % 4 == 1), (i % 4 == 0)));
             } else {
                 sectionManager.addSection(new SimpleDemoSectionAdapter());
             }
@@ -42,8 +43,8 @@ public class MainActivity extends AppCompatActivity {
         public ArrayList<String> strings = new ArrayList<>(Arrays.asList("One", "Two", "Three", "Four", "Five"));
         public int color;
 
-        DemoSectionAdapter(int color, boolean isHeaderVisible) {
-            super(isHeaderVisible);
+        DemoSectionAdapter(int color, boolean isHeaderVisible, boolean isHeaderPinned) {
+            super(isHeaderVisible, isHeaderPinned);
             this.color = color;
         }
 
@@ -235,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view) {
                     int section = adapter.getSection();
-                    DemoSectionAdapter duplicatedAdapter = new DemoSectionAdapter(adapter.color, adapter.isHeaderVisible());
+                    DemoSectionAdapter duplicatedAdapter = new DemoSectionAdapter(adapter.color, adapter.isHeaderVisible(), adapter.isHeaderPinned());
                     duplicatedAdapter.strings = new ArrayList<>(adapter.strings);
                     sectionManager.insertSection(section + 1, duplicatedAdapter);
                     //For mandatory update section in headers
@@ -249,7 +250,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onClick(View view) {
                     int section = adapter.getSection();
                     DemoSectionAdapter newAdapter = new DemoSectionAdapter(adapter.color == Color.YELLOW ?
-                            Color.RED : adapter.color == Color.RED ? Color.BLUE : Color.YELLOW, adapter.isHeaderVisible());
+                            Color.RED : adapter.color == Color.RED ? Color.BLUE : Color.YELLOW, adapter.isHeaderVisible(), adapter.isHeaderPinned());
                     newAdapter.strings = new ArrayList<>(adapter.strings);
                     sectionManager.replaceSection(section, newAdapter);
                 }
@@ -267,7 +268,20 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             });
-            btnHeader.setVisibility(View.GONE);
+            btnHeader.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (adapter != null) {
+                        adapter.updateHeaderPinnedState(!adapter.isHeaderPinned());
+                        adapter.notifyHeaderChanged();
+                    }
+                }
+            });
+            if (adapter != null) {
+                btnHeader.setImageResource(adapter.isHeaderPinned() ? R.drawable.ic_lock : R.drawable.ic_lock_open);
+            } else {
+                btnHeader.setVisibility(View.GONE);
+            }
         }
     }
 

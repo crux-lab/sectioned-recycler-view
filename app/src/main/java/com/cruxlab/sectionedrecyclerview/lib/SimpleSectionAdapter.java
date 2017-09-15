@@ -5,11 +5,16 @@ import android.view.ViewGroup;
 public abstract class SimpleSectionAdapter<VH extends SectionAdapter.ItemViewHolder> extends SectionAdapter<VH, SectionAdapter.ViewHolder> {
 
     public SimpleSectionAdapter() {
-        super(false);
+        super(false, false);
     }
 
     @Override
     public final boolean isHeaderVisible() {
+        return false;
+    }
+
+    @Override
+    public final boolean isHeaderPinned() {
         return false;
     }
 
@@ -26,6 +31,11 @@ public abstract class SimpleSectionAdapter<VH extends SectionAdapter.ItemViewHol
     @Override
     public final void updateHeaderVisibility(boolean visible) {
         throw new RuntimeException("SimpleSectionAdapter doesn't have header, so it should not call method updateHeaderVisibility(boolean visible).");
+    }
+
+    @Override
+    public final void updateHeaderPinnedState(boolean pinned) {
+        throw new RuntimeException("SimpleSectionAdapter doesn't have header, so it should not call method updateHeaderPinnedState(boolean pinned).");
     }
 
     @Override
