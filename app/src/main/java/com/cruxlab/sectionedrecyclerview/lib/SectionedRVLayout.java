@@ -19,11 +19,13 @@ public class SectionedRVLayout extends RelativeLayout {
     private int nextHeaderPos = -1;
 
     private RecyclerView.OnScrollListener onScrollListener = new RecyclerView.OnScrollListener() {
+
         @Override
         public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
             super.onScrolled(recyclerView, dx, dy);
             headerViewManager.checkIsHeaderViewChanged();
         }
+
     };
 
     private HeaderViewManager headerViewManager = new HeaderViewManager() {
@@ -42,7 +44,7 @@ public class SectionedRVLayout extends RelativeLayout {
                 public void run() {
                     int firstVisPos = layoutManager.findFirstVisibleItemPosition();
                     if (firstVisPos < 0 || firstVisPos >= adapter.getItemCount()) {
-                        removeHeaderView();
+                        removeFirstView();
                         return;
                     }
                     int topSection = adapter.getSection(firstVisPos);
@@ -52,9 +54,10 @@ public class SectionedRVLayout extends RelativeLayout {
                         View headerView = adapter.getHeaderView(sectionedRV, topSection);
                         nextHeaderPos = topSection < (adapter.getSectionCount() - 1) ?
                                 adapter.getFirstPos(topSection + 1) : -1;
-                        removeHeaderView();
                         if (headerView != null) {
                             addHeaderView(headerView);
+                        } else {
+                            removeFirstView();
                         }
                     } else if (getChildCount() > 1) {
                         View headerView = getChildAt(1);
@@ -65,7 +68,7 @@ public class SectionedRVLayout extends RelativeLayout {
         }
     };
 
-    private void removeHeaderView() {
+    private void removeFirstView() {
         if (getChildCount() > 1) {
             removeViewAt(1);
         }
@@ -80,6 +83,9 @@ public class SectionedRVLayout extends RelativeLayout {
         view.post(new Runnable() {
             @Override
             public void run() {
+                if (getChildCount() > 2) {
+                    removeViewAt(1);
+                }
                 view.setTranslationY(calcTranslation(view.getHeight()));
                 view.setVisibility(VISIBLE);
             }
