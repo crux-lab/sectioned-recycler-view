@@ -76,7 +76,7 @@ public class SectionedRVLayout extends RelativeLayout {
 
     private void addHeaderView(final View view) {
         RelativeLayout.LayoutParams newParams = new RelativeLayout.LayoutParams(view.getLayoutParams());
-        newParams.addRule(RelativeLayout.ALIGN_BOTTOM);
+        newParams.addRule(RelativeLayout.ALIGN_TOP);
         view.setLayoutParams(newParams);
         view.setVisibility(INVISIBLE);
         addView(view);
@@ -130,6 +130,34 @@ public class SectionedRVLayout extends RelativeLayout {
 
     public SectionManager getSectionManager() {
         return adapter;
+    }
+
+    public void addRVItemDecoration(RecyclerView.ItemDecoration decor) {
+        sectionedRV.addItemDecoration(decor);
+    }
+
+    public void removeRVItemDecoration(RecyclerView.ItemDecoration decor) {
+        sectionedRV.removeItemDecoration(decor);
+    }
+
+    public void addRVItemDecoration(RecyclerView.ItemDecoration decor, int index) {
+        sectionedRV.addItemDecoration(decor, index);
+    }
+
+    public void invalidateRVItemDecorations() {
+        sectionedRV.invalidateItemDecorations();
+    }
+
+    public void setRVItemAnimator(RecyclerView.ItemAnimator animator) {
+        sectionedRV.setItemAnimator(animator);
+    }
+
+    public void setRVRecyclerListener(RecyclerView.RecyclerListener listerer) {
+        sectionedRV.setRecyclerListener(listerer);
+    }
+
+    public void setRVOnFlingListener(RecyclerView.OnFlingListener listener) {
+        sectionedRV.setOnFlingListener(listener);
     }
 
 }

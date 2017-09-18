@@ -300,6 +300,8 @@ final class SectionedRVAdapter extends RecyclerView.Adapter<SectionedRVAdapter.V
 
     @Override
     public void notifyHeaderChanged(int section) {
+        int sectionType = sectionToType.get(section);
+        if (!typeToAdapter.get(sectionType).isHeaderVisible()) return;
         int headerPos = getFirstPos(section);
         notifyItemChanged(headerPos);
         headerViewManager.notifyHeaderUpdated(sectionToType.get(section));
