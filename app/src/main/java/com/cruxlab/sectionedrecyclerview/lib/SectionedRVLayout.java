@@ -5,6 +5,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.RelativeLayout;
 
 import com.cruxlab.sectionedrecyclerview.R;
@@ -40,56 +41,73 @@ public class SectionedRVLayout extends RelativeLayout {
 
         @Override
         public void checkIsHeaderViewChanged() {
+            int firstVisPos = layoutManager.findFirstVisibleItemPosition();
+            if (firstVisPos < 0 || firstVisPos >= adapter.getItemCount()) {
+                removeHeaderView();
+                return;
+            }
+            int topSection = adapter.getSection(firstVisPos);
+            int topSectionType = adapter.getSectionType(topSection);
+            if (prevTopSectionType != topSectionType) {
+                prevTopSectionType = topSectionType;
+                nextHeaderPos = topSection < (adapter.getSectionCount() - 1) ?
+                        adapter.getFirstPos(topSection + 1) : -1;
+                View headerView = adapter.getHeaderView(sectionedRV, topSection);
+                if (headerView != null) {
+                    addHeaderView(headerView);
+                } else {
+                    removeHeaderView();
+                }
+            } else if (getChildCount() > 1) {
+                View headerView = getChildAt(getChildCount() - 1);
+                headerView.setTranslationY(calcTranslation(headerView.getHeight()));
+            }
+        }
+
+    };
+
+    private void removeHeaderView() {
+        if (getChildCount() > 1) {
+            //Because we can't remove views from onLayout
             post(new Runnable() {
+                @Override
                 public void run() {
-                    int firstVisPos = layoutManager.findFirstVisibleItemPosition();
-                    if (firstVisPos < 0 || firstVisPos >= adapter.getItemCount()) {
-                        removeFirstView();
-                        return;
-                    }
-                    int topSection = adapter.getSection(firstVisPos);
-                    int topSectionType = adapter.getSectionType(topSection);
-                    if (prevTopSectionType != topSectionType) {
-                        prevTopSectionType = topSectionType;
-                        View headerView = adapter.getHeaderView(sectionedRV, topSection);
-                        nextHeaderPos = topSection < (adapter.getSectionCount() - 1) ?
-                                adapter.getFirstPos(topSection + 1) : -1;
-                        if (headerView != null) {
-                            addHeaderView(headerView);
-                        } else {
-                            removeFirstView();
-                        }
-                    } else if (getChildCount() > 1) {
-                        View headerView = getChildAt(1);
-                        headerView.setTranslationY(calcTranslation(headerView.getHeight()));
+                    if (getChildCount() > 1) {
+                        removeViewAt(1);
                     }
                 }
             });
         }
-    };
+    }
 
-    private void removeFirstView() {
-        if (getChildCount() > 1) {
-            removeViewAt(1);
+    private void removePrevHeaderView() {
+        if (getChildCount() > 2) {
+            //Because we can't remove views from onLayout
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    if (getChildCount() > 2) {
+                        removeViewAt(1);
+                    }
+                }
+            });
         }
     }
 
     private void addHeaderView(final View view) {
+        if (view == null) return;
         RelativeLayout.LayoutParams newParams = new RelativeLayout.LayoutParams(view.getLayoutParams());
         newParams.addRule(RelativeLayout.ALIGN_TOP);
         view.setLayoutParams(newParams);
-        view.setVisibility(INVISIBLE);
-        addView(view);
-        view.post(new Runnable() {
+        runJustBeforeBeingDrawn(view, new Runnable() {
             @Override
             public void run() {
-                if (getChildCount() > 2) {
-                    removeViewAt(1);
-                }
                 view.setTranslationY(calcTranslation(view.getHeight()));
-                view.setVisibility(VISIBLE);
+                view.requestLayout();
             }
         });
+        addView(view);
+        removePrevHeaderView();
     }
 
     private int calcTranslation(int headerHeight) {
@@ -158,6 +176,18 @@ public class SectionedRVLayout extends RelativeLayout {
 
     public void setRVOnFlingListener(RecyclerView.OnFlingListener listener) {
         sectionedRV.setOnFlingListener(listener);
+    }
+
+    private static void runJustBeforeBeingDrawn(final View view, final Runnable runnable) {
+        final ViewTreeObserver.OnPreDrawListener preDrawListener = new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                view.getViewTreeObserver().removeOnPreDrawListener(this);
+                runnable.run();
+                return true;
+            }
+        };
+        view.getViewTreeObserver().addOnPreDrawListener(preDrawListener);
     }
 
 }
