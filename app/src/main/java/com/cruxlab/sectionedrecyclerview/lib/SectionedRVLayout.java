@@ -16,7 +16,7 @@ public class SectionedRVLayout extends RelativeLayout {
     private LinearLayoutManager layoutManager;
     private SectionedRVAdapter adapter;
 
-    private int prevTopSectionType = -1;
+    private int topSectionType = -1;
     private int nextHeaderPos = -1;
 
     private RecyclerView.OnScrollListener onScrollListener = new RecyclerView.OnScrollListener() {
@@ -33,38 +33,61 @@ public class SectionedRVLayout extends RelativeLayout {
 
         @Override
         public void notifyHeaderUpdated(int type) {
-            if (type == prevTopSectionType) {
-                prevTopSectionType = -1;
-                checkIsHeaderViewChanged();
+            if (type == topSectionType) {
+                int topSection = getTopSection();
+                if (topSection < 0) return;
+                updateCurrentHeaderView(topSection);
             }
         }
 
         @Override
         public void checkIsHeaderViewChanged() {
-            int firstVisPos = layoutManager.findFirstVisibleItemPosition();
-            if (firstVisPos < 0 || firstVisPos >= adapter.getItemCount()) {
+            int topSection = getTopSection();
+            if (topSection < 0) {
                 removeHeaderView();
                 return;
             }
-            int topSection = adapter.getSection(firstVisPos);
-            int topSectionType = adapter.getSectionType(topSection);
-            if (prevTopSectionType != topSectionType) {
-                prevTopSectionType = topSectionType;
-                nextHeaderPos = topSection < (adapter.getSectionCount() - 1) ?
-                        adapter.getFirstPos(topSection + 1) : -1;
-                View headerView = adapter.getHeaderView(sectionedRV, topSection);
-                if (headerView != null) {
-                    addHeaderView(headerView);
-                } else {
-                    removeHeaderView();
-                }
-            } else if (getChildCount() > 1) {
-                View headerView = getChildAt(getChildCount() - 1);
-                headerView.setTranslationY(calcTranslation(headerView.getHeight()));
+            if (!updateHeaderViewType(topSection)) {
+                translateCurrentHeaderView();
             }
         }
-
     };
+
+    private int getTopSection() {
+        int firstVisPos = layoutManager.findFirstVisibleItemPosition();
+        if (firstVisPos < 0 || firstVisPos >= adapter.getItemCount()) return -1;
+        return adapter.getSection(firstVisPos);
+    }
+
+    private boolean updateHeaderViewType(int topSection) {
+        int prevTopSectionType = topSectionType;
+        topSectionType = adapter.getSectionType(topSection);
+        if (topSectionType != prevTopSectionType) {
+            nextHeaderPos = topSection < (adapter.getSectionCount() - 1) ?
+                    adapter.getFirstPos(topSection + 1) : -1;
+            updateCurrentHeaderView(topSection);
+            return true;
+        }
+        return false;
+    }
+
+    private void translateCurrentHeaderView() {
+        if (getChildCount() > 1) {
+            View headerView = getChildAt(getChildCount() - 1);
+            headerView.setTranslationY(calcTranslation(headerView.getHeight()));
+        }
+    }
+
+    private void updateCurrentHeaderView(int topSection) {
+        View headerView = adapter.getBoundHeaderView(sectionedRV, topSection);
+        if (headerView == null) {
+            removeHeaderView();
+        } else {
+            if (headerView.getParent() == null) {
+                addHeaderView(headerView);
+            } //Otherwise, header view was updated in getBoundHeaderView
+        }
+    }
 
     private void removeHeaderView() {
         if (getChildCount() > 1) {
