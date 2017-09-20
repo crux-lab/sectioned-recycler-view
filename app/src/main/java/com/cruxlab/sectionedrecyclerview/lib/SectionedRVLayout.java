@@ -3,6 +3,7 @@ package com.cruxlab.sectionedrecyclerview.lib;
 import android.content.Context;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -167,6 +168,8 @@ public class SectionedRVLayout extends RelativeLayout {
         sectionedRV.setLayoutManager(layoutManager);
         sectionedRV.setHasFixedSize(false);
         sectionedRV.addOnScrollListener(onScrollListener);
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new SwipeCallback());
+        itemTouchHelper.attachToRecyclerView(sectionedRV);
     }
 
     public SectionManager getSectionManager() {
@@ -211,6 +214,28 @@ public class SectionedRVLayout extends RelativeLayout {
             }
         };
         view.getViewTreeObserver().addOnPreDrawListener(preDrawListener);
+    }
+
+    private final class SwipeCallback extends ItemTouchHelper.Callback {
+
+        @Override
+        public final int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+            SectionedRVAdapter.ViewHolder sectionViewHolder = (SectionedRVAdapter.ViewHolder) viewHolder;
+            if (sectionViewHolder.headerViewHolder != null) return 0;
+            return makeMovementFlags(0, sectionViewHolder.itemViewHolder.getMovementFlags());
+        }
+
+        @Override
+        public final boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+            return false;
+        }
+
+        @Override
+        public final void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+            SectionedRVAdapter.ViewHolder sectionViewHolder = (SectionedRVAdapter.ViewHolder) viewHolder;
+            sectionViewHolder.itemViewHolder.onSwiped(direction);
+        }
+
     }
 
 }

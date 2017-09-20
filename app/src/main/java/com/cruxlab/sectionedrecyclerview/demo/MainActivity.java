@@ -3,6 +3,7 @@ package com.cruxlab.sectionedrecyclerview.demo;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -207,6 +208,22 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 btnHeader.setVisibility(View.GONE);
             }
+        }
+
+        @Override
+        public void onSwiped(int direction) {
+            int sectionPos = getSectionPosition();
+            if (sectionPos == -1) return;
+            if (adapter != null) {
+                adapter.removeString(sectionPos);
+            } else {
+                simpleAdapter.removeString(sectionPos);
+            }
+        }
+
+        @Override
+        public int getMovementFlags() {
+            return ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT;
         }
     }
 

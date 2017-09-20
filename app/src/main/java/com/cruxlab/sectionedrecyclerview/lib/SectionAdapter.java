@@ -173,6 +173,14 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder, H
             return sectionPositionProvider.getSectionPos(adapterPos);
         }
 
+        public void onSwiped(int direction) {
+
+        }
+
+        public int getMovementFlags() {
+            return 0;
+        }
+
     }
 
 }
