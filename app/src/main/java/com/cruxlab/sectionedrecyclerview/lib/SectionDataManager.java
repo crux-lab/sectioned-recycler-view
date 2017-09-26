@@ -3,7 +3,6 @@ package com.cruxlab.sectionedrecyclerview.lib;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.SparseArray;
-import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
@@ -12,6 +11,7 @@ import java.util.List;
 class SectionDataManager implements SectionManager, SectionItemManager, SectionPositionProvider {
 
     private short freeType = 1;
+    private short topSectionType = -1;
     private HeaderViewManager headerViewManager;
     private ArrayList<Integer> sectionToPosSum;
     private ArrayList<Short> sectionToType;
@@ -78,59 +78,30 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         typeToHeaderVH = new SparseArray<>();
     }
 
-    /* PUBLIC METHODS */
-
-    public RecyclerView.Adapter<MockViewHolder> getMockVHAdapter() {
+    RecyclerView.Adapter<SectionDataManager.MockViewHolder> getMockVHAdapter() {
         return mockVHAdapter;
     }
 
-    public int getTotalItemCount() {
-        return getSectionCount() > 0 ? sectionToPosSum.get(getSectionCount() - 1) : 0;
-    }
-
-    public int getSectionByAdapterPos(int adapterPos) {
-        Checker.checkPosition(adapterPos, getTotalItemCount());
-        return upperBoundBinarySearch(sectionToPosSum, adapterPos);
-    }
-
-    public int getSectionType(int section) {
-        Checker.checkSection(section, getSectionCount());
-        return sectionToType.get(section);
-    }
-
-    public int getSectionFirstPos(int section) {
-        Checker.checkSection(section, getSectionCount() + 1);
-        return section > 0 ? sectionToPosSum.get(section - 1) : 0;
-    }
-
-    public int getAdapterPos(int section, int sectionPos) {
-        Checker.checkSection(section, getSectionCount());
-        Checker.checkPosition(sectionPos, getTotalItemCount());
-        short sectionType = sectionToType.get(section);
-        SectionAdapter adapter = typeToAdapter.get(sectionType);
-        return (section > 0 ? sectionToPosSum.get(section - 1) : 0) + sectionPos + (adapter.isHeaderVisible() ? 1 : 0);
-    }
-
-    public int getSectionCurItemCount(int section) {
-        Checker.checkSection(section, getSectionCount());
-        return sectionToPosSum.get(section) - (section > 0 ? sectionToPosSum.get(section - 1) : 0);
-    }
-
-    public View getBoundHeaderView(ViewGroup parent, int section) {
-        Checker.checkSection(section, getSectionCount());
-        short sectionType = sectionToType.get(section);
-        SectionAdapter adapter = typeToAdapter.get(sectionType);
-        if (!adapter.isHeaderVisible() || !adapter.isHeaderPinned()) return null;
-        SectionAdapter.ViewHolder headerViewHolder = typeToHeaderVH.get(sectionType);
-        if (headerViewHolder == null) {
-            headerViewHolder = adapter.onCreateHeaderViewHolder(parent);
-            typeToHeaderVH.put(sectionType, headerViewHolder);
+    void checkIsHeaderViewChanged() {
+        int topPos = headerViewManager.getFirstVisiblePos();
+        if (topPos < 0 || topPos >= getTotalItemCount()) {
+            removeHeaderView();
+            return;
         }
-        adapter.onBindHeaderViewHolder(headerViewHolder);
-        return headerViewHolder.itemView;
+        int section = getSectionByAdapterPos(topPos);
+        short sectionType = sectionToType.get(section);
+        SectionAdapter adapter = typeToAdapter.get(sectionType);
+        if (adapter.isHeaderVisible() && adapter.isHeaderPinned()) {
+            if (sectionType == topSectionType) {
+                headerViewManager.translateHeaderView(getSectionFirstPos(section + 1));
+            } else {
+                addHeaderView(section);
+            }
+        } else {
+            removeHeaderView();
+        }
     }
 
-    /* END PUBLIC METHODS */
     /* SECTION MANAGER */
 
     @Override
@@ -150,7 +121,6 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         sectionToPosSum.add(posSum);
         freeType++;
         mockVHAdapter.notifyItemRangeInserted(start, cnt);
-        headerViewManager.checkIsHeaderViewChanged();
     }
 
     @Override
@@ -167,7 +137,6 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         freeType++;
         updatePosSum(section + 1, cnt, true);
         mockVHAdapter.notifyItemRangeInserted(start, cnt);
-        headerViewManager.checkIsHeaderViewChanged();
     }
 
     @Override
@@ -179,7 +148,6 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         } else {
             insertSection(section, sectionAdapter);
         }
-        headerViewManager.checkIsHeaderViewChanged();
     }
 
     @Override
@@ -194,14 +162,13 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         sectionToPosSum.remove(section);
         updatePosSum(section, -cnt, true);
         mockVHAdapter.notifyItemRangeRemoved(start, cnt);
-        headerViewManager.checkIsHeaderViewChanged();
     }
 
     @Override
     public void updateSection(int section) {
         Checker.checkSection(section, getSectionCount());
         mockVHAdapter.notifyItemRangeChanged(getSectionFirstPos(section), getSectionCurItemCount(section));
-        headerViewManager.notifyHeaderUpdated(sectionToType.get(section));
+        updateHeaderView(sectionToType.get(section));
     }
 
     /* END SECTION MANAGER */
@@ -213,7 +180,6 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         Checker.checkPosition(adapterPos, getTotalItemCount() + 1);
         updatePosSum(section, 1, false);
         mockVHAdapter.notifyItemInserted(adapterPos);
-        headerViewManager.checkIsHeaderViewChanged();
     }
 
     @Override
@@ -222,7 +188,6 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         Checker.checkPosition(adapterPos, getTotalItemCount() + 1);
         updatePosSum(section, -1, false);
         mockVHAdapter.notifyItemRemoved(adapterPos);
-        headerViewManager.checkIsHeaderViewChanged();
     }
 
     @Override
@@ -230,7 +195,6 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         int adapterPos = getAdapterPos(section, pos);
         Checker.checkPosition(adapterPos, getTotalItemCount());
         mockVHAdapter.notifyItemChanged(adapterPos);
-        headerViewManager.checkIsHeaderViewChanged();
     }
 
     @Override
@@ -239,7 +203,6 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         Checker.checkPosRange(adapterStartPos, cnt, getTotalItemCount());
         updatePosSum(section, cnt, false);
         mockVHAdapter.notifyItemRangeInserted(adapterStartPos, cnt);
-        headerViewManager.checkIsHeaderViewChanged();
     }
 
     @Override
@@ -248,7 +211,6 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         Checker.checkPosRange(adapterStartPos, cnt, getTotalItemCount());
         updatePosSum(section, -cnt, false);
         mockVHAdapter.notifyItemRangeRemoved(adapterStartPos, cnt);
-        headerViewManager.checkIsHeaderViewChanged();
     }
 
     @Override
@@ -256,7 +218,6 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         int adapterStartPos = getAdapterPos(section, startPos);
         Checker.checkPosRange(adapterStartPos, cnt, getTotalItemCount());
         mockVHAdapter.notifyItemRangeChanged(adapterStartPos, cnt);
-        headerViewManager.checkIsHeaderViewChanged();
     }
 
     @Override
@@ -266,7 +227,6 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         int adapterToPos = getAdapterPos(section, toPos);
         Checker.checkPosition(adapterToPos, getTotalItemCount());
         mockVHAdapter.notifyItemMoved(adapterFromPos, adapterToPos);
-        headerViewManager.checkIsHeaderViewChanged();
     }
 
     @Override
@@ -275,7 +235,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         if (!typeToAdapter.get(sectionType).isHeaderVisible()) return;
         int headerPos = getSectionFirstPos(section);
         mockVHAdapter.notifyItemChanged(headerPos);
-        headerViewManager.notifyHeaderUpdated(sectionToType.get(section));
+        updateHeaderView(sectionToType.get(section));
     }
 
     @Override
@@ -288,13 +248,12 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
             updatePosSum(section, -1, false);
             mockVHAdapter.notifyItemRemoved(getSectionFirstPos(section));
         }
-        headerViewManager.notifyHeaderUpdated(sectionToType.get(section));
     }
 
     @Override
     public void notifyHeaderPinnedStateChanged(int section, boolean pinned) {
         Checker.checkSection(section, getSectionCount());
-        headerViewManager.notifyHeaderUpdated(sectionToType.get(section));
+        checkIsHeaderViewChanged();
     }
 
     /* END SECTION ITEM MANAGER */
@@ -315,6 +274,44 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         return type < 0;
     }
 
+    private int getTotalItemCount() {
+        return getSectionCount() > 0 ? sectionToPosSum.get(getSectionCount() - 1) : 0;
+    }
+
+    private int getSectionByAdapterPos(int adapterPos) {
+        Checker.checkPosition(adapterPos, getTotalItemCount());
+        return upperBoundBinarySearch(sectionToPosSum, adapterPos);
+    }
+
+    private int getSectionFirstPos(int section) {
+        Checker.checkSection(section, getSectionCount() + 1);
+        return section > 0 ? sectionToPosSum.get(section - 1) : 0;
+    }
+
+    private int getAdapterPos(int section, int sectionPos) {
+        Checker.checkSection(section, getSectionCount());
+        Checker.checkPosition(sectionPos, getTotalItemCount());
+        short sectionType = sectionToType.get(section);
+        SectionAdapter adapter = typeToAdapter.get(sectionType);
+        return (section > 0 ? sectionToPosSum.get(section - 1) : 0) + sectionPos + (adapter.isHeaderVisible() ? 1 : 0);
+    }
+
+    private int getSectionCurItemCount(int section) {
+        Checker.checkSection(section, getSectionCount());
+        return sectionToPosSum.get(section) - (section > 0 ? sectionToPosSum.get(section - 1) : 0);
+    }
+
+    private SectionAdapter.ViewHolder getHeaderVH(short sectionType) {
+        SectionAdapter.ViewHolder headerViewHolder = typeToHeaderVH.get(sectionType);
+        if (headerViewHolder == null) {
+            ViewGroup parent = headerViewManager.getHeaderViewParent();
+            SectionAdapter adapter = typeToAdapter.get(sectionType);
+            headerViewHolder = adapter.onCreateHeaderViewHolder(parent);
+            typeToHeaderVH.put(topSectionType, headerViewHolder);
+        }
+        return headerViewHolder;
+    }
+
     private void updatePosSum(int startSection, int cnt, boolean updateSection) {
         for (int s = startSection; s < getSectionCount(); s++) {
             if (updateSection) {
@@ -323,6 +320,28 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
             }
             int prevSum = sectionToPosSum.get(s);
             sectionToPosSum.set(s, prevSum + cnt);
+        }
+    }
+
+    private void addHeaderView(int section) {
+        topSectionType = sectionToType.get(section);
+        SectionAdapter.ViewHolder headerViewHolder = getHeaderVH(topSectionType);
+        SectionAdapter adapter = typeToAdapter.get(topSectionType);
+        adapter.onBindHeaderViewHolder(headerViewHolder);
+        headerViewManager.addHeaderView(headerViewHolder.itemView, getSectionFirstPos(section + 1));
+    }
+
+    private void updateHeaderView(short sectionType) {
+        if (sectionType != topSectionType) return;
+        SectionAdapter.ViewHolder headerViewHolder = getHeaderVH(sectionType);
+        SectionAdapter adapter = typeToAdapter.get(sectionType);
+        adapter.onBindHeaderViewHolder(headerViewHolder);
+    }
+
+    private void removeHeaderView() {
+        if (topSectionType != -1) {
+            headerViewManager.removeHeaderView();
+            topSectionType = -1;
         }
     }
 
@@ -360,12 +379,12 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         SectionAdapter.ItemViewHolder itemViewHolder;
         SectionAdapter.ViewHolder headerViewHolder;
 
-        public MockViewHolder(SectionAdapter.ItemViewHolder itemViewHolder) {
+        MockViewHolder(SectionAdapter.ItemViewHolder itemViewHolder) {
             super(itemViewHolder.itemView);
             this.itemViewHolder = itemViewHolder;
         }
 
-        public MockViewHolder(SectionAdapter.ViewHolder headerViewHolder) {
+        MockViewHolder(SectionAdapter.ViewHolder headerViewHolder) {
             super(headerViewHolder.itemView);
             this.headerViewHolder = headerViewHolder;
         }
