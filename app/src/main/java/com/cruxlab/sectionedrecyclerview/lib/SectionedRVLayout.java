@@ -15,10 +15,43 @@ public class SectionedRVLayout extends RelativeLayout {
 
     private RecyclerView sectionedRV;
     private LinearLayoutManager layoutManager;
-    private SectionedRVAdapter adapter;
+    private SectionDataManager sectionDataManager;
 
     private int topSectionType = -1;
     private int nextHeaderPos = -1;
+
+    public SectionedRVLayout(Context context) {
+        super(context);
+        init(context);
+    }
+
+    public SectionedRVLayout(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        init(context);
+    }
+
+    public SectionedRVLayout(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        init(context);
+    }
+
+    private void init(Context context) {
+        inflate(context, R.layout.sectioned_recycler_view, this);
+        sectionedRV = findViewById(R.id.recycler_view);
+        sectionDataManager = new SectionDataManager(headerViewManager);
+        sectionedRV.setAdapter(sectionDataManager.getMockVHAdapter());
+        layoutManager = new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false);
+        sectionedRV.setLayoutManager(layoutManager);
+        sectionedRV.setHasFixedSize(false);
+        sectionedRV.addOnScrollListener(onScrollListener);
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new SwipeCallback());
+        itemTouchHelper.attachToRecyclerView(sectionedRV);
+    }
+
+    public RecyclerView getRecyclerView() {
+        return sectionedRV;
+    }
+
 
     private RecyclerView.OnScrollListener onScrollListener = new RecyclerView.OnScrollListener() {
 
@@ -56,16 +89,16 @@ public class SectionedRVLayout extends RelativeLayout {
 
     private int getTopSection() {
         int firstVisPos = layoutManager.findFirstVisibleItemPosition();
-        if (firstVisPos < 0 || firstVisPos >= adapter.getItemCount()) return -1;
-        return adapter.getSection(firstVisPos);
+        if (firstVisPos < 0 || firstVisPos >= sectionDataManager.getTotalItemCount()) return -1;
+        return sectionDataManager.getSectionByAdapterPos(firstVisPos);
     }
 
     private boolean updateHeaderViewType(int topSection) {
         int prevTopSectionType = topSectionType;
-        topSectionType = adapter.getSectionType(topSection);
+        topSectionType = sectionDataManager.getSectionType(topSection);
         if (topSectionType != prevTopSectionType) {
-            nextHeaderPos = topSection < (adapter.getSectionCount() - 1) ?
-                    adapter.getFirstPos(topSection + 1) : -1;
+            nextHeaderPos = topSection < (sectionDataManager.getSectionCount() - 1) ?
+                    sectionDataManager.getSectionFirstPos(topSection + 1) : -1;
             updateCurrentHeaderView(topSection);
             return true;
         }
@@ -80,7 +113,7 @@ public class SectionedRVLayout extends RelativeLayout {
     }
 
     private void updateCurrentHeaderView(int topSection) {
-        View headerView = adapter.getBoundHeaderView(sectionedRV, topSection);
+        View headerView = sectionDataManager.getBoundHeaderView(sectionedRV, topSection);
         if (headerView == null) {
             removeHeaderView();
         } else {
@@ -119,7 +152,6 @@ public class SectionedRVLayout extends RelativeLayout {
     }
 
     private void addHeaderView(final View view) {
-        if (view == null) return;
         RelativeLayout.LayoutParams newParams = new RelativeLayout.LayoutParams(view.getLayoutParams());
         newParams.addRule(RelativeLayout.ALIGN_TOP);
         view.setLayoutParams(newParams);
@@ -144,36 +176,10 @@ public class SectionedRVLayout extends RelativeLayout {
         return 0;
     }
 
-    public SectionedRVLayout(Context context) {
-        super(context);
-        init(context);
-    }
 
-    public SectionedRVLayout(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init(context);
-    }
-
-    public SectionedRVLayout(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        init(context);
-    }
-
-    private void init(Context context) {
-        inflate(context, R.layout.sectioned_recycler_view, this);
-        sectionedRV = findViewById(R.id.recycler_view);
-        adapter = new SectionedRVAdapter(headerViewManager);
-        sectionedRV.setAdapter(adapter);
-        layoutManager = new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false);
-        sectionedRV.setLayoutManager(layoutManager);
-        sectionedRV.setHasFixedSize(false);
-        sectionedRV.addOnScrollListener(onScrollListener);
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new SwipeCallback());
-        itemTouchHelper.attachToRecyclerView(sectionedRV);
-    }
 
     public SectionManager getSectionManager() {
-        return adapter;
+        return sectionDataManager;
     }
 
     public void addRVItemDecoration(RecyclerView.ItemDecoration decor) {
@@ -220,9 +226,9 @@ public class SectionedRVLayout extends RelativeLayout {
 
         @Override
         public final int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-            SectionedRVAdapter.ViewHolder sectionViewHolder = (SectionedRVAdapter.ViewHolder) viewHolder;
-            if (sectionViewHolder.headerViewHolder != null) return 0;
-            return makeMovementFlags(0, sectionViewHolder.itemViewHolder.getMovementFlags());
+            SectionDataManager.MockViewHolder mockViewHolder = (SectionDataManager.MockViewHolder) viewHolder;
+            if (mockViewHolder.headerViewHolder != null) return 0;
+            return makeMovementFlags(0, mockViewHolder.itemViewHolder.getMovementFlags());
         }
 
         @Override
@@ -232,8 +238,8 @@ public class SectionedRVLayout extends RelativeLayout {
 
         @Override
         public final void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-            SectionedRVAdapter.ViewHolder sectionViewHolder = (SectionedRVAdapter.ViewHolder) viewHolder;
-            sectionViewHolder.itemViewHolder.onSwiped(direction);
+            SectionDataManager.MockViewHolder mockViewHolder = (SectionDataManager.MockViewHolder) viewHolder;
+            mockViewHolder.itemViewHolder.onSwiped(direction);
         }
 
     }

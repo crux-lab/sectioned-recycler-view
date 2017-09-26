@@ -36,19 +36,19 @@ abstract class Checker {
 
     static void checkItemView(View itemView) {
         if (itemView == null) {
-            throw new IllegalArgumentException("ItemView may not be null when creating SectionAdapter.ViewHolder.");
+            throw new IllegalArgumentException("ItemView may not be null when creating ViewHolder.");
         }
     }
 
-    static void checkViewHolder(SectionedRVAdapter.ViewHolder viewHolder) {
+    static void checkViewHolder(SectionDataManager.MockViewHolder viewHolder) {
         if (viewHolder == null) {
-            throw new IllegalStateException("This SectionAdapter.ItemViewHolder hasn't been used in any SectionedRV, so no SectionedRVAdapter.ViewHolder has been set.");
+            throw new IllegalStateException("This ItemViewHolder hasn't been used in any SectionedRV, so no MockViewHolder has been set.");
         }
     }
 
     static void checkSectionPositionProvider(SectionPositionProvider sectionPositionProvider) {
         if (sectionPositionProvider == null) {
-            throw new IllegalStateException("This SectionAdapter.ItemViewHolder hasn't been used in any SectionedRV, so no SectionPositionProvider has been set.");
+            throw new IllegalStateException("This ItemViewHolder hasn't been used in any SectionedRV, so no SectionPositionProvider has been set.");
         }
     }
 
