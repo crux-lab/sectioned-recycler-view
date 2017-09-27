@@ -125,40 +125,49 @@ public class SectionedRVLayout extends RelativeLayout {
             @Override
             public void onItemsChanged(RecyclerView recyclerView) {
                 super.onItemsChanged(recyclerView);
-                sectionDataManager.checkIsHeaderViewChanged();
+                checkHeaderView();
             }
 
             @Override
             public void onItemsAdded(RecyclerView recyclerView, int positionStart, int itemCount) {
                 super.onItemsAdded(recyclerView, positionStart, itemCount);
-                sectionDataManager.checkIsHeaderViewChanged();
+                checkHeaderView();
             }
 
             @Override
             public void onItemsRemoved(RecyclerView recyclerView, int positionStart, int itemCount) {
                 super.onItemsRemoved(recyclerView, positionStart, itemCount);
-                sectionDataManager.checkIsHeaderViewChanged();
+                checkHeaderView();
             }
 
             @Override
             public void onItemsUpdated(RecyclerView recyclerView, int positionStart, int itemCount) {
                 super.onItemsUpdated(recyclerView, positionStart, itemCount);
-                sectionDataManager.checkIsHeaderViewChanged();
+                checkHeaderView();
             }
 
             @Override
             public void onItemsUpdated(RecyclerView recyclerView, int positionStart, int itemCount, Object payload) {
                 super.onItemsUpdated(recyclerView, positionStart, itemCount, payload);
-                sectionDataManager.checkIsHeaderViewChanged();
+                checkHeaderView();
             }
 
             @Override
             public void onItemsMoved(RecyclerView recyclerView, int from, int to, int itemCount) {
                 super.onItemsMoved(recyclerView, from, to, itemCount);
-                sectionDataManager.checkIsHeaderViewChanged();
+                checkHeaderView();
             }
 
         };
+    }
+
+    private void checkHeaderView() {
+        post(new Runnable() {
+            @Override
+            public void run() {
+                sectionDataManager.checkIsHeaderViewChanged();
+            }
+        });
     }
 
     private void removePrevHeaderView() {
