@@ -17,37 +17,38 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
     private ArrayList<Short> sectionToType;
     private SparseArray<SectionAdapter> typeToAdapter;
     private SparseArray<SectionAdapter.ViewHolder> typeToHeaderVH;
-    private RecyclerView.Adapter<MockViewHolder> mockVHAdapter = new RecyclerView.Adapter<MockViewHolder>() {
+    private RecyclerView.Adapter<ViewHolderWrapper> adapter = new RecyclerView.Adapter<ViewHolderWrapper>() {
 
         @Override
-        public MockViewHolder onCreateViewHolder(ViewGroup parent, int type) {
+        public ViewHolderWrapper onCreateViewHolder(ViewGroup parent, int type) {
             short sectionType = (short) (type);
             short itemType = (short) (type >> 16);
             if (isTypeHeader(sectionType)) {
                 SectionAdapter adapter = typeToAdapter.get(-sectionType);
                 SectionAdapter.ViewHolder headerViewHolder = adapter.onCreateHeaderViewHolder(parent);
-                return new MockViewHolder(headerViewHolder);
+                return new ViewHolderWrapper(headerViewHolder);
             } else {
                 SectionAdapter adapter = typeToAdapter.get(sectionType);
                 SectionAdapter.ItemViewHolder itemViewHolder = adapter.onCreateViewHolder(parent, itemType);
-                MockViewHolder mockViewHolder = new MockViewHolder(itemViewHolder);
-                itemViewHolder.mockViewHolder = mockViewHolder;
+                ViewHolderWrapper viewHolderWrapper = new ViewHolderWrapper(itemViewHolder);
+                itemViewHolder.viewHolderWrapper = viewHolderWrapper;
                 itemViewHolder.sectionPositionProvider = SectionDataManager.this;
-                return mockViewHolder;
+                return viewHolderWrapper;
             }
         }
 
         @Override
-        public void onBindViewHolder(MockViewHolder mockViewHolder, int position) {
+        public void onBindViewHolder(ViewHolderWrapper viewHolderWrapper, int position) {
             int type = getItemViewType(position);
             short sectionType = (short) (type);
             if (isTypeHeader(sectionType)) {
                 SectionAdapter adapter = typeToAdapter.get(-sectionType);
-                adapter.onBindHeaderViewHolder(mockViewHolder.headerViewHolder);
+                adapter.onBindHeaderViewHolder(viewHolderWrapper.viewHolder);
             } else {
                 int sectionPos = getSectionPos(position);
                 SectionAdapter adapter = typeToAdapter.get(sectionType);
-                adapter.onBindViewHolder(mockViewHolder.itemViewHolder, sectionPos);
+                SectionAdapter.ItemViewHolder itemViewHolder = (SectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder;
+                adapter.onBindViewHolder(itemViewHolder, sectionPos);
             }
         }
 
@@ -78,8 +79,8 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         typeToHeaderVH = new SparseArray<>();
     }
 
-    RecyclerView.Adapter<SectionDataManager.MockViewHolder> getMockVHAdapter() {
-        return mockVHAdapter;
+    RecyclerView.Adapter<ViewHolderWrapper> getAdapter() {
+        return adapter;
     }
 
     void checkIsHeaderViewChanged() {
@@ -120,7 +121,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         sectionToType.add(freeType);
         sectionToPosSum.add(posSum);
         freeType++;
-        mockVHAdapter.notifyItemRangeInserted(start, cnt);
+        adapter.notifyItemRangeInserted(start, cnt);
     }
 
     @Override
@@ -136,7 +137,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         sectionToPosSum.add(section, posSum);
         freeType++;
         updatePosSum(section + 1, cnt, true);
-        mockVHAdapter.notifyItemRangeInserted(start, cnt);
+        adapter.notifyItemRangeInserted(start, cnt);
     }
 
     @Override
@@ -161,13 +162,13 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         sectionToType.remove(section);
         sectionToPosSum.remove(section);
         updatePosSum(section, -cnt, true);
-        mockVHAdapter.notifyItemRangeRemoved(start, cnt);
+        adapter.notifyItemRangeRemoved(start, cnt);
     }
 
     @Override
     public void updateSection(int section) {
         Checker.checkSection(section, getSectionCount());
-        mockVHAdapter.notifyItemRangeChanged(getSectionFirstPos(section), getSectionCurItemCount(section));
+        adapter.notifyItemRangeChanged(getSectionFirstPos(section), getSectionCurItemCount(section));
         updateHeaderView(sectionToType.get(section));
     }
 
@@ -179,7 +180,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         int adapterPos = getAdapterPos(section, pos);
         Checker.checkPosition(adapterPos, getTotalItemCount() + 1);
         updatePosSum(section, 1, false);
-        mockVHAdapter.notifyItemInserted(adapterPos);
+        adapter.notifyItemInserted(adapterPos);
     }
 
     @Override
@@ -187,14 +188,14 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         int adapterPos = getAdapterPos(section, pos);
         Checker.checkPosition(adapterPos, getTotalItemCount() + 1);
         updatePosSum(section, -1, false);
-        mockVHAdapter.notifyItemRemoved(adapterPos);
+        adapter.notifyItemRemoved(adapterPos);
     }
 
     @Override
     public void notifyChanged(int section, int pos) {
         int adapterPos = getAdapterPos(section, pos);
         Checker.checkPosition(adapterPos, getTotalItemCount());
-        mockVHAdapter.notifyItemChanged(adapterPos);
+        adapter.notifyItemChanged(adapterPos);
     }
 
     @Override
@@ -202,7 +203,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         int adapterStartPos = getAdapterPos(section, startPos);
         Checker.checkPosRange(adapterStartPos, cnt, getTotalItemCount());
         updatePosSum(section, cnt, false);
-        mockVHAdapter.notifyItemRangeInserted(adapterStartPos, cnt);
+        adapter.notifyItemRangeInserted(adapterStartPos, cnt);
     }
 
     @Override
@@ -210,14 +211,14 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         int adapterStartPos = getAdapterPos(section, startPos);
         Checker.checkPosRange(adapterStartPos, cnt, getTotalItemCount());
         updatePosSum(section, -cnt, false);
-        mockVHAdapter.notifyItemRangeRemoved(adapterStartPos, cnt);
+        adapter.notifyItemRangeRemoved(adapterStartPos, cnt);
     }
 
     @Override
     public void notifyRangeChanged(int section, int startPos, int cnt) {
         int adapterStartPos = getAdapterPos(section, startPos);
         Checker.checkPosRange(adapterStartPos, cnt, getTotalItemCount());
-        mockVHAdapter.notifyItemRangeChanged(adapterStartPos, cnt);
+        adapter.notifyItemRangeChanged(adapterStartPos, cnt);
     }
 
     @Override
@@ -226,7 +227,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         Checker.checkPosition(adapterFromPos, getTotalItemCount());
         int adapterToPos = getAdapterPos(section, toPos);
         Checker.checkPosition(adapterToPos, getTotalItemCount());
-        mockVHAdapter.notifyItemMoved(adapterFromPos, adapterToPos);
+        adapter.notifyItemMoved(adapterFromPos, adapterToPos);
     }
 
     @Override
@@ -234,7 +235,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         short sectionType = sectionToType.get(section);
         if (!typeToAdapter.get(sectionType).isHeaderVisible()) return;
         int headerPos = getSectionFirstPos(section);
-        mockVHAdapter.notifyItemChanged(headerPos);
+        adapter.notifyItemChanged(headerPos);
         updateHeaderView(sectionToType.get(section));
     }
 
@@ -243,10 +244,10 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         Checker.checkSection(section, getSectionCount());
         if (visible) {
             updatePosSum(section, 1, false);
-            mockVHAdapter.notifyItemInserted(getSectionFirstPos(section));
+            adapter.notifyItemInserted(getSectionFirstPos(section));
         } else {
             updatePosSum(section, -1, false);
-            mockVHAdapter.notifyItemRemoved(getSectionFirstPos(section));
+            adapter.notifyItemRemoved(getSectionFirstPos(section));
         }
     }
 
@@ -374,19 +375,17 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         }
     }
 
-    class MockViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolderWrapper extends RecyclerView.ViewHolder {
 
-        SectionAdapter.ItemViewHolder itemViewHolder;
-        SectionAdapter.ViewHolder headerViewHolder;
+        final SectionAdapter.ViewHolder viewHolder;
 
-        MockViewHolder(SectionAdapter.ItemViewHolder itemViewHolder) {
-            super(itemViewHolder.itemView);
-            this.itemViewHolder = itemViewHolder;
+        ViewHolderWrapper(SectionAdapter.ViewHolder viewHolder) {
+            super(viewHolder.itemView);
+            this.viewHolder = viewHolder;
         }
 
-        MockViewHolder(SectionAdapter.ViewHolder headerViewHolder) {
-            super(headerViewHolder.itemView);
-            this.headerViewHolder = headerViewHolder;
+        boolean isTypeHeader() {
+            return !(viewHolder instanceof SectionAdapter.ItemViewHolder);
         }
 
     }

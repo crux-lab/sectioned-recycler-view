@@ -40,9 +40,9 @@ abstract class Checker {
         }
     }
 
-    static void checkViewHolder(SectionDataManager.MockViewHolder viewHolder) {
-        if (viewHolder == null) {
-            throw new IllegalStateException("This ItemViewHolder hasn't been used in any SectionedRV, so no MockViewHolder has been set.");
+    static void checkViewHolderWrapper(SectionDataManager.ViewHolderWrapper viewHolderWrapper) {
+        if (viewHolderWrapper == null) {
+            throw new IllegalStateException("This ItemViewHolder hasn't been used in any SectionedRV, so no ViewHolderWrapper has been set.");
         }
     }
 

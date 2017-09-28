@@ -45,7 +45,7 @@ public class SectionedRVLayout extends RelativeLayout {
         inflate(context, R.layout.sectioned_recycler_view, this);
         sectionedRV = findViewById(R.id.recycler_view);
         sectionDataManager = new SectionDataManager(headerViewManager);
-        sectionedRV.setAdapter(sectionDataManager.getMockVHAdapter());
+        sectionedRV.setAdapter(sectionDataManager.getAdapter());
         initLayoutManager(context);
         sectionedRV.setLayoutManager(layoutManager);
         sectionedRV.setHasFixedSize(false);
@@ -162,6 +162,7 @@ public class SectionedRVLayout extends RelativeLayout {
     }
 
     private void checkHeaderView() {
+        //To get correct first visible item position after update
         post(new Runnable() {
             @Override
             public void run() {
@@ -210,9 +211,10 @@ public class SectionedRVLayout extends RelativeLayout {
 
         @Override
         public final int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-            SectionDataManager.MockViewHolder sectionViewHolder = (SectionDataManager.MockViewHolder) viewHolder;
-            if (sectionViewHolder.headerViewHolder != null) return 0;
-            return makeMovementFlags(0, sectionViewHolder.itemViewHolder.getMovementFlags());
+            SectionDataManager.ViewHolderWrapper viewHolderWrapper = (SectionDataManager.ViewHolderWrapper) viewHolder;
+            if (viewHolderWrapper.isTypeHeader()) return 0;
+            SectionAdapter.ItemViewHolder itemViewHolder = (SectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder;
+            return makeMovementFlags(0, itemViewHolder.getMovementFlags());
         }
 
         @Override
@@ -222,8 +224,9 @@ public class SectionedRVLayout extends RelativeLayout {
 
         @Override
         public final void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-            SectionDataManager.MockViewHolder sectionViewHolder = (SectionDataManager.MockViewHolder) viewHolder;
-            sectionViewHolder.itemViewHolder.onSwiped(direction);
+            SectionDataManager.ViewHolderWrapper viewHolderWrapper = (SectionDataManager.ViewHolderWrapper) viewHolder;
+            SectionAdapter.ItemViewHolder itemViewHolder = (SectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder;
+            itemViewHolder.onSwiped(direction);
         }
 
     }

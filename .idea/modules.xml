@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/SectionedRecyclerView copy.iml" filepath="$PROJECT_DIR$/SectionedRecyclerView copy.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/sectioned-recycler-view.iml" filepath="$PROJECT_DIR$/sectioned-recycler-view.iml" />
     </modules>

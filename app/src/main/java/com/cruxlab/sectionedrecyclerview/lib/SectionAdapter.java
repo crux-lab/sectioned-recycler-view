@@ -158,7 +158,7 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder, H
 
     public abstract static class ItemViewHolder extends SectionAdapter.ViewHolder {
 
-        SectionDataManager.MockViewHolder mockViewHolder;
+        SectionDataManager.ViewHolderWrapper viewHolderWrapper;
         SectionPositionProvider sectionPositionProvider;
 
         public ItemViewHolder(View itemView) {
@@ -166,9 +166,9 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder, H
         }
 
         public final int getSectionPosition() {
-            Checker.checkViewHolder(mockViewHolder);
+            Checker.checkViewHolderWrapper(viewHolderWrapper);
             Checker.checkSectionPositionProvider(sectionPositionProvider);
-            int adapterPos = mockViewHolder.getAdapterPosition();
+            int adapterPos = viewHolderWrapper.getAdapterPosition();
             if (adapterPos == -1) return -1;
             return sectionPositionProvider.getSectionPos(adapterPos);
         }
