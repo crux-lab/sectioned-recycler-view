@@ -1,8 +1,14 @@
 package com.cruxlab.sectionedrecyclerview.demo;
 
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DrawableUtils;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +18,7 @@ import android.widget.TextView;
 
 import com.cruxlab.sectionedrecyclerview.R;
 import com.cruxlab.sectionedrecyclerview.lib.SectionAdapter;
+import com.cruxlab.sectionedrecyclerview.lib.SectionItemSwipeCallback;
 import com.cruxlab.sectionedrecyclerview.lib.SectionManager;
 import com.cruxlab.sectionedrecyclerview.lib.SectionedRVLayout;
 import com.cruxlab.sectionedrecyclerview.lib.SimpleSectionAdapter;
@@ -22,19 +29,24 @@ import java.util.Arrays;
 public class MainActivity extends AppCompatActivity {
 
     private SectionManager sectionManager;
+    private Drawable deleteIcon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        deleteIcon = ContextCompat.getDrawable(this, R.drawable.ic_remove);
         SectionedRVLayout srvl = findViewById(R.id.srvl);
         sectionManager = srvl.getSectionManager();
         for (int i = 0; i < 20; i++) {
             if (i % 4 != 3) {
-                sectionManager.addSection(new DemoSectionAdapter((i % 4 == 0) ? Color.YELLOW : (i % 4 == 1) ? Color.RED : Color.BLUE,
-                        (i % 4 == 0) || (i % 4 == 1), (i % 4 == 0)));
+                int color = (i % 4 == 0) ? Color.YELLOW : (i % 4 == 1) ? Color.RED : Color.BLUE;
+                boolean isHeaderVisible = (i % 4 == 0) || (i % 4 == 1);
+                boolean isHeaderPinned = (i % 4 == 0);
+                DemoSectionAdapter adapter = new DemoSectionAdapter(color, isHeaderVisible, isHeaderPinned);
+                sectionManager.addSection(adapter, new DemoSectionItemSwipeCallback(color));
             } else {
-                sectionManager.addSection(new SimpleDemoSectionAdapter());
+                sectionManager.addSection(new SimpleDemoSectionAdapter(), new DemoSectionItemSwipeCallback(Color.GRAY));
             }
         }
     }
@@ -131,6 +143,53 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private class DemoSectionItemSwipeCallback extends SectionItemSwipeCallback {
+
+        public int color;
+        private ColorDrawable background;
+
+        DemoSectionItemSwipeCallback(int color) {
+            this.color = color;
+            this.background = new ColorDrawable();
+        }
+
+        @Override
+        public int getSwipeDirFlags(RecyclerView recyclerView, SectionAdapter.ViewHolder viewHolder) {
+            return ItemTouchHelper.LEFT;
+        }
+
+        @Override
+        public void onSwiped(SectionAdapter.ViewHolder viewHolder, int direction) {
+            ItemViewHolder itemViewHolder = (ItemViewHolder) viewHolder;
+            int sectionPos = itemViewHolder.getSectionPosition();
+            if (sectionPos == -1) return;
+            if (itemViewHolder.adapter != null) {
+                itemViewHolder.adapter.removeString(sectionPos);
+            } else {
+                itemViewHolder.simpleAdapter.removeString(sectionPos);
+            }
+            //TODO: Figure out why sometimes line lasts
+        }
+
+        @Override
+        public void onChildDraw(Canvas c, RecyclerView recyclerView, SectionAdapter.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+            View itemView = viewHolder.itemView;
+            int itemHeight = itemView.getBottom() - itemView.getTop();
+            background.setColor(color);
+            background.setBounds((int) (itemView.getRight() + dX), itemView.getTop(), itemView.getRight(), itemView.getBottom());
+            background.draw(c);
+            int deleteIconTop = itemView.getTop() + (itemHeight - deleteIcon.getIntrinsicHeight()) / 2;
+            int deleteIconMargin = (itemHeight - deleteIcon.getIntrinsicHeight()) / 2;
+            int deleteIconLeft = itemView.getRight() - deleteIconMargin - deleteIcon.getIntrinsicWidth();
+            int deleteIconRight = itemView.getRight() - deleteIconMargin;
+            int deleteIconBottom = deleteIconTop + deleteIcon.getIntrinsicHeight();
+            deleteIcon.setBounds(deleteIconLeft, deleteIconTop, deleteIconRight, deleteIconBottom);
+            deleteIcon.draw(c);
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+        }
+
+    }
+
     private class ItemViewHolder extends SectionAdapter.ItemViewHolder {
 
         private TextView text;
@@ -210,21 +269,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        @Override
-        public void onSwiped(int direction) {
-            int sectionPos = getSectionPosition();
-            if (sectionPos == -1) return;
-            if (adapter != null) {
-                adapter.removeString(sectionPos);
-            } else {
-                simpleAdapter.removeString(sectionPos);
-            }
-        }
-
-        @Override
-        public int getMovementFlags() {
-            return ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT;
-        }
     }
 
     private class HeaderViewHolder extends SectionAdapter.ViewHolder {

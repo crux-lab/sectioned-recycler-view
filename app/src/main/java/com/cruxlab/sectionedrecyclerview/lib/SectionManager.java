@@ -6,8 +6,11 @@ public interface SectionManager {
 
     int getSectionCount();
     void addSection(@NonNull SectionAdapter sectionAdapter);
+    void addSection(@NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback);
     void insertSection(int section, @NonNull SectionAdapter sectionAdapter);
+    void insertSection(int section, @NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback);
     void replaceSection(int section, @NonNull SectionAdapter sectionAdapter);
+    void replaceSection(int section, @NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback);
     void removeSection(int section);
     void updateSection(int section);
 

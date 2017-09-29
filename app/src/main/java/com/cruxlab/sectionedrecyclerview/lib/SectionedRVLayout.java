@@ -50,7 +50,7 @@ public class SectionedRVLayout extends RelativeLayout {
         sectionedRV.setLayoutManager(layoutManager);
         sectionedRV.setHasFixedSize(false);
         sectionedRV.addOnScrollListener(onScrollListener);
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new SwipeCallback());
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(sectionDataManager.getSwipeCallback());
         itemTouchHelper.attachToRecyclerView(sectionedRV);
     }
 
@@ -205,30 +205,6 @@ public class SectionedRVLayout extends RelativeLayout {
             }
         };
         view.getViewTreeObserver().addOnPreDrawListener(preDrawListener);
-    }
-
-    private final class SwipeCallback extends ItemTouchHelper.Callback {
-
-        @Override
-        public final int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-            SectionDataManager.ViewHolderWrapper viewHolderWrapper = (SectionDataManager.ViewHolderWrapper) viewHolder;
-            if (viewHolderWrapper.isTypeHeader()) return 0;
-            SectionAdapter.ItemViewHolder itemViewHolder = (SectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder;
-            return makeMovementFlags(0, itemViewHolder.getMovementFlags());
-        }
-
-        @Override
-        public final boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-            return false;
-        }
-
-        @Override
-        public final void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-            SectionDataManager.ViewHolderWrapper viewHolderWrapper = (SectionDataManager.ViewHolderWrapper) viewHolder;
-            SectionAdapter.ItemViewHolder itemViewHolder = (SectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder;
-            itemViewHolder.onSwiped(direction);
-        }
-
     }
 
 }
