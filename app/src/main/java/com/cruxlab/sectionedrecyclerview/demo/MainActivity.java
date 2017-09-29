@@ -297,7 +297,8 @@ public class MainActivity extends AppCompatActivity {
                     int section = adapter.getSection();
                     DemoSectionAdapter duplicatedAdapter = new DemoSectionAdapter(adapter.color, adapter.isHeaderVisible(), adapter.isHeaderPinned());
                     duplicatedAdapter.strings = new ArrayList<>(adapter.strings);
-                    sectionManager.insertSection(section + 1, duplicatedAdapter);
+                    DemoSectionItemSwipeCallback duplicatedCallback = new DemoSectionItemSwipeCallback(adapter.color);
+                    sectionManager.insertSection(section + 1, duplicatedAdapter, duplicatedCallback);
                     //For mandatory update section in headers
                     for (int s = section + 1 ; s < sectionManager.getSectionCount(); s++) {
                         sectionManager.updateSection(s);

@@ -107,38 +107,43 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
 
         @Override
         public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
-            if (viewHolder != null && viewHolder.getAdapterPosition() >= 0) {
+            if (viewHolder.getAdapterPosition() >= 0) {
                 SectionItemSwipeCallback swipeCallback = getSwipeCallback(viewHolder);
                 swipeCallback.onChildDraw(c, recyclerView, ((ViewHolderWrapper) viewHolder).viewHolder, dX, dY, actionState, isCurrentlyActive);
+            } else {
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
             }
-            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
         }
 
         @Override
         public void onChildDrawOver(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
-            if (viewHolder != null && viewHolder.getAdapterPosition() >= 0) {
+            if (viewHolder.getAdapterPosition() >= 0) {
                 SectionItemSwipeCallback swipeCallback = getSwipeCallback(viewHolder);
                 swipeCallback.onChildDrawOver(c, recyclerView, ((ViewHolderWrapper) viewHolder).viewHolder, dX, dY, actionState, isCurrentlyActive);
+            } else {
+                super.onChildDrawOver(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
             }
-            super.onChildDrawOver(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
         }
 
         @Override
         public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-            if (viewHolder != null && viewHolder.getAdapterPosition() >= 0) {
+            if (viewHolder.getAdapterPosition() >= 0) {
                 SectionItemSwipeCallback swipeCallback = getSwipeCallback(viewHolder);
                 swipeCallback.clearView(recyclerView, ((ViewHolderWrapper) viewHolder).viewHolder);
+            } else {
+                super.clearView(recyclerView, viewHolder);
             }
-            super.clearView(recyclerView, viewHolder);
         }
 
         @Override
         public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
-            if (viewHolder != null && viewHolder.getAdapterPosition() >= 0) {
+            if (viewHolder == null) return;
+            if (viewHolder.getAdapterPosition() >= 0) {
                 SectionItemSwipeCallback swipeCallback = getSwipeCallback(viewHolder);
                 swipeCallback.onSelectedChanged(((ViewHolderWrapper) viewHolder).viewHolder, actionState);
+            } else {
+                super.onSelectedChanged(viewHolder, actionState);
             }
-            super.onSelectedChanged(viewHolder, actionState);
         }
 
     };
