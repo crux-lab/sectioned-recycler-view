@@ -20,6 +20,9 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
     private SparseArray<SectionAdapter> typeToAdapter;
     private SparseArray<SectionItemSwipeCallback> typeToCallback;
     private SparseArray<SectionAdapter.ViewHolder> typeToHeaderVH;
+
+    /* RECYCLER VIEW ADAPTER */
+
     private RecyclerView.Adapter<ViewHolderWrapper> adapter = new RecyclerView.Adapter<ViewHolderWrapper>() {
 
         @Override
@@ -74,6 +77,9 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
 
     };
 
+    /* END RECYCLER VIEW ADAPTER */
+    /* ITEM TOUCH HELPER CALLBACK */
+
     private ItemTouchHelper.Callback swipeCallback = new ItemTouchHelper.Callback() {
 
         @Override
@@ -101,38 +107,43 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
 
         @Override
         public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
-            //TODO: Figure out why it is happening
-            if (viewHolder == null || viewHolder.getAdapterPosition() < 0) return;
-            SectionItemSwipeCallback swipeCallback = getSwipeCallback(viewHolder);
-            swipeCallback.onChildDraw(c, recyclerView, ((ViewHolderWrapper) viewHolder).viewHolder, dX, dY, actionState, isCurrentlyActive);
+            if (viewHolder != null && viewHolder.getAdapterPosition() >= 0) {
+                SectionItemSwipeCallback swipeCallback = getSwipeCallback(viewHolder);
+                swipeCallback.onChildDraw(c, recyclerView, ((ViewHolderWrapper) viewHolder).viewHolder, dX, dY, actionState, isCurrentlyActive);
+            }
             super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
         }
 
         @Override
         public void onChildDrawOver(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
-            if (viewHolder == null || viewHolder.getAdapterPosition() < 0) return;
-            SectionItemSwipeCallback swipeCallback = getSwipeCallback(viewHolder);
-            swipeCallback.onChildDrawOver(c, recyclerView, ((ViewHolderWrapper) viewHolder).viewHolder, dX, dY, actionState, isCurrentlyActive);
+            if (viewHolder != null && viewHolder.getAdapterPosition() >= 0) {
+                SectionItemSwipeCallback swipeCallback = getSwipeCallback(viewHolder);
+                swipeCallback.onChildDrawOver(c, recyclerView, ((ViewHolderWrapper) viewHolder).viewHolder, dX, dY, actionState, isCurrentlyActive);
+            }
             super.onChildDrawOver(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
         }
 
         @Override
         public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-            if (viewHolder == null || viewHolder.getAdapterPosition() < 0) return;
-            SectionItemSwipeCallback swipeCallback = getSwipeCallback(viewHolder);
-            swipeCallback.clearView(recyclerView, ((ViewHolderWrapper) viewHolder).viewHolder);
+            if (viewHolder != null && viewHolder.getAdapterPosition() >= 0) {
+                SectionItemSwipeCallback swipeCallback = getSwipeCallback(viewHolder);
+                swipeCallback.clearView(recyclerView, ((ViewHolderWrapper) viewHolder).viewHolder);
+            }
             super.clearView(recyclerView, viewHolder);
         }
 
         @Override
         public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
-            if (viewHolder  == null || viewHolder.getAdapterPosition() < 0) return;
-            SectionItemSwipeCallback swipeCallback = getSwipeCallback(viewHolder);
-            swipeCallback.onSelectedChanged(((ViewHolderWrapper) viewHolder).viewHolder, actionState);
+            if (viewHolder != null && viewHolder.getAdapterPosition() >= 0) {
+                SectionItemSwipeCallback swipeCallback = getSwipeCallback(viewHolder);
+                swipeCallback.onSelectedChanged(((ViewHolderWrapper) viewHolder).viewHolder, actionState);
+            }
             super.onSelectedChanged(viewHolder, actionState);
         }
 
     };
+
+    /* END ITEM TOUCH HELPER CALLBACK */
 
     SectionDataManager(HeaderViewManager headerViewManager) {
         this.headerViewManager = headerViewManager;
@@ -262,6 +273,34 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         updateHeaderView(sectionToType.get(section));
     }
 
+    @Override
+    public void setSwipeCallback(int section, @NonNull SectionItemSwipeCallback swipeCallback) {
+        Checker.checkSection(section, getSectionCount());
+        short sectionType = sectionToType.get(section);
+        typeToCallback.put(sectionType, swipeCallback);
+    }
+
+    @Override
+    public void removeSwipeCallback(int section) {
+        Checker.checkSection(section, getSectionCount());
+        short sectionType = sectionToType.get(section);
+        typeToCallback.remove(sectionType);
+    }
+
+    @Override
+    public SectionAdapter getSectionAdapter(int section) {
+        Checker.checkSection(section, getSectionCount());
+        short sectionType = sectionToType.get(section);
+        return typeToAdapter.get(sectionType);
+    }
+
+    @Override
+    public SectionItemSwipeCallback getSwipeCallback(int section) {
+        Checker.checkSection(section, getSectionCount());
+        short sectionType = sectionToType.get(section);
+        return typeToCallback.get(sectionType);
+    }
+
     /* END SECTION MANAGER */
     /* SECTION ITEM MANAGER */
 
@@ -377,7 +416,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
     private SectionItemSwipeCallback getSwipeCallback(RecyclerView.ViewHolder viewHolder) {
         int adapterPos = viewHolder.getAdapterPosition();
         int section = getSectionByAdapterPos(adapterPos);
-        int sectionType = sectionToType.get(section);
+        short sectionType = sectionToType.get(section);
         return typeToCallback.get(sectionType);
     }
 

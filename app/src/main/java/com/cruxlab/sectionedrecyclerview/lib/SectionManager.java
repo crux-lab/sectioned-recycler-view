@@ -13,5 +13,9 @@ public interface SectionManager {
     void replaceSection(int section, @NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback);
     void removeSection(int section);
     void updateSection(int section);
+    void setSwipeCallback(int section, @NonNull SectionItemSwipeCallback swipeCallback);
+    void removeSwipeCallback(int section);
+    SectionAdapter getSectionAdapter(int section);
+    SectionItemSwipeCallback getSwipeCallback(int section);
 
 }

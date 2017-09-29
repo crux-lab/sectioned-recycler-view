@@ -7,7 +7,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DrawableUtils;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
@@ -168,7 +167,6 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 itemViewHolder.simpleAdapter.removeString(sectionPos);
             }
-            //TODO: Figure out why sometimes line lasts
         }
 
         @Override

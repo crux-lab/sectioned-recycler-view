@@ -14,6 +14,7 @@ public abstract class SectionItemSwipeCallback {
     public void onChildDraw(Canvas c, RecyclerView recyclerView,
                             SectionAdapter.ViewHolder viewHolder,
                             float dX, float dY, int actionState, boolean isCurrentlyActive) {
+
     }
 
     public void onChildDrawOver(Canvas c, RecyclerView recyclerView,
