@@ -1,7 +1,10 @@
 package com.cruxlab.sectionedrecyclerview.lib;
 
-public interface SectionPositionProvider {
+/**
+ * Interface for converting adapter position to section position.
+ */
+interface SectionPositionProvider {
 
-    int getSectionPos(int adapterPos);
+    int getPosInSection(int adapterPos);
 
 }

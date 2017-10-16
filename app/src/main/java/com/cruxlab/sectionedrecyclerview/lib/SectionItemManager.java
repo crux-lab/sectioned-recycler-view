@@ -1,6 +1,9 @@
 package com.cruxlab.sectionedrecyclerview.lib;
 
-public interface SectionItemManager {
+/**
+ * Interface for interaction between {@link SectionAdapter} and SectionedRecyclerView.
+ */
+interface SectionItemManager {
 
     void notifyInserted(int section, int pos);
     void notifyRemoved(int section, int pos);

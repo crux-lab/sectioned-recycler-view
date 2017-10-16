@@ -2,6 +2,11 @@ package com.cruxlab.sectionedrecyclerview.lib;
 
 import android.view.View;
 
+/**
+ * Helper class for field validation.
+ * <p>
+ * Throws an exception when the given arguments don't satisfy at least one condition.
+ */
 abstract class Checker {
 
     static void checkPosition(int pos, int itemCount) {
@@ -22,7 +27,6 @@ abstract class Checker {
         }
     }
 
-    //TODO: fix when inserting/removing
     static void checkPosRange(int startPos, int cnt, int itemCount) {
         checkPosition(startPos, itemCount);
         if (cnt <= 0) {
