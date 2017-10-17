@@ -16,7 +16,7 @@ import java.util.List;
  * <p>
  * Items in SectionedRecyclerView are divided into groups - sections. Each section consists of
  * regular items and an optional header (just another item for the real RecyclerView), which can be
- * represented as views using corresponding {@link SectionAdapter}.
+ * represented as views using corresponding {@link SectionAdapter} or {@link SectionWithHeaderAdapter}.
  * <p>
  * Each section obtains own unique type stored in {@link #sectionToType}. It is used to determine
  * that the section which corresponds to the given global adapter position has changed, so the
@@ -47,7 +47,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
     private HeaderViewManager headerViewManager;
     private ArrayList<Integer> sectionToPosSum;
     private ArrayList<Short> sectionToType;
-    private SparseArray<SectionAdapter> typeToAdapter;
+    private SparseArray<SectionAdapterWrapper> typeToAdapter;
     private SparseArray<SectionItemSwipeCallback> typeToCallback;
     private SparseArray<SectionAdapter.ViewHolder> typeToHeaderVH;
 
@@ -58,6 +58,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
      * Can be obtained by calling {@link #getAdapter()}.
      *
      * @see SectionAdapter
+     * @see SectionWithHeaderAdapter
      * @see SectionAdapter.ViewHolder
      */
     private RecyclerView.Adapter<ViewHolderWrapper> adapter = new RecyclerView.Adapter<ViewHolderWrapper>() {
@@ -74,14 +75,14 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
             short sectionType = (short) (type);
             short itemType = (short) (type >> 16);
             if (isTypeHeader(sectionType)) {
-                SectionAdapter adapter = typeToAdapter.get(-sectionType);
-                SectionAdapter.ViewHolder headerViewHolder = adapter.onCreateHeaderViewHolder(parent);
+                SectionAdapterWrapper adapterWrapper = typeToAdapter.get(-sectionType);
+                SectionAdapter.ViewHolder headerViewHolder = adapterWrapper.onCreateHeaderViewHolder(parent);
                 ViewHolderWrapper viewHolderWrapper = new ViewHolderWrapper(headerViewHolder);
                 headerViewHolder.viewHolderWrapper = viewHolderWrapper;
                 return viewHolderWrapper;
             } else {
-                SectionAdapter adapter = typeToAdapter.get(sectionType);
-                SectionAdapter.ItemViewHolder itemViewHolder = adapter.onCreateViewHolder(parent, itemType);
+                SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
+                SectionAdapter.ItemViewHolder itemViewHolder = adapterWrapper.onCreateViewHolder(parent, itemType);
                 ViewHolderWrapper viewHolderWrapper = new ViewHolderWrapper(itemViewHolder);
                 itemViewHolder.viewHolderWrapper = viewHolderWrapper;
                 itemViewHolder.sectionPositionProvider = SectionDataManager.this;
@@ -99,13 +100,13 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
             int type = getItemViewType(position);
             short sectionType = (short) (type);
             if (isTypeHeader(sectionType)) {
-                SectionAdapter adapter = typeToAdapter.get(-sectionType);
-                adapter.onBindHeaderViewHolder(viewHolderWrapper.viewHolder);
+                SectionAdapterWrapper adapterWrapper = typeToAdapter.get(-sectionType);
+                adapterWrapper.onBindHeaderViewHolder(viewHolderWrapper.viewHolder);
             } else {
                 int sectionPos = getPosInSection(position);
-                SectionAdapter adapter = typeToAdapter.get(sectionType);
+                SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
                 SectionAdapter.ItemViewHolder itemViewHolder = (SectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder;
-                adapter.onBindViewHolder(itemViewHolder, sectionPos);
+                adapterWrapper.onBindViewHolder(itemViewHolder, sectionPos);
             }
         }
 
@@ -128,9 +129,9 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
             int section = getSectionByAdapterPos(pos);
             short sectionType = sectionToType.get(section);
             int sectionPos = getPosInSection(pos);
-            SectionAdapter adapter = typeToAdapter.get(sectionType);
-            short itemType = adapter.getItemViewType(sectionPos);
-            if (adapter.isHeaderVisible() && getSectionFirstPos(section) == pos) sectionType *= -1;
+            SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
+            short itemType = adapterWrapper.getItemViewType(sectionPos);
+            if (adapterWrapper.isHeaderVisible() && getSectionFirstPos(section) == pos) sectionType *= -1;
             return (itemType << 16) + sectionType;
         }
 
@@ -284,8 +285,8 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         }
         int section = getSectionByAdapterPos(topPos);
         short sectionType = sectionToType.get(section);
-        SectionAdapter adapter = typeToAdapter.get(sectionType);
-        if (adapter.isHeaderVisible() && adapter.isHeaderPinned()) {
+        SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
+        if (adapterWrapper.isHeaderVisible() && adapterWrapper.isHeaderPinned()) {
             if (sectionType == topSectionType) {
                 int nextHeaderPos = getSectionFirstPos(section + 1);
                 headerViewManager.translateHeaderView(nextHeaderPos);
@@ -310,13 +311,27 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
     }
 
     @Override
+    public void addSection(@NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter) {
+        addSection(sectionWithHeaderAdapter, null);
+    }
+
+    @Override
     public void addSection(@NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback) {
-        sectionAdapter.section = getSectionCount();
-        sectionAdapter.setItemManager(this);
+        addSection(new SectionAdapterWrapper(sectionAdapter), swipeCallback);
+    }
+
+    @Override
+    public void addSection(@NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter, SectionItemSwipeCallback swipeCallback) {
+        addSection(new SectionAdapterWrapper(sectionWithHeaderAdapter), swipeCallback);
+    }
+
+    private void addSection(SectionAdapterWrapper sectionAdapterWrapper, SectionItemSwipeCallback swipeCallback) {
+        sectionAdapterWrapper.setSection(getSectionCount());
+        sectionAdapterWrapper.setItemManager(this);
         int start = getTotalItemCount();
-        int cnt = sectionAdapter.getItemCount() + (sectionAdapter.isHeaderVisible() ? 1 : 0);
+        int cnt = sectionAdapterWrapper.getItemCount() + (sectionAdapterWrapper.isHeaderVisible() ? 1 : 0);
         int posSum = getTotalItemCount() + cnt;
-        typeToAdapter.put(freeType, sectionAdapter);
+        typeToAdapter.put(freeType, sectionAdapterWrapper);
         if (swipeCallback != null) {
             typeToCallback.put(freeType, swipeCallback);
         }
@@ -326,20 +341,35 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         adapter.notifyItemRangeInserted(start, cnt);
     }
 
+
     @Override
     public void insertSection(int section, @NonNull SectionAdapter sectionAdapter) {
         insertSection(section, sectionAdapter, null);
     }
 
     @Override
+    public void insertSection(int section, @NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter) {
+        insertSection(section, sectionWithHeaderAdapter, null);
+    }
+
+    @Override
     public void insertSection(int section, @NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback) {
+        insertSection(section, new SectionAdapterWrapper(sectionAdapter), swipeCallback);
+    }
+
+    @Override
+    public void insertSection(int section, @NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter, SectionItemSwipeCallback swipeCallback) {
+        insertSection(section, new SectionAdapterWrapper(sectionWithHeaderAdapter), swipeCallback);
+    }
+
+    private void insertSection(int section, SectionAdapterWrapper sectionAdapterWrapper, SectionItemSwipeCallback swipeCallback) {
         Checker.checkSection(section, getSectionCount() + 1);
-        sectionAdapter.section = section;
-        sectionAdapter.setItemManager(this);
+        sectionAdapterWrapper.setSection(section);
+        sectionAdapterWrapper.setItemManager(this);
         int start = getSectionFirstPos(section);
-        int cnt = sectionAdapter.getItemCount() + (sectionAdapter.isHeaderVisible() ? 1 : 0);
+        int cnt = sectionAdapterWrapper.getItemCount() + (sectionAdapterWrapper.isHeaderVisible() ? 1 : 0);
         int posSum = (section > 0 ? sectionToPosSum.get(section - 1) : 0) + cnt;
-        typeToAdapter.put(freeType, sectionAdapter);
+        typeToAdapter.put(freeType, sectionAdapterWrapper);
         if (swipeCallback != null) {
             typeToCallback.put(freeType, swipeCallback);
         }
@@ -356,13 +386,27 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
     }
 
     @Override
+    public void replaceSection(int section, @NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter) {
+        replaceSection(section, sectionWithHeaderAdapter, null);
+    }
+
+    @Override
     public void replaceSection(int section, @NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback) {
+        replaceSection(section, new SectionAdapterWrapper(sectionAdapter), swipeCallback);
+    }
+
+    @Override
+    public void replaceSection(int section, @NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter, SectionItemSwipeCallback swipeCallback) {
+        replaceSection(section, new SectionAdapterWrapper(sectionWithHeaderAdapter), swipeCallback);
+    }
+
+    private void replaceSection(int section, SectionAdapterWrapper sectionAdapterWrapper, SectionItemSwipeCallback swipeCallback) {
         Checker.checkSection(section, getSectionCount());
         removeSection(section);
         if (section == getSectionCount()) {
-            addSection(sectionAdapter);
+            addSection(sectionAdapterWrapper, swipeCallback);
         } else {
-            insertSection(section, sectionAdapter);
+            insertSection(section, sectionAdapterWrapper, swipeCallback);
         }
     }
 
@@ -406,7 +450,8 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
     public SectionAdapter getSectionAdapter(int section) {
         Checker.checkSection(section, getSectionCount());
         short sectionType = sectionToType.get(section);
-        return typeToAdapter.get(sectionType);
+        SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
+        return adapterWrapper.getAdapter();
     }
 
     @Override
@@ -509,8 +554,8 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         Checker.checkPosition(adapterPos, getTotalItemCount());
         int section = getSectionByAdapterPos(adapterPos);
         short sectionType = sectionToType.get(section);
-        SectionAdapter adapter = typeToAdapter.get(sectionType);
-        return adapterPos - (section > 0 ? sectionToPosSum.get(section - 1) : 0) - (adapter.isHeaderVisible() ? 1 : 0);
+        SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
+        return adapterPos - (section > 0 ? sectionToPosSum.get(section - 1) : 0) - (adapterWrapper.isHeaderVisible() ? 1 : 0);
     }
 
     /* END SECTION POSITION PROVIDER */
@@ -585,8 +630,8 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         Checker.checkSection(section, getSectionCount());
         Checker.checkPosition(sectionPos, getTotalItemCount());
         short sectionType = sectionToType.get(section);
-        SectionAdapter adapter = typeToAdapter.get(sectionType);
-        return (section > 0 ? sectionToPosSum.get(section - 1) : 0) + sectionPos + (adapter.isHeaderVisible() ? 1 : 0);
+        SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
+        return (section > 0 ? sectionToPosSum.get(section - 1) : 0) + sectionPos + (adapterWrapper.isHeaderVisible() ? 1 : 0);
     }
 
     /**
@@ -612,8 +657,8 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         SectionAdapter.ViewHolder headerViewHolder = typeToHeaderVH.get(sectionType);
         if (headerViewHolder == null) {
             ViewGroup parent = headerViewManager.getHeaderViewParent();
-            SectionAdapter adapter = typeToAdapter.get(sectionType);
-            headerViewHolder = adapter.onCreateHeaderViewHolder(parent);
+            SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
+            headerViewHolder = adapterWrapper.onCreateHeaderViewHolder(parent);
             typeToHeaderVH.put(topSectionType, headerViewHolder);
         }
         return headerViewHolder;
@@ -632,7 +677,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         for (int s = startSection; s < getSectionCount(); s++) {
             if (updateSection) {
                 short sectionType = sectionToType.get(s);
-                typeToAdapter.get(sectionType).section = s;
+                typeToAdapter.get(sectionType).setSection(s);
             }
             int prevSum = sectionToPosSum.get(s);
             sectionToPosSum.set(s, prevSum + cnt);
@@ -648,8 +693,8 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
     private void addHeaderView(int section) {
         topSectionType = sectionToType.get(section);
         SectionAdapter.ViewHolder headerViewHolder = getHeaderVH(topSectionType);
-        SectionAdapter adapter = typeToAdapter.get(topSectionType);
-        adapter.onBindHeaderViewHolder(headerViewHolder);
+        SectionAdapterWrapper adapterWrapper = typeToAdapter.get(topSectionType);
+        adapterWrapper.onBindHeaderViewHolder(headerViewHolder);
         int nextHeaderPos = getSectionFirstPos(section + 1);
         headerViewManager.addHeaderView(headerViewHolder.itemView, nextHeaderPos);
     }
@@ -663,8 +708,8 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
     private void updateHeaderView(short sectionType) {
         if (sectionType != topSectionType) return;
         SectionAdapter.ViewHolder headerViewHolder = getHeaderVH(sectionType);
-        SectionAdapter adapter = typeToAdapter.get(sectionType);
-        adapter.onBindHeaderViewHolder(headerViewHolder);
+        SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
+        adapterWrapper.onBindHeaderViewHolder(headerViewHolder);
     }
 
     /**
@@ -725,6 +770,109 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         ViewHolderWrapper(SectionAdapter.ViewHolder viewHolder) {
             super(viewHolder.itemView);
             this.viewHolder = viewHolder;
+        }
+
+    }
+
+    class SectionAdapterWrapper {
+
+        private final SectionAdapter sectionAdapter;
+        private final SectionWithHeaderAdapter sectionWithHeaderAdapter;
+
+        SectionAdapterWrapper(SectionAdapter sectionAdapter) {
+            this.sectionAdapter = sectionAdapter;
+            this.sectionWithHeaderAdapter = null;
+        }
+
+        SectionAdapterWrapper(SectionWithHeaderAdapter sectionWithHeaderAdapter) {
+            this.sectionWithHeaderAdapter = sectionWithHeaderAdapter;
+            this.sectionAdapter = null;
+        }
+
+        SectionAdapter.ItemViewHolder onCreateViewHolder(ViewGroup parent, short type) {
+            if (sectionWithHeaderAdapter != null) {
+                return sectionWithHeaderAdapter.onCreateViewHolder(parent, type);
+            } else {
+                return sectionAdapter.onCreateViewHolder(parent, type);
+            }
+        }
+
+        SectionAdapter.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
+            if (sectionWithHeaderAdapter != null) {
+                return sectionWithHeaderAdapter.onCreateHeaderViewHolder(parent);
+            } else {
+                return null;
+            }
+        }
+
+        void onBindViewHolder(SectionAdapter.ItemViewHolder holder, int position) {
+            if (sectionWithHeaderAdapter != null) {
+                sectionWithHeaderAdapter.onBindViewHolder(holder, position);
+            } else {
+                sectionAdapter.onBindViewHolder(holder, position);
+            }
+        }
+
+        void onBindHeaderViewHolder(SectionAdapter.ViewHolder holder) {
+            if (sectionWithHeaderAdapter != null) {
+                sectionWithHeaderAdapter.onBindHeaderViewHolder(holder);
+            }
+        }
+
+        short getItemViewType(int position) {
+            if (sectionWithHeaderAdapter != null) {
+                return sectionWithHeaderAdapter.getItemViewType(position);
+            } else {
+                return sectionAdapter.getItemViewType(position);
+            }
+        }
+
+        boolean isHeaderVisible() {
+            if (sectionWithHeaderAdapter != null) {
+                return sectionWithHeaderAdapter.isHeaderVisible();
+            } else {
+                return false;
+            }
+        }
+
+        boolean isHeaderPinned() {
+            if (sectionWithHeaderAdapter != null) {
+                return sectionWithHeaderAdapter.isHeaderPinned();
+            } else {
+                return false;
+            }
+        }
+
+        void setSection(int section) {
+            if (sectionWithHeaderAdapter != null) {
+                sectionWithHeaderAdapter.section = section;
+            } else {
+                sectionAdapter.section = section;
+            }
+        }
+
+        SectionAdapter getAdapter() {
+            if (sectionWithHeaderAdapter != null) {
+                return sectionWithHeaderAdapter;
+            } else {
+                return sectionAdapter;
+            }
+        }
+
+        void setItemManager(SectionItemManager itemManager) {
+            if (sectionWithHeaderAdapter != null) {
+                sectionWithHeaderAdapter.setItemManager(itemManager);
+            } else {
+                sectionAdapter.setItemManager(itemManager);
+            }
+        }
+
+        int getItemCount() {
+            if (sectionWithHeaderAdapter != null) {
+                return sectionWithHeaderAdapter.getItemCount();
+            } else {
+                return sectionAdapter.getItemCount();
+            }
         }
 
     }

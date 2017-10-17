@@ -17,7 +17,7 @@ import android.support.v7.widget.helper.ItemTouchHelper;
  * <p>
  * When a View is swiped, ItemTouchHelper animates it until it goes out of bounds, then calls
  * {@link #onSwiped(SectionAdapter.ViewHolder, int)}. At this point, you should update your
- * adapter (e.g. remove the item) and call related SectionAdapter#notify event.
+ * adapter (e.g. remove the item) and call related SectionWithHeaderAdapter#notify event.
  * <p>
  * You can also customize how your View's respond to user interactions and disable swipe
  * for all views {@link #isSwipeEnabled()}.

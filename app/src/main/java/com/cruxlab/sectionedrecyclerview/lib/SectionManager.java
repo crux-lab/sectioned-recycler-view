@@ -6,9 +6,10 @@ import android.support.annotation.Nullable;
 /**
  * Interface for interaction with SectionedRecyclerView and managing its sections.
  * <p>
- * Each section is represented by a {@link SectionAdapter}, which provides a binding from
- * an app-specific data set to views, and an optional {@link SectionItemSwipeCallback}, which
- * lets you control swipe behavior of each item view within the section.
+ * Each section is represented by a {@link SectionAdapter} or {@link SectionWithHeaderAdapter},
+ * which provides a binding from an app-specific data set to views, and an optional
+ * {@link SectionItemSwipeCallback}, which lets you control swipe behavior of each item view within
+ * the section.
  * <p>
  * Most methods require an index of the section to interact with. It can be
  * received from adapter by calling {@link SectionAdapter#getSection()}.
@@ -31,6 +32,14 @@ public interface SectionManager {
     void addSection(@NonNull SectionAdapter sectionAdapter);
 
     /**
+     * Appends the section represented by the specified SectionWithHeaderAdapter to the end of the
+     * SectionedRecyclerView.
+     *
+     * @param sectionWithHeaderAdapter SectionWithHeaderAdapter to represent the appended section.
+     */
+    void addSection(@NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter);
+
+    /**
      * Appends the section represented by the specified SectionAdapter and SectionItemSwipeCallback
      * to the end of the SectionedRecyclerView.
      *
@@ -38,6 +47,15 @@ public interface SectionManager {
      * @param swipeCallback SectionItemSwipeCallback to represent the appended section.
      */
     void addSection(@NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback);
+
+    /**
+     * Appends the section represented by the specified SectionWithHeaderAdapter and SectionItemSwipeCallback
+     * to the end of the SectionedRecyclerView.
+     *
+     * @param sectionWithHeaderAdapter SectionWithHeaderAdapter to represent the appended section.
+     * @param swipeCallback SectionItemSwipeCallback to represent the appended section.
+     */
+    void addSection(@NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter, SectionItemSwipeCallback swipeCallback);
 
     /**
      * Inserts the section represented by the specified SectionAdapter to the specified position
@@ -49,6 +67,15 @@ public interface SectionManager {
     void insertSection(int section, @NonNull SectionAdapter sectionAdapter);
 
     /**
+     * Inserts the section represented by the specified SectionWithHeaderAdapter to the specified position
+     * in the SectionedRecyclerView.
+     *
+     * @param section Index at which the section is to be inserted.
+     * @param sectionWithHeaderAdapter SectionWithHeaderAdapter to represent the inserted section.
+     */
+    void insertSection(int section, @NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter);
+
+    /**
      * Inserts the section represented by the specified SectionAdapter and SectionItemSwipeCallback
      * to the specified position in the SectionedRecyclerView.
      *
@@ -57,6 +84,18 @@ public interface SectionManager {
      * @param swipeCallback SectionItemSwipeCallback to represent the inserted section.
      */
     void insertSection(int section, @NonNull SectionAdapter sectionAdapter,
+                       SectionItemSwipeCallback swipeCallback);
+
+
+    /**
+     * Inserts the section represented by the specified SectionWithHeaderAdapter and SectionItemSwipeCallback
+     * to the specified position in the SectionedRecyclerView.
+     *
+     * @param section Index at which the section is to be inserted.
+     * @param sectionWithHeaderAdapter SectionWithHeaderAdapter to represent the inserted section.
+     * @param swipeCallback SectionItemSwipeCallback to represent the inserted section.
+     */
+    void insertSection(int section, @NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter,
                        SectionItemSwipeCallback swipeCallback);
 
     /**
@@ -70,6 +109,15 @@ public interface SectionManager {
 
     /**
      * Replaces the section at the specified position in the SectionedRecyclerView with the section
+     * represented by the specified SectionWithHeaderAdapter.
+     *
+     * @param section Index of the section to replace.
+     * @param sectionWithHeaderAdapter SectionWithHeaderAdapter to represent the section to replace.
+     */
+    void replaceSection(int section, @NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter);
+
+    /**
+     * Replaces the section at the specified position in the SectionedRecyclerView with the section
      * represented by the specified SectionAdapter and SectionItemSwipeCallback.
      *
      * @param section Index of the section to replace.
@@ -77,6 +125,17 @@ public interface SectionManager {
      * @param swipeCallback SectionItemSwipeCallback to represent the section to replace.
      */
     void replaceSection(int section, @NonNull SectionAdapter sectionAdapter,
+                        SectionItemSwipeCallback swipeCallback);
+
+    /**
+     * Replaces the section at the specified position in the SectionedRecyclerView with the section
+     * represented by the specified SectionWithHeaderAdapter and SectionItemSwipeCallback.
+     *
+     * @param section Index of the section to replace.
+     * @param sectionWithHeaderAdapter SectionWithHeaderAdapter to represent the section to replace.
+     * @param swipeCallback SectionItemSwipeCallback to represent the section to replace.
+     */
+    void replaceSection(int section, @NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter,
                         SectionItemSwipeCallback swipeCallback);
 
     /**
