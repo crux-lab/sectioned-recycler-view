@@ -64,11 +64,12 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
     private RecyclerView.Adapter<ViewHolderWrapper> adapter = new RecyclerView.Adapter<ViewHolderWrapper>() {
 
         /**
-         * Uses type to get an appropriate SectionAdapter, item type within section and to determine,
-         * whether item view is a section header. Passes the corresponding call to the SectionAdapter,
-         * obtaining {@link SectionAdapter.ViewHolder}. Returns {@link ViewHolderWrapper}, that
-         * refers to the same View. SectionAdapter.ViewHolder holds a reference to it to access the
-         * global adapter position any time.
+         * Uses type to get an appropriate SectionAdapterWrapper, item type within section and to
+         * determine, whether item view is a section header. Passes the corresponding call to the
+         * SectionAdapter via {@link SectionAdapterWrapper}, obtaining
+         * {@link SectionAdapter.ViewHolder}. Returns {@link ViewHolderWrapper}, that refers to the
+         * same View. SectionAdapter.ViewHolder holds a reference to it to access the global adapter
+         * position any time.
          */
         @Override
         public ViewHolderWrapper onCreateViewHolder(ViewGroup parent, int type) {
@@ -93,7 +94,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         /**
          * Uses position to determine section type and whether item view is a section header.
          * Obtains {@link SectionAdapter.ViewHolder} from {@link ViewHolderWrapper} and passes the
-         * corresponding call to the SectionAdapter.
+         * corresponding call to the SectionAdapter via {@link SectionAdapterWrapper}.
          */
         @Override
         public void onBindViewHolder(ViewHolderWrapper viewHolderWrapper, int position) {
@@ -119,9 +120,10 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
          * Item view type allows to determine section type, item type within section and whether
          * item view is a section header. It is an integer, consisted of two shorts as follows:
          * <code>(itemType << 16) + sectionType</code>,
-         * where <code>itemType</code> is an item type within section, obtained from SectionAdapter,
-         * and <code>sectionType</code> is a section type, calculated from adapter position, which
-         * is negative (multiplied by -1) when the given item view corresponds to a section header.
+         * where <code>itemType</code> is an item type within section, obtained from
+         * SectionAdapterWrapper, and <code>sectionType</code> is a section type, calculated from
+         * adapter position, which is negative (multiplied by -1) when the given item view
+         * corresponds to a section header.
          */
         @Override
         public int getItemViewType(int pos) {
@@ -622,7 +624,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
     /**
      * Converts section index and item position in section to the global adapter position.
      *
-     * @param section Index of the section.
+     * @param section    Index of the section.
      * @param sectionPos Item position in section.
      * @return Global adapter position.
      */
@@ -669,8 +671,8 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
      * <code>startSection</code>. If <code>updateSection</code> is true, updates the section indexes
      * of the corresponding adapters.
      *
-     * @param startSection First section index to be updated.
-     * @param cnt Value to be updated by.
+     * @param startSection  First section index to be updated.
+     * @param cnt           Value to be updated by.
      * @param updateSection True if the adapters section indexes should be updated.
      */
     private void updatePosSum(int startSection, int cnt, boolean updateSection) {
@@ -728,7 +730,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
      * (after other equal ones).
      *
      * @param list List where to search.
-     * @param key Value to be found.
+     * @param key  Value to be found.
      * @return Upper bound binary search result position.
      */
     private static int upperBoundBinarySearch(List<Integer> list, int key) {
@@ -774,6 +776,10 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
 
     }
 
+    /**
+     * Contains {@link SectionAdapter} or {@link SectionWithHeaderAdapter}. Passes calls to non null
+     * adapter instance, handling unsupported calls for SectionAdapter without header.
+     */
     class SectionAdapterWrapper {
 
         private final SectionAdapter sectionAdapter;

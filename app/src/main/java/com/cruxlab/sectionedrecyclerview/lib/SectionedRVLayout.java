@@ -305,7 +305,7 @@ public class SectionedRVLayout extends RelativeLayout {
      * Calculates yTranslation for the current header view based on its height and next header
      * position.
      *
-     * @param headerHeight Height of the current header view in px.
+     * @param headerHeight  Height of the current header view in px.
      * @param nextHeaderPos Adapter position of the next header view.
      * @return Calculated yTranslation for the header view.
      */
@@ -323,7 +323,7 @@ public class SectionedRVLayout extends RelativeLayout {
      * Runs the code just before the given view is being drawn so that its size has been already
      * calculated.
      *
-     * @param view View to be drawn.
+     * @param view     View to be drawn.
      * @param runnable Code to run.
      */
     private static void runJustBeforeBeingDrawn(final View view, final Runnable runnable) {

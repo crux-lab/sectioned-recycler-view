@@ -33,7 +33,7 @@ public abstract class SectionItemSwipeCallback {
      * or 0 if no movement is allowed.
      *
      * @param recyclerView The RecyclerView to which the ItemTouchHelper is attached to.
-     * @param viewHolder The ViewHolder for which the swipe direction is queried.
+     * @param viewHolder   The ViewHolder for which the swipe direction is queried.
      *
      * @return A binary OR of swipe direction flags.
      */
@@ -143,7 +143,7 @@ public abstract class SectionItemSwipeCallback {
      * Similar to {@link ItemTouchHelper.Callback#isItemViewSwipeEnabled()}.
      *
      * @return True if ItemTouchHelper should start swiping an item when user swipes a pointer
-     * over the View, false otherwise. Default value is <code>true</code>.
+     *         over the View, false otherwise. Default value is <code>true</code>.
      */
     public boolean isSwipeEnabled() {
         return true;

@@ -9,7 +9,7 @@ import android.view.ViewGroup;
  * Besides item views, provides a header view displayed within a SectionedRecyclerView in
  * an individual section.
  *
- * @param <VH> A class that extends ItemViewHolder that will be used by the adapter to manage item views.
+ * @param <VH>  A class that extends ItemViewHolder that will be used by the adapter to manage item views.
  * @param <HVH> A class that extends ViewHolder that will be used by the adapter to manage header view.
  */
 
