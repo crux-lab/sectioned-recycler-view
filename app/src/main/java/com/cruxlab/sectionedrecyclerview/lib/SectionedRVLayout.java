@@ -54,6 +54,15 @@ public class SectionedRVLayout extends RelativeLayout {
     }
 
     /**
+     * Returns an interface for conversion between section and adapter positions.
+     *
+     * @return PositionConverter instance.
+     */
+    public PositionConverter getPositionConverter() {
+        return sectionDataManager;
+    }
+
+    /**
      * Returns RecyclerView that works with SectionDataManager's adapter. Be careful using it. To
      * manage ItemDecorations or to set ItemAnimator, RecyclerListener or OnFlingListener better use
      * the corresponding methods.

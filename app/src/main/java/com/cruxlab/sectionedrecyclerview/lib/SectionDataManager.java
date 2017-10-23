@@ -26,7 +26,7 @@ import java.util.List;
  * The main task is to determine, which section corresponds to the given global adapter position and
  * whether it is a header or a regular item in it. To do it efficiently we use partial sum array
  * {@link #sectionToPosSum}, where on the i-th position is the number of items in RecyclerView in all
- * sections before i-th inclusive, and binary search (e.g. {@link #getSectionByAdapterPos(int)}).
+ * sections before i-th inclusive, and binary search (e.g. {@link #getSection(int)}).
  * For details on how RecyclerView interacts with sections see the RecyclerView.Adapter {@link #adapter}
  * and ItemTouchHelper.Callback {@link #swipeCallback} implementations.
  * <p>
@@ -40,7 +40,7 @@ import java.util.List;
  * @see #updateHeaderView(short)
  *
  */
-class SectionDataManager implements SectionManager, SectionItemManager, SectionPositionProvider {
+class SectionDataManager implements SectionManager, SectionItemManager, PositionConverter {
 
     private short freeType = 1;
     private short topSectionType = -1;
@@ -80,13 +80,14 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
                 SectionAdapter.ViewHolder headerViewHolder = adapterWrapper.onCreateHeaderViewHolder(parent);
                 ViewHolderWrapper viewHolderWrapper = new ViewHolderWrapper(headerViewHolder);
                 headerViewHolder.viewHolderWrapper = viewHolderWrapper;
+                headerViewHolder.positionConverter = SectionDataManager.this;
                 return viewHolderWrapper;
             } else {
                 SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
                 SectionAdapter.ItemViewHolder itemViewHolder = adapterWrapper.onCreateViewHolder(parent, itemType);
                 ViewHolderWrapper viewHolderWrapper = new ViewHolderWrapper(itemViewHolder);
                 itemViewHolder.viewHolderWrapper = viewHolderWrapper;
-                itemViewHolder.sectionPositionProvider = SectionDataManager.this;
+                itemViewHolder.positionConverter = SectionDataManager.this;
                 return viewHolderWrapper;
             }
         }
@@ -128,7 +129,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         @Override
         public int getItemViewType(int pos) {
             Checker.checkPosition(pos, getTotalItemCount());
-            int section = getSectionByAdapterPos(pos);
+            int section = getSection(pos);
             short sectionType = sectionToType.get(section);
             int sectionPos = getPosInSection(pos);
             SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
@@ -160,7 +161,8 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
             if (!isTypeHeader(viewHolder.getItemViewType())) {
                 SectionItemSwipeCallback swipeCallback = getSwipeCallback(viewHolder);
                 if (swipeCallback != null && swipeCallback.isSwipeEnabled()) {
-                    swipeFlags = swipeCallback.getSwipeDirFlags(recyclerView, ((ViewHolderWrapper) viewHolder).viewHolder);
+                    ViewHolderWrapper viewHolderWrapper = (ViewHolderWrapper) viewHolder;
+                    swipeFlags = swipeCallback.getSwipeDirFlags(recyclerView, (SectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder);
                 }
             }
             return makeMovementFlags(0, swipeFlags);
@@ -178,7 +180,8 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         @Override
         public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
             SectionItemSwipeCallback swipeCallback = getSwipeCallback(viewHolder);
-            swipeCallback.onSwiped(((ViewHolderWrapper) viewHolder).viewHolder, direction);
+            ViewHolderWrapper viewHolderWrapper = (ViewHolderWrapper) viewHolder;
+            swipeCallback.onSwiped((SectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder, direction);
         }
 
         /**
@@ -189,7 +192,9 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
                                 float dX, float dY, int actionState, boolean isCurrentlyActive) {
             if (viewHolder.getAdapterPosition() >= 0) {
                 SectionItemSwipeCallback swipeCallback = getSwipeCallback(viewHolder);
-                swipeCallback.onChildDraw(c, recyclerView, ((ViewHolderWrapper) viewHolder).viewHolder,
+                ViewHolderWrapper viewHolderWrapper = (ViewHolderWrapper) viewHolder;
+                swipeCallback.onChildDraw(c, recyclerView,
+                        (SectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder,
                         dX, dY, actionState, isCurrentlyActive);
             } else {
                 super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
@@ -204,7 +209,9 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
                                     float dX, float dY, int actionState, boolean isCurrentlyActive) {
             if (viewHolder.getAdapterPosition() >= 0) {
                 SectionItemSwipeCallback swipeCallback = getSwipeCallback(viewHolder);
-                swipeCallback.onChildDrawOver(c, recyclerView, ((ViewHolderWrapper) viewHolder).viewHolder,
+                ViewHolderWrapper viewHolderWrapper = (ViewHolderWrapper) viewHolder;
+                swipeCallback.onChildDrawOver(c, recyclerView,
+                        (SectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder,
                         dX, dY, actionState, isCurrentlyActive);
             } else {
                 super.onChildDrawOver(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
@@ -218,7 +225,9 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
         public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
             if (viewHolder.getAdapterPosition() >= 0) {
                 SectionItemSwipeCallback swipeCallback = getSwipeCallback(viewHolder);
-                swipeCallback.clearView(recyclerView, ((ViewHolderWrapper) viewHolder).viewHolder);
+                ViewHolderWrapper viewHolderWrapper = (ViewHolderWrapper) viewHolder;
+                swipeCallback.clearView(recyclerView,
+                        (SectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder);
             } else {
                 super.clearView(recyclerView, viewHolder);
             }
@@ -232,7 +241,9 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
             if (viewHolder == null) return;
             if (viewHolder.getAdapterPosition() >= 0) {
                 SectionItemSwipeCallback swipeCallback = getSwipeCallback(viewHolder);
-                swipeCallback.onSelectedChanged(((ViewHolderWrapper) viewHolder).viewHolder, actionState);
+                ViewHolderWrapper viewHolderWrapper = (ViewHolderWrapper) viewHolder;
+                swipeCallback.onSelectedChanged(
+                        (SectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder, actionState);
             } else {
                 super.onSelectedChanged(viewHolder, actionState);
             }
@@ -285,7 +296,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
             removeHeaderView();
             return;
         }
-        int section = getSectionByAdapterPos(topPos);
+        int section = getSection(topPos);
         short sectionType = sectionToType.get(section);
         SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
         if (adapterWrapper.isHeaderVisible() && adapterWrapper.isHeaderPinned()) {
@@ -549,18 +560,34 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
     }
 
     /* END SECTION ITEM MANAGER */
-    /* SECTION POSITION PROVIDER */
+    /* SECTION POSITION CONVERTER */
+
+    @Override
+    public int getAdapterPos(int section, int sectionPos) {
+        if (section < 0 || section >= getSectionCount()) return -1;
+        short sectionType = sectionToType.get(section);
+        SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
+        int sectionItemCount = getSectionCurItemCount(section) - (adapterWrapper.isHeaderVisible() ? 1 : 0);
+        if (sectionPos < 0 || sectionPos >= sectionItemCount) return -1;
+        return (section > 0 ? sectionToPosSum.get(section - 1) : 0) + sectionPos + (adapterWrapper.isHeaderVisible() ? 1 : 0);
+    }
+
+    @Override
+    public int getSection(int adapterPos) {
+        if (adapterPos < 0 || adapterPos >= getTotalItemCount()) return -1;
+        return upperBoundBinarySearch(sectionToPosSum, adapterPos);
+    }
 
     @Override
     public int getPosInSection(int adapterPos) {
-        Checker.checkPosition(adapterPos, getTotalItemCount());
-        int section = getSectionByAdapterPos(adapterPos);
+        if (adapterPos < 0 || adapterPos >= getTotalItemCount()) return -1;
+        int section = getSection(adapterPos);
         short sectionType = sectionToType.get(section);
         SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
         return adapterPos - (section > 0 ? sectionToPosSum.get(section - 1) : 0) - (adapterWrapper.isHeaderVisible() ? 1 : 0);
     }
 
-    /* END SECTION POSITION PROVIDER */
+    /* END SECTION POSITION CONVERTER */
 
     /**
      * Checks whether the given item view type corresponds to header view.
@@ -584,17 +611,6 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
     }
 
     /**
-     * Returns the section index corresponding to the given global position in adapter.
-     *
-     * @param adapterPos Global position in adapter.
-     * @return Section index.
-     */
-    private int getSectionByAdapterPos(int adapterPos) {
-        Checker.checkPosition(adapterPos, getTotalItemCount());
-        return upperBoundBinarySearch(sectionToPosSum, adapterPos);
-    }
-
-    /**
      * Returns SectionItemSwipeCallback for the given ViewHolder or null, if the obtained adapter
      * position is invalid.
      *
@@ -603,8 +619,8 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
      */
     private SectionItemSwipeCallback getSwipeCallback(RecyclerView.ViewHolder viewHolder) {
         int adapterPos = viewHolder.getAdapterPosition();
-        if (adapterPos < 0) return null;
-        int section = getSectionByAdapterPos(adapterPos);
+        if (adapterPos < 0 || adapterPos >= getTotalItemCount()) return null;
+        int section = getSection(adapterPos);
         short sectionType = sectionToType.get(section);
         return typeToCallback.get(sectionType);
     }
@@ -619,21 +635,6 @@ class SectionDataManager implements SectionManager, SectionItemManager, SectionP
     private int getSectionFirstPos(int section) {
         Checker.checkSection(section, getSectionCount() + 1);
         return section > 0 ? sectionToPosSum.get(section - 1) : 0;
-    }
-
-    /**
-     * Converts section index and item position in section to the global adapter position.
-     *
-     * @param section    Index of the section.
-     * @param sectionPos Item position in section.
-     * @return Global adapter position.
-     */
-    private int getAdapterPos(int section, int sectionPos) {
-        Checker.checkSection(section, getSectionCount());
-        Checker.checkPosition(sectionPos, getTotalItemCount());
-        short sectionType = sectionToType.get(section);
-        SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
-        return (section > 0 ? sectionToPosSum.get(section - 1) : 0) + sectionPos + (adapterWrapper.isHeaderVisible() ? 1 : 0);
     }
 
     /**

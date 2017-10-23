@@ -72,7 +72,7 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder> {
      * inserted.
      * <p>
      * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#notifyItemInserted(int)}.
-     ≈
+     *
      * @param pos Inserted item position.
      */
     public final void notifyItemInserted(int pos) {
@@ -266,6 +266,7 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder> {
     public abstract static class ViewHolder {
 
         public final View itemView;
+        PositionConverter positionConverter;
         SectionDataManager.ViewHolderWrapper viewHolderWrapper;
 
         public ViewHolder(View itemView) {
@@ -281,9 +282,20 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder> {
          *
          * @return Global adapter position.
          */
-        public final int getGlobalPosition() {
+        public final int getGlobalAdapterPosition() {
             Checker.checkViewHolderWrapper(viewHolderWrapper);
             return viewHolderWrapper.getAdapterPosition();
+        }
+
+        /**
+         * Returns the section index that corresponds to this ViewGolder.
+         *
+         * @return Index of the section.
+         */
+        public final int getSection() {
+            Checker.checkSectionPositionConverter(positionConverter);
+            int adapterPos = getGlobalAdapterPosition();
+            return positionConverter.getSection(adapterPos);
         }
 
     }
@@ -295,8 +307,6 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder> {
      */
     public abstract static class ItemViewHolder extends SectionAdapter.ViewHolder {
 
-        SectionPositionProvider sectionPositionProvider;
-
         public ItemViewHolder(View itemView) {
             super(itemView);
         }
@@ -306,11 +316,10 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder> {
          *
          * @return Section adapter position.
          */
-        public final int getSectionPosition() {
-            Checker.checkSectionPositionProvider(sectionPositionProvider);
-            int adapterPos = getGlobalPosition();
-            if (adapterPos == -1) return -1;
-            return sectionPositionProvider.getPosInSection(adapterPos);
+        public final int getSectionAdapterPosition() {
+            Checker.checkSectionPositionConverter(positionConverter);
+            int adapterPos = getGlobalAdapterPosition();
+            return positionConverter.getPosInSection(adapterPos);
         }
 
     }

@@ -16,11 +16,12 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.cruxlab.sectionedrecyclerview.R;
-import com.cruxlab.sectionedrecyclerview.lib.SectionWithHeaderAdapter;
+import com.cruxlab.sectionedrecyclerview.lib.PositionConverter;
+import com.cruxlab.sectionedrecyclerview.lib.SectionAdapter;
 import com.cruxlab.sectionedrecyclerview.lib.SectionItemSwipeCallback;
 import com.cruxlab.sectionedrecyclerview.lib.SectionManager;
+import com.cruxlab.sectionedrecyclerview.lib.SectionWithHeaderAdapter;
 import com.cruxlab.sectionedrecyclerview.lib.SectionedRVLayout;
-import com.cruxlab.sectionedrecyclerview.lib.SectionAdapter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,6 +29,7 @@ import java.util.Arrays;
 public class MainActivity extends AppCompatActivity {
 
     private SectionManager sectionManager;
+    private PositionConverter positionConverter;
     private Drawable deleteIcon;
 
     @Override
@@ -37,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
         deleteIcon = ContextCompat.getDrawable(this, R.drawable.ic_remove);
         SectionedRVLayout srvl = findViewById(R.id.srvl);
         sectionManager = srvl.getSectionManager();
+        positionConverter = srvl.getPositionConverter();
         for (int i = 0; i < 20; i++) {
             if (i % 4 != 3) {
                 int color = (i % 4 == 0) ? Color.YELLOW : (i % 4 == 1) ? Color.RED : Color.BLUE;
@@ -153,14 +156,14 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public int getSwipeDirFlags(RecyclerView recyclerView, SectionAdapter.ViewHolder viewHolder) {
+        public int getSwipeDirFlags(RecyclerView recyclerView, SectionAdapter.ItemViewHolder viewHolder) {
             return ItemTouchHelper.LEFT;
         }
 
         @Override
-        public void onSwiped(SectionAdapter.ViewHolder viewHolder, int direction) {
+        public void onSwiped(SectionAdapter.ItemViewHolder viewHolder, int direction) {
             ItemViewHolder itemViewHolder = (ItemViewHolder) viewHolder;
-            int sectionPos = itemViewHolder.getSectionPosition();
+            int sectionPos = itemViewHolder.getSectionAdapterPosition();
             if (sectionPos == -1) return;
             if (itemViewHolder.adapter != null) {
                 itemViewHolder.adapter.removeString(sectionPos);
@@ -170,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onChildDraw(Canvas c, RecyclerView recyclerView, SectionAdapter.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+        public void onChildDraw(Canvas c, RecyclerView recyclerView, SectionAdapter.ItemViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
             View itemView = viewHolder.itemView;
             int itemHeight = itemView.getBottom() - itemView.getTop();
             background.setColor(color);
@@ -220,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
             btnDuplicate.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    int sectionPos = getSectionPosition();
+                    int sectionPos = getSectionAdapterPosition();
                     if (adapter != null) {
                         adapter.duplicateString(sectionPos);
                     } else {
@@ -231,7 +234,7 @@ public class MainActivity extends AppCompatActivity {
             btnChange.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    int sectionPos = getSectionPosition();
+                    int sectionPos = getSectionAdapterPosition();
                     if (adapter != null) {
                         adapter.changeString(sectionPos);
                     } else {
@@ -242,7 +245,7 @@ public class MainActivity extends AppCompatActivity {
             btnRemove.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    int sectionPos = getSectionPosition();
+                    int sectionPos = getSectionAdapterPosition();
                     if (sectionPos == -1) return;
                     if (adapter != null) {
                         adapter.removeString(sectionPos);
@@ -294,6 +297,10 @@ public class MainActivity extends AppCompatActivity {
             btnDuplicate.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    // Note, that we can't call getSection() directly, because the duplicated
+                    // ViewHolder hasn't been used in any SectionedRV, so no PositionConverter
+                    // has been set. We also can't use global PositionConverter, because we can't
+                    // obtain the global adapter position, because no ViewHolderWrapper has been set.
                     int section = adapter.getSection();
                     DemoSectionWithHeaderAdapter duplicatedAdapter = new DemoSectionWithHeaderAdapter(adapter.color, adapter.isHeaderVisible(), adapter.isHeaderPinned());
                     duplicatedAdapter.strings = new ArrayList<>(adapter.strings);
@@ -308,6 +315,10 @@ public class MainActivity extends AppCompatActivity {
             btnChange.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    // Note, that we can't call getSection() directly, because the duplicated
+                    // ViewHolder hasn't been used in any SectionedRV, so no PositionConverter
+                    // has been set. We also can't use global PositionConverter, because we can't
+                    // obtain the global adapter position, because no ViewHolderWrapper has been set.
                     int section = adapter.getSection();
                     DemoSectionWithHeaderAdapter newAdapter = new DemoSectionWithHeaderAdapter(adapter.color == Color.YELLOW ?
                             Color.RED : adapter.color == Color.RED ? Color.BLUE : Color.YELLOW, adapter.isHeaderVisible(), adapter.isHeaderPinned());
@@ -320,6 +331,10 @@ public class MainActivity extends AppCompatActivity {
                 public void onClick(View view) {
                     if (isRemoved) return;
                     isRemoved = true;
+                    // Note, that we can't call getSection() directly, because the duplicated
+                    // ViewHolder hasn't been used in any SectionedRV, so no PositionConverter
+                    // has been set. We also can't use global PositionConverter, because we can't
+                    // obtain the global adapter position, because no ViewHolderWrapper has been set.
                     int section = adapter.getSection();
                     sectionManager.removeSection(section);
                     //For mandatory update section in headers
