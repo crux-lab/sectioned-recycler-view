@@ -53,7 +53,7 @@ public abstract class SectionWithHeaderAdapter<VH extends SectionAdapter.ItemVie
      * in the RecyclerView.
      */
     public void notifyHeaderChanged() {
-        Checker.checkItemManager(itemManager);
+        if (itemManager == null) return;
         itemManager.notifyHeaderChanged(section);
     }
 
@@ -63,7 +63,7 @@ public abstract class SectionWithHeaderAdapter<VH extends SectionAdapter.ItemVie
      * @param visible New header visibility.
      */
     public void updateHeaderVisibility(boolean visible) {
-        Checker.checkItemManager(itemManager);
+        if (itemManager == null) return;
         if (visible == isHeaderVisible) return;
         isHeaderVisible = visible;
         itemManager.notifyHeaderVisibilityChanged(section, visible);
@@ -75,7 +75,7 @@ public abstract class SectionWithHeaderAdapter<VH extends SectionAdapter.ItemVie
      * @param pinned New header pinned state.
      */
     public void updateHeaderPinnedState(boolean pinned) {
-        Checker.checkItemManager(itemManager);
+        if (itemManager == null) return;
         if (pinned == isHeaderPinned) return;
         isHeaderPinned = pinned;
         itemManager.notifyHeaderPinnedStateChanged(section, pinned);

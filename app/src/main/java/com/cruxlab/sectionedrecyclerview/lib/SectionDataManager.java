@@ -128,7 +128,6 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
          */
         @Override
         public int getItemViewType(int pos) {
-            Checker.checkPosition(pos, getTotalItemCount());
             int section = getSection(pos);
             short sectionType = sectionToType.get(section);
             int sectionPos = getPosInSection(pos);
@@ -292,7 +291,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
      */
     void checkIsHeaderViewChanged() {
         int topPos = headerViewManager.getFirstVisiblePos();
-        if (topPos < 0 || topPos >= getTotalItemCount()) {
+        if (!checkInd(topPos, getTotalItemCount())) {
             removeHeaderView();
             return;
         }
@@ -376,7 +375,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
     }
 
     private void insertSection(int section, SectionAdapterWrapper sectionAdapterWrapper, SectionItemSwipeCallback swipeCallback) {
-        Checker.checkSection(section, getSectionCount() + 1);
+        if (!checkInd(section, getSectionCount() + 1)) return;
         sectionAdapterWrapper.setSection(section);
         sectionAdapterWrapper.setItemManager(this);
         int start = getSectionFirstPos(section);
@@ -414,7 +413,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
     }
 
     private void replaceSection(int section, SectionAdapterWrapper sectionAdapterWrapper, SectionItemSwipeCallback swipeCallback) {
-        Checker.checkSection(section, getSectionCount());
+        if (!checkInd(section, getSectionCount())) return;
         removeSection(section);
         if (section == getSectionCount()) {
             addSection(sectionAdapterWrapper, swipeCallback);
@@ -425,7 +424,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
 
     @Override
     public void removeSection(int section) {
-        Checker.checkSection(section, getSectionCount());
+        if (!checkInd(section, getSectionCount())) return;;
         short sectionType = sectionToType.get(section);
         int cnt = getSectionCurItemCount(section);
         int start = getSectionFirstPos(section);
@@ -440,28 +439,30 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
 
     @Override
     public void updateSection(int section) {
-        Checker.checkSection(section, getSectionCount());
+        if (!checkInd(section, getSectionCount())) return;
         adapter.notifyItemRangeChanged(getSectionFirstPos(section), getSectionCurItemCount(section));
         updateHeaderView(sectionToType.get(section));
     }
 
     @Override
     public void setSwipeCallback(int section, @NonNull SectionItemSwipeCallback swipeCallback) {
-        Checker.checkSection(section, getSectionCount());
+        if (!checkInd(section, getSectionCount())) return;
         short sectionType = sectionToType.get(section);
         typeToCallback.put(sectionType, swipeCallback);
     }
 
     @Override
     public void removeSwipeCallback(int section) {
-        Checker.checkSection(section, getSectionCount());
+        if (!checkInd(section, getSectionCount())) return;
         short sectionType = sectionToType.get(section);
         typeToCallback.remove(sectionType);
     }
 
     @Override
     public SectionAdapter getSectionAdapter(int section) {
-        Checker.checkSection(section, getSectionCount());
+        if (!checkInd(section, getSectionCount())) {
+            return null;
+        }
         short sectionType = sectionToType.get(section);
         SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
         return adapterWrapper.getAdapter();
@@ -469,7 +470,9 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
 
     @Override
     public SectionItemSwipeCallback getSwipeCallback(int section) {
-        Checker.checkSection(section, getSectionCount());
+        if (!checkInd(section, getSectionCount())) {
+            return null;
+        }
         short sectionType = sectionToType.get(section);
         return typeToCallback.get(sectionType);
     }
@@ -480,56 +483,63 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
     @Override
     public void notifyInserted(int section, int pos) {
         int adapterPos = getAdapterPos(section, pos);
-        Checker.checkPosition(adapterPos, getTotalItemCount() + 1);
-        updatePosSum(section, 1, false);
-        adapter.notifyItemInserted(adapterPos);
+        if (checkInd(adapterPos, getTotalItemCount() + 1)) {
+            updatePosSum(section, 1, false);
+            adapter.notifyItemInserted(adapterPos);
+        }
     }
 
     @Override
     public void notifyRemoved(int section, int pos) {
         int adapterPos = getAdapterPos(section, pos);
-        Checker.checkPosition(adapterPos, getTotalItemCount() + 1);
-        updatePosSum(section, -1, false);
-        adapter.notifyItemRemoved(adapterPos);
+        if (checkInd(adapterPos, getTotalItemCount() + 1)) {
+            updatePosSum(section, -1, false);
+            adapter.notifyItemRemoved(adapterPos);
+        }
     }
 
     @Override
     public void notifyChanged(int section, int pos) {
         int adapterPos = getAdapterPos(section, pos);
-        Checker.checkPosition(adapterPos, getTotalItemCount());
-        adapter.notifyItemChanged(adapterPos);
+        if (checkInd(adapterPos, getTotalItemCount())) {
+            adapter.notifyItemChanged(adapterPos);
+        }
     }
 
     @Override
     public void notifyRangeInserted(int section, int startPos, int cnt) {
         int adapterStartPos = getAdapterPos(section, startPos);
-        Checker.checkPosRange(adapterStartPos, cnt, getTotalItemCount() + 1);
-        updatePosSum(section, cnt, false);
-        adapter.notifyItemRangeInserted(adapterStartPos, cnt);
+        if (checkIndRange(adapterStartPos, cnt, getTotalItemCount() + 1)) {
+            updatePosSum(section, cnt, false);
+            adapter.notifyItemRangeInserted(adapterStartPos, cnt);
+        }
     }
 
     @Override
     public void notifyRangeRemoved(int section, int startPos, int cnt) {
         int adapterStartPos = getAdapterPos(section, startPos);
-        Checker.checkPosRange(adapterStartPos, cnt, getTotalItemCount() + 1);
-        updatePosSum(section, -cnt, false);
-        adapter.notifyItemRangeRemoved(adapterStartPos, cnt);
+        if (checkIndRange(adapterStartPos, cnt, getTotalItemCount() + 1)) {
+            updatePosSum(section, -cnt, false);
+            adapter.notifyItemRangeRemoved(adapterStartPos, cnt);
+        }
     }
 
     @Override
     public void notifyRangeChanged(int section, int startPos, int cnt) {
         int adapterStartPos = getAdapterPos(section, startPos);
-        Checker.checkPosRange(adapterStartPos, cnt, getTotalItemCount());
-        adapter.notifyItemRangeChanged(adapterStartPos, cnt);
+        if (checkIndRange(adapterStartPos, cnt, getTotalItemCount())) {
+            adapter.notifyItemRangeChanged(adapterStartPos, cnt);
+        }
     }
 
     @Override
     public void notifyMoved(int section, int fromPos, int toPos) {
         int adapterFromPos = getAdapterPos(section, fromPos);
-        Checker.checkPosition(adapterFromPos, getTotalItemCount());
         int adapterToPos = getAdapterPos(section, toPos);
-        Checker.checkPosition(adapterToPos, getTotalItemCount());
-        adapter.notifyItemMoved(adapterFromPos, adapterToPos);
+        if (checkInd(adapterFromPos, getTotalItemCount()) &&
+                checkInd(adapterToPos, getTotalItemCount())) {
+            adapter.notifyItemMoved(adapterFromPos, adapterToPos);
+        }
     }
 
     @Override
@@ -543,7 +553,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
 
     @Override
     public void notifyHeaderVisibilityChanged(int section, boolean visible) {
-        Checker.checkSection(section, getSectionCount());
+        if (!checkInd(section, getSectionCount())) return;
         if (visible) {
             updatePosSum(section, 1, false);
             adapter.notifyItemInserted(getSectionFirstPos(section));
@@ -555,8 +565,9 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
 
     @Override
     public void notifyHeaderPinnedStateChanged(int section, boolean pinned) {
-        Checker.checkSection(section, getSectionCount());
-        checkIsHeaderViewChanged();
+        if (checkInd(section, getSectionCount())) {
+            checkIsHeaderViewChanged();
+        }
     }
 
     /* END SECTION ITEM MANAGER */
@@ -564,23 +575,23 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
 
     @Override
     public int getAdapterPos(int section, int sectionPos) {
-        if (section < 0 || section >= getSectionCount()) return -1;
+        if (!checkInd(section, getSectionCount())) return -1;
         short sectionType = sectionToType.get(section);
         SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
         int sectionItemCount = getSectionCurItemCount(section) - (adapterWrapper.isHeaderVisible() ? 1 : 0);
-        if (sectionPos < 0 || sectionPos >= sectionItemCount) return -1;
+        if (!checkInd(sectionPos, sectionItemCount)) return -1;
         return (section > 0 ? sectionToPosSum.get(section - 1) : 0) + sectionPos + (adapterWrapper.isHeaderVisible() ? 1 : 0);
     }
 
     @Override
     public int getSection(int adapterPos) {
-        if (adapterPos < 0 || adapterPos >= getTotalItemCount()) return -1;
+        if (!checkInd(adapterPos, getTotalItemCount())) return -1;
         return upperBoundBinarySearch(sectionToPosSum, adapterPos);
     }
 
     @Override
     public int getPosInSection(int adapterPos) {
-        if (adapterPos < 0 || adapterPos >= getTotalItemCount()) return -1;
+        if (!checkInd(adapterPos, getTotalItemCount())) return -1;
         int section = getSection(adapterPos);
         short sectionType = sectionToType.get(section);
         SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
@@ -619,7 +630,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
      */
     private SectionItemSwipeCallback getSwipeCallback(RecyclerView.ViewHolder viewHolder) {
         int adapterPos = viewHolder.getAdapterPosition();
-        if (adapterPos < 0 || adapterPos >= getTotalItemCount()) return null;
+        if (!checkInd(adapterPos, getTotalItemCount())) return null;
         int section = getSection(adapterPos);
         short sectionType = sectionToType.get(section);
         return typeToCallback.get(sectionType);
@@ -633,7 +644,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
      * @return First global adapter position.
      */
     private int getSectionFirstPos(int section) {
-        Checker.checkSection(section, getSectionCount() + 1);
+        if (!checkInd(section, getSectionCount() + 1)) return -1;
         return section > 0 ? sectionToPosSum.get(section - 1) : 0;
     }
 
@@ -645,7 +656,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
      * @return Number of items.
      */
     private int getSectionCurItemCount(int section) {
-        Checker.checkSection(section, getSectionCount());
+        if (!checkInd(section, getSectionCount())) return 0;
         return sectionToPosSum.get(section) - (section > 0 ? sectionToPosSum.get(section - 1) : 0);
     }
 
@@ -760,6 +771,17 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
                 l = m + 1;
             }
         }
+    }
+
+    private boolean checkInd(int ind, int size) {
+        return ind >= 0 && ind < size;
+    }
+
+    private boolean checkIndRange(int startInd, int cnt, int size) {
+        if (!checkInd(startInd, size)) return false;
+        if (cnt <= 0) return false;
+        int endPos = startInd + cnt - 1;
+        return endPos < size;
     }
 
     /**

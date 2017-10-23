@@ -76,9 +76,9 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder> {
      * @param pos Inserted item position.
      */
     public final void notifyItemInserted(int pos) {
-        Checker.checkItemManager(itemManager);
-        Checker.checkPosition(pos, getItemCount() + 1);
-        itemManager.notifyInserted(section, pos);
+        if (itemManager != null) {
+            itemManager.notifyInserted(section, pos);
+        }
     }
 
     /**
@@ -115,9 +115,9 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder> {
      * @param cnt      Number of items inserted.
      */
     public final void notifyItemRangeInserted(int startPos, int cnt) {
-        Checker.checkItemManager(itemManager);
-        Checker.checkPosRange(startPos, cnt, getItemCount() + 1);
-        itemManager.notifyRangeInserted(section, startPos, cnt);
+        if (itemManager != null) {
+            itemManager.notifyRangeInserted(section, startPos, cnt);
+        }
     }
 
     /**
@@ -129,9 +129,9 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder> {
      * @param pos Removed item position.
      */
     public final void notifyItemRemoved(int pos) {
-        Checker.checkItemManager(itemManager);
-        Checker.checkPosition(pos, getItemCount() + 1);
-        itemManager.notifyRemoved(section, pos);
+        if (itemManager != null) {
+            itemManager.notifyRemoved(section, pos);
+        }
     }
 
     /**
@@ -168,9 +168,9 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder> {
      * @param cnt      Number of items removed.
      */
     public final void notifyItemRangeRemoved(int startPos, int cnt) {
-        Checker.checkItemManager(itemManager);
-        Checker.checkPosRange(startPos, cnt, getItemCount() + 1);
-        itemManager.notifyRangeRemoved(section, startPos, cnt);
+        if (itemManager != null) {
+            itemManager.notifyRangeRemoved(section, startPos, cnt);
+        }
     }
 
     /**
@@ -182,9 +182,9 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder> {
      * @param pos Changed item position.
      */
     public final void notifyItemChanged(int pos) {
-        Checker.checkItemManager(itemManager);
-        Checker.checkPosition(pos, getItemCount());
-        itemManager.notifyChanged(section, pos);
+        if (itemManager != null) {
+            itemManager.notifyChanged(section, pos);
+        }
     }
 
     /**
@@ -221,9 +221,9 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder> {
      * @param cnt      Number of items changed.
      */
     public final void notifyItemRangeChanged(int startPos, int cnt) {
-        Checker.checkItemManager(itemManager);
-        Checker.checkPosRange(startPos, cnt, getItemCount());
-        itemManager.notifyRangeChanged(section, startPos, cnt);
+        if (itemManager != null) {
+            itemManager.notifyRangeChanged(section, startPos, cnt);
+        }
     }
 
     /**
@@ -236,10 +236,9 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder> {
      * @param toPos   New position of the item.
      */
     public final void notifyItemMoved(int fromPos, int toPos) {
-        Checker.checkItemManager(itemManager);
-        Checker.checkPosition(fromPos, getItemCount());
-        Checker.checkPosition(toPos, getItemCount());
-        itemManager.notifyMoved(section, fromPos, toPos);
+        if (itemManager != null) {
+            itemManager.notifyMoved(section, fromPos, toPos);
+        }
     }
 
     /**
@@ -270,32 +269,33 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder> {
         SectionDataManager.ViewHolderWrapper viewHolderWrapper;
 
         public ViewHolder(View itemView) {
-            Checker.checkItemView(itemView);
+            if (itemView == null) {
+                throw new IllegalArgumentException("ItemView may not be null when creating ViewHolder.");
+            }
             this.itemView = itemView;
         }
 
         /**
          * Returns the global adapter position in the {@link RecyclerView.Adapter} represented by
-         * this ViewHolder.
+         * this ViewHolder or -1, if this ViewHolder hasn't been used in any SectionedRV.
          * <p>
          * Similar to {@link RecyclerView.ViewHolder#getAdapterPosition()}.
          *
-         * @return Global adapter position.
+         * @return Global adapter position or -1.
          */
         public final int getGlobalAdapterPosition() {
-            Checker.checkViewHolderWrapper(viewHolderWrapper);
-            return viewHolderWrapper.getAdapterPosition();
+            return viewHolderWrapper != null ? viewHolderWrapper.getAdapterPosition() : -1;
         }
 
         /**
-         * Returns the section index that corresponds to this ViewGolder.
+         * Returns the section index that corresponds to this ViewGolder or -1, if this ViewHolder
+         * hasn't been used in any SectionedRV.
          *
-         * @return Index of the section.
+         * @return Index of the section or -1.
          */
         public final int getSection() {
-            Checker.checkSectionPositionConverter(positionConverter);
             int adapterPos = getGlobalAdapterPosition();
-            return positionConverter.getSection(adapterPos);
+            return positionConverter != null ? positionConverter.getSection(adapterPos) : -1;
         }
 
     }
@@ -312,14 +312,14 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder> {
         }
 
         /**
-         * Returns the section adapter position represented by this ViewHolder.
+         * Returns the section adapter position represented by this ViewHolder or -1, if this
+         * ViewHolder hasn't been used in any SectionedRV.
          *
          * @return Section adapter position.
          */
         public final int getSectionAdapterPosition() {
-            Checker.checkSectionPositionConverter(positionConverter);
             int adapterPos = getGlobalAdapterPosition();
-            return positionConverter.getPosInSection(adapterPos);
+            return positionConverter != null ? positionConverter.getPosInSection(adapterPos) : -1;
         }
 
     }
