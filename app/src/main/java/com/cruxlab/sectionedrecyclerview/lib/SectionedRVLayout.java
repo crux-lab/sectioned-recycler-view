@@ -200,13 +200,16 @@ public class SectionedRVLayout extends RelativeLayout {
         }
 
         @Override
-        public void translateHeaderView(int nextHeaderPos) {
+        public void translateHeaderView(final int nextHeaderPos) {
             if (getChildCount() > 1) {
-                View headerView = getChildAt(getChildCount() - 1);
-                int translationY = calcTranslation(headerView.getHeight(), nextHeaderPos);
-                if (headerView.getTranslationY() != translationY) {
-                    headerView.setTranslationY(translationY);
-                }
+                final View headerView = getChildAt(getChildCount() - 1);
+                runJustBeforeBeingDrawn(headerView, new Runnable() {
+                    @Override
+                    public void run() {
+                        headerView.setTranslationY(calcTranslation(headerView.getHeight(), nextHeaderPos));
+                        headerView.requestLayout();
+                    }
+                });
             }
         }
 
@@ -281,10 +284,11 @@ public class SectionedRVLayout extends RelativeLayout {
 
     /**
      * Notifies {@link #sectionDataManager} that the header view could have been changed. Uses
-     * postponed runnable to provide a correct first visible item position after the update.
+     * {@link #runJustBeforeBeingDrawn(View, Runnable)} to provide a correct first visible item
+     * position after the update.
      */
     private void checkHeaderView() {
-        post(new Runnable() {
+        runJustBeforeBeingDrawn(sectionedRV, new Runnable() {
             @Override
             public void run() {
                 sectionDataManager.checkIsHeaderViewChanged();
@@ -336,7 +340,7 @@ public class SectionedRVLayout extends RelativeLayout {
      * @param runnable Code to run.
      */
     private static void runJustBeforeBeingDrawn(final View view, final Runnable runnable) {
-        final ViewTreeObserver.OnPreDrawListener onpPreDrawListener = new ViewTreeObserver.OnPreDrawListener() {
+        final ViewTreeObserver.OnPreDrawListener onPreDrawListener = new ViewTreeObserver.OnPreDrawListener() {
             @Override
             public boolean onPreDraw() {
                 view.getViewTreeObserver().removeOnPreDrawListener(this);
@@ -344,7 +348,7 @@ public class SectionedRVLayout extends RelativeLayout {
                 return true;
             }
         };
-        view.getViewTreeObserver().addOnPreDrawListener(onpPreDrawListener);
+        view.getViewTreeObserver().addOnPreDrawListener(onPreDrawListener);
     }
 
 }

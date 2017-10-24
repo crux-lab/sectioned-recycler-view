@@ -579,7 +579,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
         short sectionType = sectionToType.get(section);
         SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
         int sectionItemCount = getSectionCurItemCount(section) - (adapterWrapper.isHeaderVisible() ? 1 : 0);
-        if (!checkInd(sectionPos, sectionItemCount)) return -1;
+        if (!checkInd(sectionPos, sectionItemCount + 1)) return -1;
         return (section > 0 ? sectionToPosSum.get(section - 1) : 0) + sectionPos + (adapterWrapper.isHeaderVisible() ? 1 : 0);
     }
 

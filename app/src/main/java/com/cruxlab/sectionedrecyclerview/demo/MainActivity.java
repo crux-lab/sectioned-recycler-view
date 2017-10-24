@@ -16,7 +16,6 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.cruxlab.sectionedrecyclerview.R;
-import com.cruxlab.sectionedrecyclerview.lib.PositionConverter;
 import com.cruxlab.sectionedrecyclerview.lib.SectionAdapter;
 import com.cruxlab.sectionedrecyclerview.lib.SectionItemSwipeCallback;
 import com.cruxlab.sectionedrecyclerview.lib.SectionManager;
@@ -29,7 +28,6 @@ import java.util.Arrays;
 public class MainActivity extends AppCompatActivity {
 
     private SectionManager sectionManager;
-    private PositionConverter positionConverter;
     private Drawable deleteIcon;
 
     @Override
@@ -39,7 +37,6 @@ public class MainActivity extends AppCompatActivity {
         deleteIcon = ContextCompat.getDrawable(this, R.drawable.ic_remove);
         SectionedRVLayout srvl = findViewById(R.id.srvl);
         sectionManager = srvl.getSectionManager();
-        positionConverter = srvl.getPositionConverter();
         for (int i = 0; i < 20; i++) {
             if (i % 4 != 3) {
                 int color = (i % 4 == 0) ? Color.YELLOW : (i % 4 == 1) ? Color.RED : Color.BLUE;
@@ -298,9 +295,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view) {
                     // Note, that we can't call getSection() directly, because the duplicated
-                    // ViewHolder hasn't been used in any SectionedRV, so no PositionConverter
-                    // has been set. We also can't use global PositionConverter, because we can't
-                    // obtain the global adapter position, because no ViewHolderWrapper has been set.
+                    // ViewHolder hasn't been used in any SectionedRV.
                     int section = adapter.getSection();
                     DemoSectionWithHeaderAdapter duplicatedAdapter = new DemoSectionWithHeaderAdapter(adapter.color, adapter.isHeaderVisible(), adapter.isHeaderPinned());
                     duplicatedAdapter.strings = new ArrayList<>(adapter.strings);
@@ -316,9 +311,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view) {
                     // Note, that we can't call getSection() directly, because the duplicated
-                    // ViewHolder hasn't been used in any SectionedRV, so no PositionConverter
-                    // has been set. We also can't use global PositionConverter, because we can't
-                    // obtain the global adapter position, because no ViewHolderWrapper has been set.
+                    // ViewHolder hasn't been used in any SectionedRV.
                     int section = adapter.getSection();
                     DemoSectionWithHeaderAdapter newAdapter = new DemoSectionWithHeaderAdapter(adapter.color == Color.YELLOW ?
                             Color.RED : adapter.color == Color.RED ? Color.BLUE : Color.YELLOW, adapter.isHeaderVisible(), adapter.isHeaderPinned());
@@ -332,9 +325,7 @@ public class MainActivity extends AppCompatActivity {
                     if (isRemoved) return;
                     isRemoved = true;
                     // Note, that we can't call getSection() directly, because the duplicated
-                    // ViewHolder hasn't been used in any SectionedRV, so no PositionConverter
-                    // has been set. We also can't use global PositionConverter, because we can't
-                    // obtain the global adapter position, because no ViewHolderWrapper has been set.
+                    // ViewHolder hasn't been used in any SectionedRV.
                     int section = adapter.getSection();
                     sectionManager.removeSection(section);
                     //For mandatory update section in headers
