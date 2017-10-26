@@ -176,7 +176,8 @@ public interface SectionManager {
      * @param section Index of the section to be represented.
      * @return SectionAdapter which represents the specifies section.
      */
-    SectionAdapter getSectionAdapter(int section);
+
+    <T extends SectionAdapter> T getSectionAdapter(int section);
 
     /**
      * Returns the SectionItemSwipeCallback which represents the specifies section in the

@@ -266,7 +266,7 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder> {
 
         public final View itemView;
         PositionConverter positionConverter;
-        SectionDataManager.ViewHolderWrapper viewHolderWrapper;
+        ViewHolderWrapper viewHolderWrapper;
 
         public ViewHolder(View itemView) {
             if (itemView == null) {
@@ -295,7 +295,7 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder> {
          */
         public final int getSection() {
             int adapterPos = getGlobalAdapterPosition();
-            return positionConverter != null ? positionConverter.getSection(adapterPos) : -1;
+            return positionConverter != null ? positionConverter.calcSection(adapterPos) : -1;
         }
 
     }
@@ -319,7 +319,7 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder> {
          */
         public final int getSectionAdapterPosition() {
             int adapterPos = getGlobalAdapterPosition();
-            return positionConverter != null ? positionConverter.getPosInSection(adapterPos) : -1;
+            return positionConverter != null ? positionConverter.calcPosInSection(adapterPos) : -1;
         }
 
     }

@@ -9,11 +9,11 @@ public interface PositionConverter {
      * Returns the global adapter position that corresponds to the given section and item position
      * in it or -1, if the given values are invalid.
      *
-     * @param section    Index of the section.
-     * @param sectionPos Item position in section.
+     * @param section Index of the section.
+     * @param pos     Item position in section.
      * @return Global adapter position or -1.
      */
-    int getAdapterPos(int section, int sectionPos);
+    int calcAdapterPos(int section, int pos);
 
     /**
      * Returns the section index that corresponds to the given global position in the adapter or -1,
@@ -22,7 +22,7 @@ public interface PositionConverter {
      * @param adapterPos Global position in the adapter.
      * @return Section index or -1.
      */
-    int getSection(int adapterPos);
+    int calcSection(int adapterPos);
 
 
     /**
@@ -32,5 +32,5 @@ public interface PositionConverter {
      * @param adapterPos Global position in adapter.
      * @return Position in section or -1.
      */
-    int getPosInSection(int adapterPos);
+    int calcPosInSection(int adapterPos);
 }

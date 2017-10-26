@@ -221,6 +221,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view) {
                     int sectionPos = getSectionAdapterPosition();
+                    if (sectionPos == -1) return;
                     if (adapter != null) {
                         adapter.duplicateString(sectionPos);
                     } else {
@@ -232,6 +233,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view) {
                     int sectionPos = getSectionAdapterPosition();
+                    if (sectionPos == -1) return;
                     if (adapter != null) {
                         adapter.changeString(sectionPos);
                     } else {
