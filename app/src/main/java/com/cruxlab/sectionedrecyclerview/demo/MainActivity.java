@@ -315,10 +315,11 @@ public class MainActivity extends AppCompatActivity {
                     // Note, that we can't call getSection() directly, because the duplicated
                     // ViewHolder hasn't been used in any SectionedRV.
                     int section = adapter.getSection();
-                    DemoSectionWithHeaderAdapter newAdapter = new DemoSectionWithHeaderAdapter(adapter.color == Color.YELLOW ?
-                            Color.RED : adapter.color == Color.RED ? Color.BLUE : Color.YELLOW, adapter.isHeaderVisible(), adapter.isHeaderPinned());
+                    int newColor = adapter.color == Color.YELLOW ? Color.RED :
+                            adapter.color == Color.RED ? Color.BLUE : Color.YELLOW;
+                    DemoSectionWithHeaderAdapter newAdapter = new DemoSectionWithHeaderAdapter(newColor, adapter.isHeaderVisible(), adapter.isHeaderPinned());
                     newAdapter.strings = new ArrayList<>(adapter.strings);
-                    sectionManager.replaceSection(section, newAdapter);
+                    sectionManager.replaceSection(section, newAdapter, new DemoSectionItemSwipeCallback(newColor));
                 }
             });
             btnRemove.setOnClickListener(new View.OnClickListener() {

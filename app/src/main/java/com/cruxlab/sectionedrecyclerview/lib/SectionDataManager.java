@@ -75,21 +75,17 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
         public ViewHolderWrapper onCreateViewHolder(ViewGroup parent, int type) {
             short sectionType = (short) (type);
             short itemType = (short) (type >> 16);
+            SectionAdapterWrapper adapterWrapper = typeToAdapter.get(Math.abs(sectionType));
+            SectionAdapter.ViewHolder viewHolder;
             if (isTypeHeader(sectionType)) {
-                SectionAdapterWrapper adapterWrapper = typeToAdapter.get(-sectionType);
-                SectionAdapter.ViewHolder headerViewHolder = adapterWrapper.onCreateHeaderViewHolder(parent);
-                ViewHolderWrapper viewHolderWrapper = new ViewHolderWrapper(headerViewHolder);
-                headerViewHolder.viewHolderWrapper = viewHolderWrapper;
-                headerViewHolder.positionConverter = SectionDataManager.this;
-                return viewHolderWrapper;
+                viewHolder = adapterWrapper.onCreateHeaderViewHolder(parent);
             } else {
-                SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
-                SectionAdapter.ItemViewHolder itemViewHolder = adapterWrapper.onCreateViewHolder(parent, itemType);
-                ViewHolderWrapper viewHolderWrapper = new ViewHolderWrapper(itemViewHolder);
-                itemViewHolder.viewHolderWrapper = viewHolderWrapper;
-                itemViewHolder.positionConverter = SectionDataManager.this;
-                return viewHolderWrapper;
+                viewHolder = adapterWrapper.onCreateViewHolder(parent, itemType);
             }
+            ViewHolderWrapper viewHolderWrapper = new ViewHolderWrapper(viewHolder);
+            viewHolder.viewHolderWrapper = viewHolderWrapper;
+            viewHolder.positionConverter = SectionDataManager.this;
+            return viewHolderWrapper;
         }
 
         /**
@@ -438,6 +434,9 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
         short sectionType = sectionToType.get(section);
         int cnt = getSectionRealItemCount(section);
         int start = getSectionFirstPos(section);
+        SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
+        adapterWrapper.setSection(-1);
+        adapterWrapper.setItemManager(null);
         typeToAdapter.remove(sectionType);
         typeToCallback.remove(sectionType);
         typeToHeaderVH.remove(sectionType);

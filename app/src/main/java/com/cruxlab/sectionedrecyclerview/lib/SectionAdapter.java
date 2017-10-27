@@ -18,7 +18,7 @@ import java.util.List;
  */
 public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder> {
 
-    int section;
+    int section = -1;
     SectionItemManager itemManager;
 
     /**
@@ -270,7 +270,7 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder> {
 
         public ViewHolder(View itemView) {
             if (itemView == null) {
-                throw new IllegalArgumentException("ItemView may not be null when creating ViewHolder.");
+                throw new IllegalArgumentException("ItemView cannot be null when creating ViewHolder.");
             }
             this.itemView = itemView;
         }
@@ -288,7 +288,7 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder> {
         }
 
         /**
-         * Returns the section index that corresponds to this ViewGolder or -1, if this ViewHolder
+         * Returns the section index that corresponds to this ViewHolder or -1, if this ViewHolder
          * hasn't been used in any SectionedRV.
          *
          * @return Index of the section or -1.

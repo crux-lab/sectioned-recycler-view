@@ -17,7 +17,7 @@ public interface PositionConverter {
 
     /**
      * Returns the section index that corresponds to the given global position in the adapter or -1,
-     * if the given <code>adapterPosition</code> is invalid.
+     * if the given <code>adapterPos</code> is invalid.
      *
      * @param adapterPos Global position in the adapter.
      * @return Section index or -1.
@@ -27,10 +27,11 @@ public interface PositionConverter {
 
     /**
      * Returns the item position in section that corresponds to the given global position in the
-     * adapter or -1, if the given <code>adapterPosition</code> is invalid or corresponds to header.
+     * adapter or -1, if the given <code>adapterPos</code> is invalid or corresponds to header.
      *
      * @param adapterPos Global position in adapter.
      * @return Position in section or -1.
      */
     int calcPosInSection(int adapterPos);
+
 }
