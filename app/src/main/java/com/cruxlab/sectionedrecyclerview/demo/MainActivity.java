@@ -67,13 +67,13 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public MainActivity.ItemViewHolder onCreateViewHolder(ViewGroup parent, short type) {
+        public MainActivity.ItemViewHolder onCreateItemViewHolder(ViewGroup parent, short type) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.view_holder_view, parent, false);
             return new MainActivity.ItemViewHolder(view, this);
         }
 
         @Override
-        public void onBindViewHolder(MainActivity.ItemViewHolder holder, int position) {
+        public void onBindItemViewHolder(MainActivity.ItemViewHolder holder, int position) {
             holder.bind(strings.get(position % strings.size()));
         }
 
@@ -111,12 +111,12 @@ public class MainActivity extends AppCompatActivity {
         public ArrayList<String> strings = new ArrayList<>(Arrays.asList("Apple", "Orange", "Watermelon"));
 
         @Override
-        public MainActivity.ItemViewHolder onCreateViewHolder(ViewGroup parent, short type) {
+        public MainActivity.ItemViewHolder onCreateItemViewHolder(ViewGroup parent, short type) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.view_holder_view, parent, false);
             return new MainActivity.ItemViewHolder(view, this);
         }
         @Override
-        public void onBindViewHolder(MainActivity.ItemViewHolder holder, int position) {
+        public void onBindItemViewHolder(MainActivity.ItemViewHolder holder, int position) {
             holder.bind(strings.get(position % strings.size()));
         }
 
@@ -271,7 +271,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private class HeaderViewHolder extends SectionAdapter.ViewHolder {
+    private class HeaderViewHolder extends SectionAdapter.HeaderViewHolder {
 
         private DemoSectionWithHeaderAdapter adapter;
         private TextView text;
@@ -296,9 +296,7 @@ public class MainActivity extends AppCompatActivity {
             btnDuplicate.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    // Note, that we can't call getSection() directly, because the duplicated
-                    // ViewHolder hasn't been used in any SectionedRV.
-                    int section = adapter.getSection();
+                    int section = getSection();
                     DemoSectionWithHeaderAdapter duplicatedAdapter = new DemoSectionWithHeaderAdapter(adapter.color, adapter.isHeaderVisible(), adapter.isHeaderPinned());
                     duplicatedAdapter.strings = new ArrayList<>(adapter.strings);
                     DemoSectionItemSwipeCallback duplicatedCallback = new DemoSectionItemSwipeCallback(adapter.color);
@@ -312,9 +310,7 @@ public class MainActivity extends AppCompatActivity {
             btnChange.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    // Note, that we can't call getSection() directly, because the duplicated
-                    // ViewHolder hasn't been used in any SectionedRV.
-                    int section = adapter.getSection();
+                    int section = getSection();
                     int newColor = adapter.color == Color.YELLOW ? Color.RED :
                             adapter.color == Color.RED ? Color.BLUE : Color.YELLOW;
                     DemoSectionWithHeaderAdapter newAdapter = new DemoSectionWithHeaderAdapter(newColor, adapter.isHeaderVisible(), adapter.isHeaderPinned());
@@ -327,9 +323,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onClick(View view) {
                     if (isRemoved) return;
                     isRemoved = true;
-                    // Note, that we can't call getSection() directly, because the duplicated
-                    // ViewHolder hasn't been used in any SectionedRV.
-                    int section = adapter.getSection();
+                    int section = getSection();
                     sectionManager.removeSection(section);
                     //For mandatory update section in headers
                     for (int s = section; s < sectionManager.getSectionCount(); s++) {

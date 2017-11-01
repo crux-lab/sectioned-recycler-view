@@ -13,5 +13,4 @@ interface HeaderViewManager {
     void removeHeaderView();
     void translateHeaderView(int nextHeaderPos);
     ViewGroup getHeaderViewParent();
-
 }

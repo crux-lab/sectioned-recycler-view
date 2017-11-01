@@ -33,14 +33,14 @@ import java.util.List;
  * This class also manages header state. It determines, which header view corresponds to the first
  * visible adapter position, and adds/removes/translates the header view via {@link HeaderViewManager}.
  * The contents of the current header view can be updated by rebinding the corresponding
- * {@link SectionAdapter.ViewHolder}. The duplicated header SectionAdapter.ViewHolders for
- * {@link SectionedRVLayout} can be obtained by calling {@link #getHeaderVH(short)} and are stored
+ * {@link SectionAdapter.HeaderViewHolder}. The duplicated header SectionAdapter.ViewHolders for
+ * {@link SectionedRVLayout} can be obtained by calling {@link #getDuplicatedHeaderVH(short)} and are stored
  * in {@link #typeToHeaderVH}, so that each of them is created only once.
  * @see #checkIsHeaderViewChanged()
  * @see #updateHeaderView(short)
  *
  */
-class SectionDataManager implements SectionManager, SectionItemManager, PositionConverter {
+class SectionDataManager implements SectionManager, SectionItemManager, PositionConverter, HeaderVHPositionProvider {
 
     private short freeType = 1;
     private short topSectionType = -1;
@@ -49,7 +49,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
     private ArrayList<Short> sectionToType;
     private SparseArray<SectionAdapterWrapper> typeToAdapter;
     private SparseArray<SectionItemSwipeCallback> typeToCallback;
-    private SparseArray<SectionAdapter.ViewHolder> typeToHeaderVH;
+    private SparseArray<SectionAdapter.HeaderViewHolder> typeToHeaderVH;
 
     /**
      * This RecyclerView.Adapter implementation provides interaction between RecyclerView and
@@ -59,7 +59,8 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
      *
      * @see SectionAdapter
      * @see SectionWithHeaderAdapter
-     * @see SectionAdapter.ViewHolder
+     * @see SectionAdapter.ItemViewHolder
+     * @see SectionAdapter.HeaderViewHolder
      */
     private RecyclerView.Adapter<ViewHolderWrapper> adapter = new RecyclerView.Adapter<ViewHolderWrapper>() {
 
@@ -97,12 +98,12 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
         public void onBindViewHolder(ViewHolderWrapper viewHolderWrapper, int position) {
             int type = getItemViewType(position);
             short sectionType = (short) (type);
+            SectionAdapterWrapper adapterWrapper = typeToAdapter.get(Math.abs(sectionType));
             if (isTypeHeader(sectionType)) {
-                SectionAdapterWrapper adapterWrapper = typeToAdapter.get(-sectionType);
-                adapterWrapper.onBindHeaderViewHolder(viewHolderWrapper.viewHolder);
+                SectionAdapter.HeaderViewHolder headerViewHolder = (SectionAdapter.HeaderViewHolder) viewHolderWrapper.viewHolder;
+                adapterWrapper.onBindHeaderViewHolder(headerViewHolder);
             } else {
                 int sectionPos = calcPosInSection(position);
-                SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
                 SectionAdapter.ItemViewHolder itemViewHolder = (SectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder;
                 adapterWrapper.onBindViewHolder(itemViewHolder, sectionPos);
             }
@@ -620,6 +621,16 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
     }
 
     /* END POSITION CONVERTER */
+    /* HEADER VIEW HOLDER POSITION PROVIDER */
+
+    @Override
+    public int getHeaderAdapterPos(short sectionType) {
+        SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
+        int section = adapterWrapper.getSection();
+        return getSectionFirstPos(section);
+    }
+
+    /*END HEADER VIEW HOLDER POSITION PROVIDER */
 
     /**
      * Checks whether the given item view type corresponds to header view.
@@ -719,13 +730,16 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
      * @param sectionType Type of the section.
      * @return SectionAdapter.ViewHolder of the header.
      */
-    private SectionAdapter.ViewHolder getHeaderVH(short sectionType) {
-        SectionAdapter.ViewHolder headerViewHolder = typeToHeaderVH.get(sectionType);
+    private SectionAdapter.HeaderViewHolder getDuplicatedHeaderVH(short sectionType) {
+        SectionAdapter.HeaderViewHolder headerViewHolder = typeToHeaderVH.get(sectionType);
         if (headerViewHolder == null) {
             ViewGroup parent = headerViewManager.getHeaderViewParent();
             SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
             headerViewHolder = adapterWrapper.onCreateHeaderViewHolder(parent);
-            typeToHeaderVH.put(topSectionType, headerViewHolder);
+            headerViewHolder.sectionType = sectionType;
+            headerViewHolder.sourcePositionProvider = SectionDataManager.this;
+            headerViewHolder.positionConverter = SectionDataManager.this;
+            typeToHeaderVH.put(sectionType, headerViewHolder);
         }
         return headerViewHolder;
     }
@@ -758,7 +772,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
      */
     private void addHeaderView(int section) {
         topSectionType = sectionToType.get(section);
-        SectionAdapter.ViewHolder headerViewHolder = getHeaderVH(topSectionType);
+        SectionAdapter.HeaderViewHolder headerViewHolder = getDuplicatedHeaderVH(topSectionType);
         SectionAdapterWrapper adapterWrapper = typeToAdapter.get(topSectionType);
         adapterWrapper.onBindHeaderViewHolder(headerViewHolder);
         int nextHeaderPos = getSectionFirstPos(section + 1);
@@ -773,7 +787,7 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
      */
     private void updateHeaderView(short sectionType) {
         if (sectionType != topSectionType) return;
-        SectionAdapter.ViewHolder headerViewHolder = getHeaderVH(sectionType);
+        SectionAdapter.HeaderViewHolder headerViewHolder = getDuplicatedHeaderVH(sectionType);
         SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
         adapterWrapper.onBindHeaderViewHolder(headerViewHolder);
     }

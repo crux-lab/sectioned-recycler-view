@@ -14,9 +14,9 @@ import java.util.List;
  * <p>
  * Similar to {@link android.support.v7.widget.RecyclerView.Adapter}.
  *
- * @param <VH> A class that extends ItemViewHolder that will be used by the adapter to manage item views.
+ * @param <IVH> A class that extends ItemViewHolder that will be used by the adapter to manage item views.
  */
-public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder> {
+public abstract class SectionAdapter<IVH extends SectionAdapter.ItemViewHolder> {
 
     int section = -1;
     SectionItemManager itemManager;
@@ -38,11 +38,11 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder> {
      *               an adapter position.
      * @param type   The view type of the new View.
      */
-    public abstract VH onCreateViewHolder(ViewGroup parent, short type);
+    public abstract IVH onCreateItemViewHolder(ViewGroup parent, short type);
 
     /**
      * Called by SectionDataManager to display the data at the specified section position. This
-     * method should update the contents of the {@link SectionAdapter.ViewHolder#itemView} to
+     * method should update the contents of the {@link SectionAdapter.ItemViewHolder#itemView} to
      * reflect the item at the given position.
      * <p>
      * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#onBindViewHolder(RecyclerView.ViewHolder, int)}.
@@ -51,7 +51,7 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder> {
      *                 item at the given position in the section data set.
      * @param position The position of the item within the adapter's data set.
      */
-    public abstract void onBindViewHolder(VH holder, int position);
+    public abstract void onBindItemViewHolder(IVH holder, int position);
 
     /**
      * Return the view type of the item within this section at <code>position</code> for the purposes
@@ -283,7 +283,7 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder> {
          *
          * @return Global adapter position or -1.
          */
-        public final int getGlobalAdapterPosition() {
+        public int getGlobalAdapterPosition() {
             return viewHolderWrapper != null ? viewHolderWrapper.getAdapterPosition() : -1;
         }
 
@@ -299,27 +299,55 @@ public abstract class SectionAdapter<VH extends SectionAdapter.ItemViewHolder> {
         }
 
     }
+
     /**
      * Base ViewHolder class for item view in SectionAdapter.
      * <p>
      * Describes an item view and metadata about its place within the SectionedRecyclerView and
-     * SectionAdapter. Item views unlike header views have section adapter position.
+     * SectionAdapter. Provides item view position within its section.
      */
-    public abstract static class ItemViewHolder extends SectionAdapter.ViewHolder {
+    public abstract static class ItemViewHolder extends ViewHolder {
 
         public ItemViewHolder(View itemView) {
             super(itemView);
         }
 
         /**
-         * Returns the section adapter position represented by this ViewHolder or -1, if this
-         * ViewHolder hasn't been used in any SectionedRV.
+         * Returns the position in the corresponding SectionAdapter represented by this ViewHolder
+         * or -1, if this ViewHolder hasn't been used in any SectionedRV.
          *
          * @return Section adapter position.
          */
         public final int getSectionAdapterPosition() {
             int adapterPos = getGlobalAdapterPosition();
             return positionConverter != null ? positionConverter.calcPosInSection(adapterPos) : -1;
+        }
+
+    }
+
+    /**
+     * Base ViewHolder class for header view in SectionAdapter.
+     * <p>
+     * Describes a header view and metadata about its place within the SectionedRecyclerView. When
+     * the corresponding header is duplicated, it uses {@link #sourcePositionProvider} to obtain
+     * the global adapter position.
+     */
+    public abstract static class HeaderViewHolder extends ViewHolder {
+
+        short sectionType;
+        HeaderVHPositionProvider sourcePositionProvider;
+
+        public HeaderViewHolder(View itemView) {
+            super(itemView);
+        }
+
+        @Override
+        public final int getGlobalAdapterPosition() {
+            if (sourcePositionProvider != null) {
+                return sourcePositionProvider.getHeaderAdapterPos(sectionType);
+            } else {
+                return super.getGlobalAdapterPosition();
+            }
         }
 
     }

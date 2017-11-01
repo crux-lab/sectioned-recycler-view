@@ -29,13 +29,13 @@ class SectionAdapterWrapper {
 
     SectionAdapter.ItemViewHolder onCreateViewHolder(ViewGroup parent, short type) {
         if (sectionWithHeaderAdapter != null) {
-            return sectionWithHeaderAdapter.onCreateViewHolder(parent, type);
+            return sectionWithHeaderAdapter.onCreateItemViewHolder(parent, type);
         } else {
-            return sectionAdapter.onCreateViewHolder(parent, type);
+            return sectionAdapter.onCreateItemViewHolder(parent, type);
         }
     }
 
-    SectionAdapter.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
+    SectionAdapter.HeaderViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
         if (sectionWithHeaderAdapter != null) {
             return sectionWithHeaderAdapter.onCreateHeaderViewHolder(parent);
         } else {
@@ -45,14 +45,14 @@ class SectionAdapterWrapper {
     @SuppressWarnings("unchecked")
     void onBindViewHolder(SectionAdapter.ItemViewHolder holder, int position) {
         if (sectionWithHeaderAdapter != null) {
-            sectionWithHeaderAdapter.onBindViewHolder(holder, position);
+            sectionWithHeaderAdapter.onBindItemViewHolder(holder, position);
         } else {
-            sectionAdapter.onBindViewHolder(holder, position);
+            sectionAdapter.onBindItemViewHolder(holder, position);
         }
     }
 
     @SuppressWarnings("unchecked")
-    void onBindHeaderViewHolder(SectionAdapter.ViewHolder holder) {
+    void onBindHeaderViewHolder(SectionAdapter.HeaderViewHolder holder) {
         if (sectionWithHeaderAdapter != null) {
             sectionWithHeaderAdapter.onBindHeaderViewHolder(holder);
         }
@@ -85,6 +85,14 @@ class SectionAdapterWrapper {
             sectionWithHeaderAdapter.section = section;
         } else {
             sectionAdapter.section = section;
+        }
+    }
+
+    int getSection() {
+        if (sectionWithHeaderAdapter != null) {
+            return sectionWithHeaderAdapter.section;
+        } else {
+            return sectionAdapter.section;
         }
     }
 

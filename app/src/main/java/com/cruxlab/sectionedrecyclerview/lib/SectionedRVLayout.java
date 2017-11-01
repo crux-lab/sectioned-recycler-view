@@ -217,6 +217,7 @@ public class SectionedRVLayout extends RelativeLayout {
         public ViewGroup getHeaderViewParent() {
             return SectionedRVLayout.this;
         }
+
     };
 
     /**
