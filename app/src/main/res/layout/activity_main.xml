@@ -7,13 +7,20 @@
     android:layout_height="match_parent"
     tools:context="com.cruxlab.sectionedrecyclerview.demo.MainActivity">
 
-    <com.cruxlab.sectionedrecyclerview.lib.SectionedRVLayout
-        android:id="@+id/srvl"
+    <com.cruxlab.sectionedrecyclerview.lib.SectionHeaderLayout
+        android:id="@+id/section_header_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+    </com.cruxlab.sectionedrecyclerview.lib.SectionHeaderLayout>
 
 </android.support.constraint.ConstraintLayout>

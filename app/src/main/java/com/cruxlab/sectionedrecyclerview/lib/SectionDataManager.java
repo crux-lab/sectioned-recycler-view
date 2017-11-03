@@ -1,5 +1,6 @@
 package com.cruxlab.sectionedrecyclerview.lib;
 
+
 import android.graphics.Canvas;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -10,46 +11,252 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
- * Stores and manages all data for SectionedRecyclerView.
+ * Stores and manages all data for RecyclerView sections.
  * <p>
- * Items in SectionedRecyclerView are divided into groups - sections. Each section consists of
- * regular items and an optional header (just another item for the real RecyclerView), which can be
- * represented as views using corresponding {@link SectionAdapter} or {@link SectionWithHeaderAdapter}.
+ * Items in RecyclerView are divided into groups - sections. Each section consists of regular items
+ * and an optional header (just another item for the RecyclerView.Adapter implementation), which can
+ * be represented as views using corresponding {@link SectionAdapter} or {@link SectionWithHeaderAdapter}.
  * <p>
  * Each section obtains own unique type stored in {@link #sectionToType}. It is used to determine
  * that the section which corresponds to the given global adapter position has changed, so the
- * corresponding RecyclerView.ViewHolder should be recreated. Each SectionAdapter also can use short
- * values to distinguish own items.
+ * corresponding ViewHolder should be recreated. Each SectionAdapter also can use short values to
+ * distinguish own items.
  * <p>
  * The main task is to determine, which section corresponds to the given global adapter position and
- * whether it is a header or a regular item in it. To do it efficiently we use partial sum array
+ * whether it is a header or a regular item in it. To do it efficiently partial sum array is used
  * {@link #sectionToPosSum}, where on the i-th position is the number of items in RecyclerView in all
  * sections before i-th inclusive, and binary search (e.g. {@link #calcSection(int)}).
  * For details on how RecyclerView interacts with sections see the RecyclerView.Adapter {@link #adapter}
  * and ItemTouchHelper.Callback {@link #swipeCallback} implementations.
- * <p>
- * This class also manages header state. It determines, which header view corresponds to the first
- * visible adapter position, and adds/removes/translates the header view via {@link HeaderViewManager}.
- * The contents of the current header view can be updated by rebinding the corresponding
- * {@link SectionAdapter.HeaderViewHolder}. The duplicated header SectionAdapter.ViewHolders for
- * {@link SectionedRVLayout} can be obtained by calling {@link #getDuplicatedHeaderVH(short)} and are stored
- * in {@link #typeToHeaderVH}, so that each of them is created only once.
- * @see #checkIsHeaderViewChanged()
- * @see #updateHeaderView(short)
  *
  */
-class SectionDataManager implements SectionManager, SectionItemManager, PositionConverter, HeaderVHPositionProvider {
+public class SectionDataManager implements SectionManager, PositionConverter {
 
     private short freeType = 1;
-    private short topSectionType = -1;
-    private HeaderViewManager headerViewManager;
     private ArrayList<Integer> sectionToPosSum;
     private ArrayList<Short> sectionToType;
     private SparseArray<SectionAdapterWrapper> typeToAdapter;
     private SparseArray<SectionItemSwipeCallback> typeToCallback;
-    private SparseArray<SectionAdapter.HeaderViewHolder> typeToHeaderVH;
+    private HeaderManager headerManager;
+
+    public SectionDataManager() {
+        sectionToPosSum = new ArrayList<>();
+        sectionToType = new ArrayList<>();
+        typeToAdapter = new SparseArray<>();
+        typeToCallback = new SparseArray<>();
+    }
+
+    /***
+     * Returns Adapter for RecyclerView, which interacts with sections passing calls to
+     * SectionAdapters.
+     *
+     * @return RecyclerView.Adapter implementation.
+     */
+    public RecyclerView.Adapter<ViewHolderWrapper> getAdapter() {
+        return adapter;
+    }
+
+    /**
+     * Returns Callback for RecyclerView's ItemTouchHelper, which interacts with sections passing
+     * calls to SectionItemSwipeCallbacks.
+     *
+     * @return ItemTouchHelper.Callback implementation.
+     */
+    public ItemTouchHelper.Callback getSwipeCallback() {
+        return swipeCallback;
+    }
+
+    /**
+     * Creates {@link HeaderManager} to interact with the given SectionHeaderLayout.
+     *
+     * @param sectionHeaderLayout SectionHeaderLayout to attach.
+     */
+    public void attachTo(SectionHeaderLayout sectionHeaderLayout) {
+        HeaderViewManager headerViewManager = sectionHeaderLayout.getHeaderViewManager();
+        headerManager = new HeaderManager(headerViewManager);
+    }
+
+    /* SECTION MANAGER */
+
+    @Override
+    public int getSectionCount() {
+        return typeToAdapter.size();
+    }
+
+    @Override
+    public void addSection(@NonNull SectionAdapter sectionAdapter) {
+        addSection(sectionAdapter, null);
+    }
+
+    @Override
+    public void addSection(@NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter) {
+        addSection(sectionWithHeaderAdapter, null);
+    }
+
+    @Override
+    public void addSection(@NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback) {
+        addSection(new SectionAdapterWrapper(sectionAdapter), swipeCallback);
+    }
+
+    @Override
+    public void addSection(@NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter, SectionItemSwipeCallback swipeCallback) {
+        addSection(new SectionAdapterWrapper(sectionWithHeaderAdapter), swipeCallback);
+    }
+
+    private void addSection(SectionAdapterWrapper adapterWrapper, SectionItemSwipeCallback swipeCallback) {
+        adapterWrapper.setSection(getSectionCount());
+        adapterWrapper.setItemManager(sectionItemManager);
+        int start = getTotalItemCount();
+        int cnt = adapterWrapper.getItemCount() + adapterWrapper.getHeaderVisibilityInt();
+        int posSum = getTotalItemCount() + cnt;
+        typeToAdapter.put(freeType, adapterWrapper);
+        if (swipeCallback != null) {
+            typeToCallback.put(freeType, swipeCallback);
+        }
+        sectionToType.add(freeType);
+        sectionToPosSum.add(posSum);
+        freeType++;
+        adapter.notifyItemRangeInserted(start, cnt);
+        if (headerManager != null) {
+            headerManager.checkFirstVisiblePos();
+        }
+    }
+
+    @Override
+    public void insertSection(int section, @NonNull SectionAdapter sectionAdapter) {
+        insertSection(section, sectionAdapter, null);
+    }
+
+    @Override
+    public void insertSection(int section, @NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter) {
+        insertSection(section, sectionWithHeaderAdapter, null);
+    }
+
+    @Override
+    public void insertSection(int section, @NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback) {
+        insertSection(section, new SectionAdapterWrapper(sectionAdapter), swipeCallback);
+    }
+
+    @Override
+    public void insertSection(int section, @NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter, SectionItemSwipeCallback swipeCallback) {
+        insertSection(section, new SectionAdapterWrapper(sectionWithHeaderAdapter), swipeCallback);
+    }
+
+    private void insertSection(int section, SectionAdapterWrapper adapterWrapper, SectionItemSwipeCallback swipeCallback) {
+        checkSectionIndex(section, true);
+        adapterWrapper.setSection(section);
+        adapterWrapper.setItemManager(sectionItemManager);
+        int start = getSectionFirstPos(section);
+        int cnt = adapterWrapper.getItemCount() + adapterWrapper.getHeaderVisibilityInt();
+        int posSum = (section > 0 ? sectionToPosSum.get(section - 1) : 0) + cnt;
+        typeToAdapter.put(freeType, adapterWrapper);
+        if (swipeCallback != null) {
+            typeToCallback.put(freeType, swipeCallback);
+        }
+        sectionToType.add(section, freeType);
+        sectionToPosSum.add(section, posSum);
+        freeType++;
+        updatePosSum(section + 1, cnt, true);
+        adapter.notifyItemRangeInserted(start, cnt);
+        if (headerManager != null) {
+            headerManager.checkFirstVisiblePos();
+        }
+    }
+
+    @Override
+    public void replaceSection(int section, @NonNull SectionAdapter sectionAdapter) {
+        replaceSection(section, sectionAdapter, null);
+    }
+
+    @Override
+    public void replaceSection(int section, @NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter) {
+        replaceSection(section, sectionWithHeaderAdapter, null);
+    }
+
+    @Override
+    public void replaceSection(int section, @NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback) {
+        replaceSection(section, new SectionAdapterWrapper(sectionAdapter), swipeCallback);
+    }
+
+    @Override
+    public void replaceSection(int section, @NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter, SectionItemSwipeCallback swipeCallback) {
+        replaceSection(section, new SectionAdapterWrapper(sectionWithHeaderAdapter), swipeCallback);
+    }
+
+    private void replaceSection(int section, SectionAdapterWrapper adapterWrapper, SectionItemSwipeCallback swipeCallback) {
+        checkSectionIndex(section);
+        removeSection(section);
+        if (section == getSectionCount()) {
+            addSection(adapterWrapper, swipeCallback);
+        } else {
+            insertSection(section, adapterWrapper, swipeCallback);
+        }
+    }
+
+    @Override
+    public void removeSection(int section) {
+        checkSectionIndex(section);
+        short sectionType = sectionToType.get(section);
+        int cnt = getSectionRealItemCount(section);
+        int start = getSectionFirstPos(section);
+        SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
+        adapterWrapper.setSection(-1);
+        adapterWrapper.setItemManager(null);
+        typeToAdapter.remove(sectionType);
+        typeToCallback.remove(sectionType);
+        if (headerManager != null) {
+            headerManager.typeToHeaderVH.remove(section);
+        }
+        sectionToType.remove(section);
+        sectionToPosSum.remove(section);
+        updatePosSum(section, -cnt, true);
+        adapter.notifyItemRangeRemoved(start, cnt);
+        if (headerManager != null) {
+            headerManager.checkFirstVisiblePos();
+        }
+    }
+
+    @Override
+    public void updateSection(int section) {
+        checkSectionIndex(section);
+        adapter.notifyItemRangeChanged(getSectionFirstPos(section), getSectionRealItemCount(section));
+        if (headerManager != null) {
+            headerManager.updateHeaderView(sectionToType.get(section));
+        }
+    }
+
+    @Override
+    public void setSwipeCallback(int section, @NonNull SectionItemSwipeCallback swipeCallback) {
+        checkSectionIndex(section);
+        short sectionType = sectionToType.get(section);
+        typeToCallback.put(sectionType, swipeCallback);
+    }
+
+    @Override
+    public void removeSwipeCallback(int section) {
+        checkSectionIndex(section);
+        short sectionType = sectionToType.get(section);
+        typeToCallback.remove(sectionType);
+    }
+
+    @Override
+    public <T extends SectionAdapter> T getSectionAdapter(int section) {
+        checkSectionIndex(section);
+        short sectionType = sectionToType.get(section);
+        SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
+        return adapterWrapper.getAdapter();
+    }
+
+    @Override
+    public SectionItemSwipeCallback getSwipeCallback(int section) {
+        checkSectionIndex(section);
+        short sectionType = sectionToType.get(section);
+        return typeToCallback.get(sectionType);
+    }
+
+    /* END SECTION MANAGER */
+    /* ADAPTER */
 
     /**
      * This RecyclerView.Adapter implementation provides interaction between RecyclerView and
@@ -135,6 +342,9 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
         }
 
     };
+
+    /* END ADAPTER */
+    /* SWIPE CALLBACK */
 
     /**
      * ItemTouchHelper.Callback implementation provides interaction between RecyclerView and
@@ -257,334 +467,140 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
 
     };
 
-    /* END ITEM TOUCH HELPER CALLBACK */
-
-    SectionDataManager(HeaderViewManager headerViewManager) {
-        this.headerViewManager = headerViewManager;
-        sectionToPosSum = new ArrayList<>();
-        sectionToType = new ArrayList<>();
-        typeToAdapter = new SparseArray<>();
-        typeToCallback = new SparseArray<>();
-        typeToHeaderVH = new SparseArray<>();
-    }
-
-    /***
-     * Returns Adapter for RecyclerView, which interacts with sections passing calls to
-     * SectionAdapters.
-     *
-     * @return RecyclerView.Adapter implementation.
-     */
-    RecyclerView.Adapter<ViewHolderWrapper> getAdapter() {
-        return adapter;
-    }
-
-    /**
-     * Returns Callback for RecyclerView's ItemTouchHelper, which interacts with sections passing
-     * calls to SectionItemSwipeCallbacks.
-     *
-     * @return ItemTouchHelper.Callback implementation.
-     */
-    ItemTouchHelper.Callback getSwipeCallback() {
-        return swipeCallback;
-    }
-
-    /**
-     * Checks, whether the header should be updated (added/removed/translated) based on the first
-     * visible position (e.g. called after swipe). To update the contents of the corresponding
-     * header SectionAdapter.ViewHolder you should call {@link #updateHeaderView(short)}.
-     * <p>
-     * Interacts with header view via {@link HeaderViewManager}. Current header view section type
-     * is stored in {@link #topSectionType}.
-     */
-    void checkIsHeaderViewChanged() {
-        int topPos = headerViewManager.getFirstVisiblePos();
-        if (!checkIndex(topPos, getTotalItemCount())) {
-            removeHeaderView();
-            return;
-        }
-        int section = calcSection(topPos);
-        short sectionType = sectionToType.get(section);
-        SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
-        if (adapterWrapper.isHeaderVisible() && adapterWrapper.isHeaderPinned()) {
-            if (sectionType == topSectionType) {
-                int nextHeaderPos = getSectionFirstPos(section + 1);
-                headerViewManager.translateHeaderView(nextHeaderPos);
-            } else {
-                addHeaderView(section);
-            }
-        } else {
-            removeHeaderView();
-        }
-    }
-
-    /* SECTION MANAGER */
-
-    @Override
-    public int getSectionCount() {
-        return typeToAdapter.size();
-    }
-
-    @Override
-    public void addSection(@NonNull SectionAdapter sectionAdapter) {
-        addSection(sectionAdapter, null);
-    }
-
-    @Override
-    public void addSection(@NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter) {
-        addSection(sectionWithHeaderAdapter, null);
-    }
-
-    @Override
-    public void addSection(@NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback) {
-        addSection(new SectionAdapterWrapper(sectionAdapter), swipeCallback);
-    }
-
-    @Override
-    public void addSection(@NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter, SectionItemSwipeCallback swipeCallback) {
-        addSection(new SectionAdapterWrapper(sectionWithHeaderAdapter), swipeCallback);
-    }
-
-    private void addSection(SectionAdapterWrapper adapterWrapper, SectionItemSwipeCallback swipeCallback) {
-        adapterWrapper.setSection(getSectionCount());
-        adapterWrapper.setItemManager(this);
-        int start = getTotalItemCount();
-        int cnt = adapterWrapper.getItemCount() + adapterWrapper.getHeaderVisibilityInt();
-        int posSum = getTotalItemCount() + cnt;
-        typeToAdapter.put(freeType, adapterWrapper);
-        if (swipeCallback != null) {
-            typeToCallback.put(freeType, swipeCallback);
-        }
-        sectionToType.add(freeType);
-        sectionToPosSum.add(posSum);
-        freeType++;
-        adapter.notifyItemRangeInserted(start, cnt);
-    }
-
-
-    @Override
-    public void insertSection(int section, @NonNull SectionAdapter sectionAdapter) {
-        insertSection(section, sectionAdapter, null);
-    }
-
-    @Override
-    public void insertSection(int section, @NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter) {
-        insertSection(section, sectionWithHeaderAdapter, null);
-    }
-
-    @Override
-    public void insertSection(int section, @NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback) {
-        insertSection(section, new SectionAdapterWrapper(sectionAdapter), swipeCallback);
-    }
-
-    @Override
-    public void insertSection(int section, @NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter, SectionItemSwipeCallback swipeCallback) {
-        insertSection(section, new SectionAdapterWrapper(sectionWithHeaderAdapter), swipeCallback);
-    }
-
-    private void insertSection(int section, SectionAdapterWrapper adapterWrapper, SectionItemSwipeCallback swipeCallback) {
-        checkSectionIndex(section, true);
-        adapterWrapper.setSection(section);
-        adapterWrapper.setItemManager(this);
-        int start = getSectionFirstPos(section);
-        int cnt = adapterWrapper.getItemCount() + adapterWrapper.getHeaderVisibilityInt();
-        int posSum = (section > 0 ? sectionToPosSum.get(section - 1) : 0) + cnt;
-        typeToAdapter.put(freeType, adapterWrapper);
-        if (swipeCallback != null) {
-            typeToCallback.put(freeType, swipeCallback);
-        }
-        sectionToType.add(section, freeType);
-        sectionToPosSum.add(section, posSum);
-        freeType++;
-        updatePosSum(section + 1, cnt, true);
-        adapter.notifyItemRangeInserted(start, cnt);
-    }
-
-    @Override
-    public void replaceSection(int section, @NonNull SectionAdapter sectionAdapter) {
-        replaceSection(section, sectionAdapter, null);
-    }
-
-    @Override
-    public void replaceSection(int section, @NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter) {
-        replaceSection(section, sectionWithHeaderAdapter, null);
-    }
-
-    @Override
-    public void replaceSection(int section, @NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback) {
-        replaceSection(section, new SectionAdapterWrapper(sectionAdapter), swipeCallback);
-    }
-
-    @Override
-    public void replaceSection(int section, @NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter, SectionItemSwipeCallback swipeCallback) {
-        replaceSection(section, new SectionAdapterWrapper(sectionWithHeaderAdapter), swipeCallback);
-    }
-
-    private void replaceSection(int section, SectionAdapterWrapper adapterWrapper, SectionItemSwipeCallback swipeCallback) {
-        checkSectionIndex(section);
-        removeSection(section);
-        if (section == getSectionCount()) {
-            addSection(adapterWrapper, swipeCallback);
-        } else {
-            insertSection(section, adapterWrapper, swipeCallback);
-        }
-    }
-
-    @Override
-    public void removeSection(int section) {
-        checkSectionIndex(section);
-        short sectionType = sectionToType.get(section);
-        int cnt = getSectionRealItemCount(section);
-        int start = getSectionFirstPos(section);
-        SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
-        adapterWrapper.setSection(-1);
-        adapterWrapper.setItemManager(null);
-        typeToAdapter.remove(sectionType);
-        typeToCallback.remove(sectionType);
-        typeToHeaderVH.remove(sectionType);
-        sectionToType.remove(section);
-        sectionToPosSum.remove(section);
-        updatePosSum(section, -cnt, true);
-        adapter.notifyItemRangeRemoved(start, cnt);
-    }
-
-    @Override
-    public void updateSection(int section) {
-        checkSectionIndex(section);
-        adapter.notifyItemRangeChanged(getSectionFirstPos(section), getSectionRealItemCount(section));
-        updateHeaderView(sectionToType.get(section));
-    }
-
-    @Override
-    public void setSwipeCallback(int section, @NonNull SectionItemSwipeCallback swipeCallback) {
-        checkSectionIndex(section);
-        short sectionType = sectionToType.get(section);
-        typeToCallback.put(sectionType, swipeCallback);
-    }
-
-    @Override
-    public void removeSwipeCallback(int section) {
-        checkSectionIndex(section);
-        short sectionType = sectionToType.get(section);
-        typeToCallback.remove(sectionType);
-    }
-
-    @Override
-    public <T extends SectionAdapter> T getSectionAdapter(int section) {
-        checkSectionIndex(section);
-        short sectionType = sectionToType.get(section);
-        SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
-        return adapterWrapper.getAdapter();
-    }
-
-    @Override
-    public SectionItemSwipeCallback getSwipeCallback(int section) {
-        checkSectionIndex(section);
-        short sectionType = sectionToType.get(section);
-        return typeToCallback.get(sectionType);
-    }
-
-    /* END SECTION MANAGER */
+    /* END SWIPE CALLBACK */
     /* SECTION ITEM MANAGER */
 
-    @Override
-    public void notifyInserted(int section, int pos) {
-        checkSectionIndex(section);
-        checkSectionItemIndex(section, pos, true);
-        checkSectionItemCntConsistency(section, 1);
-        updatePosSum(section, 1, false);
-        int adapterPos = getAdapterPos(section, pos);
-        adapter.notifyItemInserted(adapterPos);
-    }
+    SectionItemManager sectionItemManager = new SectionItemManager() {
 
-    @Override
-    public void notifyRemoved(int section, int pos) {
-        checkSectionIndex(section);
-        checkSectionItemIndex(section, pos);
-        checkSectionItemCntConsistency(section, -1);
-        updatePosSum(section, -1, false);
-        int adapterPos = getAdapterPos(section, pos);
-        adapter.notifyItemRemoved(adapterPos);
-    }
-
-    @Override
-    public void notifyChanged(int section, int pos) {
-        checkSectionIndex(section);
-        checkSectionItemIndex(section, pos);
-        int adapterPos = getAdapterPos(section, pos);
-        adapter.notifyItemChanged(adapterPos);
-    }
-
-    @Override
-    public void notifyRangeInserted(int section, int startPos, int cnt) {
-        checkSectionIndex(section);
-        checkSectionItemIndex(section, startPos, true);
-        checkRangeItemCnt(cnt);
-        checkSectionItemCntConsistency(section, cnt);
-        updatePosSum(section, cnt, false);
-        int adapterStartPos = getAdapterPos(section, startPos);
-        adapter.notifyItemRangeInserted(adapterStartPos, cnt);
-    }
-
-    @Override
-    public void notifyRangeRemoved(int section, int startPos, int cnt) {
-        checkSectionIndex(section);
-        checkSectionItemIndex(section, startPos);
-        checkRangeItemCnt(cnt);
-        checkRangeBounds(section, startPos, cnt);
-        checkSectionItemCntConsistency(section, -cnt);
-        int adapterStartPos = getAdapterPos(section, startPos);
-        updatePosSum(section, -cnt, false);
-        adapter.notifyItemRangeRemoved(adapterStartPos, cnt);
-    }
-
-    @Override
-    public void notifyRangeChanged(int section, int startPos, int cnt) {
-        checkSectionIndex(section);
-        checkSectionItemIndex(section, startPos);
-        checkRangeItemCnt(cnt);
-        checkRangeBounds(section, startPos, cnt);
-        int adapterStartPos = getAdapterPos(section, startPos);
-        adapter.notifyItemRangeChanged(adapterStartPos, cnt);
-    }
-
-    @Override
-    public void notifyMoved(int section, int fromPos, int toPos) {
-        checkSectionIndex(section);
-        checkSectionItemIndex(section, fromPos);
-        checkSectionItemIndex(section, toPos);
-        int adapterFromPos = getAdapterPos(section, fromPos);
-        int adapterToPos = getAdapterPos(section, toPos);
-        adapter.notifyItemMoved(adapterFromPos, adapterToPos);
-    }
-
-    @Override
-    public void notifyHeaderChanged(int section) {
-        checkSectionIndex(section);
-        short sectionType = sectionToType.get(section);
-        SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
-        if (!adapterWrapper.isHeaderVisible()) return;
-        int headerPos = getSectionFirstPos(section);
-        adapter.notifyItemChanged(headerPos);
-        updateHeaderView(sectionType);
-    }
-
-    @Override
-    public void notifyHeaderVisibilityChanged(int section, boolean visible) {
-        checkSectionIndex(section);
-        if (visible) {
+        @Override
+        public void notifyInserted(int section, int pos) {
+            checkSectionIndex(section);
+            checkSectionItemIndex(section, pos, true);
+            checkSectionItemCntConsistency(section, 1);
             updatePosSum(section, 1, false);
-            adapter.notifyItemInserted(getSectionFirstPos(section));
-        } else {
-            updatePosSum(section, -1, false);
-            adapter.notifyItemRemoved(getSectionFirstPos(section));
+            int adapterPos = getAdapterPos(section, pos);
+            adapter.notifyItemInserted(adapterPos);
+            if (headerManager != null) {
+                headerManager.checkFirstVisiblePos();
+            }
         }
-    }
 
-    @Override
-    public void notifyHeaderPinnedStateChanged(int section, boolean pinned) {
-        checkSectionIndex(section);
-        checkIsHeaderViewChanged();
-    }
+        @Override
+        public void notifyRemoved(int section, int pos) {
+            checkSectionIndex(section);
+            checkSectionItemIndex(section, pos);
+            checkSectionItemCntConsistency(section, -1);
+            updatePosSum(section, -1, false);
+            int adapterPos = getAdapterPos(section, pos);
+            adapter.notifyItemRemoved(adapterPos);
+            if (headerManager != null) {
+                headerManager.checkFirstVisiblePos();
+            }
+        }
+
+        @Override
+        public void notifyChanged(int section, int pos) {
+            checkSectionIndex(section);
+            checkSectionItemIndex(section, pos);
+            int adapterPos = getAdapterPos(section, pos);
+            adapter.notifyItemChanged(adapterPos);
+            if (headerManager != null) {
+                headerManager.checkFirstVisiblePos();
+            }
+        }
+
+        @Override
+        public void notifyRangeInserted(int section, int startPos, int cnt) {
+            checkSectionIndex(section);
+            checkSectionItemIndex(section, startPos, true);
+            checkRangeItemCnt(cnt);
+            checkSectionItemCntConsistency(section, cnt);
+            updatePosSum(section, cnt, false);
+            int adapterStartPos = getAdapterPos(section, startPos);
+            adapter.notifyItemRangeInserted(adapterStartPos, cnt);
+            if (headerManager != null) {
+                headerManager.checkFirstVisiblePos();
+            }
+        }
+
+        @Override
+        public void notifyRangeRemoved(int section, int startPos, int cnt) {
+            checkSectionIndex(section);
+            checkSectionItemIndex(section, startPos);
+            checkRangeItemCnt(cnt);
+            checkRangeBounds(section, startPos, cnt);
+            checkSectionItemCntConsistency(section, -cnt);
+            int adapterStartPos = getAdapterPos(section, startPos);
+            updatePosSum(section, -cnt, false);
+            adapter.notifyItemRangeRemoved(adapterStartPos, cnt);
+            if (headerManager != null) {
+                headerManager.checkFirstVisiblePos();
+            }
+
+        }
+
+        @Override
+        public void notifyRangeChanged(int section, int startPos, int cnt) {
+            checkSectionIndex(section);
+            checkSectionItemIndex(section, startPos);
+            checkRangeItemCnt(cnt);
+            checkRangeBounds(section, startPos, cnt);
+            int adapterStartPos = getAdapterPos(section, startPos);
+            adapter.notifyItemRangeChanged(adapterStartPos, cnt);
+            if (headerManager != null) {
+                headerManager.checkFirstVisiblePos();
+            }
+        }
+
+        @Override
+        public void notifyMoved(int section, int fromPos, int toPos) {
+            checkSectionIndex(section);
+            checkSectionItemIndex(section, fromPos);
+            checkSectionItemIndex(section, toPos);
+            int adapterFromPos = getAdapterPos(section, fromPos);
+            int adapterToPos = getAdapterPos(section, toPos);
+            adapter.notifyItemMoved(adapterFromPos, adapterToPos);
+            if (headerManager != null) {
+                headerManager.checkFirstVisiblePos();
+            }
+        }
+
+        @Override
+        public void notifyHeaderChanged(int section) {
+            checkSectionIndex(section);
+            short sectionType = sectionToType.get(section);
+            SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
+            if (!adapterWrapper.isHeaderVisible()) return;
+            int headerPos = getSectionFirstPos(section);
+            adapter.notifyItemChanged(headerPos);
+            if (headerManager != null) {
+                headerManager.updateHeaderView(sectionType);
+            }
+        }
+
+        @Override
+        public void notifyHeaderVisibilityChanged(int section, boolean visible) {
+            checkSectionIndex(section);
+            if (visible) {
+                updatePosSum(section, 1, false);
+                adapter.notifyItemInserted(getSectionFirstPos(section));
+            } else {
+                updatePosSum(section, -1, false);
+                adapter.notifyItemRemoved(getSectionFirstPos(section));
+            }
+            if (headerManager != null) {
+                headerManager.checkFirstVisiblePos();
+            }
+        }
+
+        @Override
+        public void notifyHeaderPinnedStateChanged(int section, boolean pinned) {
+            checkSectionIndex(section);
+            if (headerManager != null) {
+                headerManager.checkIsHeaderViewChanged();
+            }
+        }
+    };
 
     /* END SECTION ITEM MANAGER */
     /* POSITION CONVERTER */
@@ -621,16 +637,148 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
     }
 
     /* END POSITION CONVERTER */
-    /* HEADER VIEW HOLDER POSITION PROVIDER */
+    /* HEADER MANAGER */
 
-    @Override
-    public int getHeaderAdapterPos(short sectionType) {
-        SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
-        int section = adapterWrapper.getSection();
-        return getSectionFirstPos(section);
+    /**
+     * Manages header state.
+     * <p>
+     * It determines, which header view corresponds to the first visible adapter position,
+     * and adds/removes/translates the header view via {@link #headerViewManager}.
+     * <p>
+     * The contents of the current header view can be updated by rebinding the corresponding
+     * {@link SectionAdapter.HeaderViewHolder}. The duplicated {@link SectionAdapter.HeaderViewHolder}
+     * for {@link SectionHeaderLayout} can be obtained by calling {@link #getDuplicatedHeaderVH(short)}.
+     * They are stored in {@link #typeToHeaderVH}, so that each HeaderViewHolder is created only once.
+     */
+    class HeaderManager implements HeaderPosProvider {
+
+        short topSectionType = -1;
+        HeaderViewManager headerViewManager;
+        SparseArray<SectionAdapter.HeaderViewHolder> typeToHeaderVH;
+
+        HeaderManager(HeaderViewManager headerViewManager) {
+            this.headerViewManager = headerViewManager;
+            typeToHeaderVH = new SparseArray<>();
+        }
+
+        /* HEADER POSITION PROVIDER */
+
+        @Override
+        public int getHeaderAdapterPos(short sectionType) {
+            SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
+            int section = adapterWrapper.getSection();
+            return getSectionFirstPos(section);
+        }
+
+        /* END HEADER POSITION PROVIDER */
+
+        /**
+         * Checks, whether the header should be updated (added/removed/translated) based on the first
+         * visible position (e.g. called after swipe). To update the contents of the corresponding
+         * header SectionAdapter.ViewHolder you should call {@link #updateHeaderView(short)}.
+         * <p>
+         * Interacts with header view via {@link HeaderViewManager}. Current header view section type
+         * is stored in {@link #topSectionType}.
+         */
+        void checkIsHeaderViewChanged() {
+            int topPos = headerViewManager.getFirstVisiblePos();
+            if (!checkIndex(topPos, getTotalItemCount())) {
+                removeHeaderView();
+                return;
+            }
+            int section = calcSection(topPos);
+            short sectionType = sectionToType.get(section);
+            SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
+            if (adapterWrapper.isHeaderVisible() && adapterWrapper.isHeaderPinned()) {
+                if (sectionType == topSectionType) {
+                    int nextHeaderPos = getSectionFirstPos(section + 1);
+                    headerViewManager.translateHeaderView(nextHeaderPos);
+                } else {
+                    addHeaderView(section);
+                }
+            } else {
+                removeHeaderView();
+            }
+        }
+
+        /**
+         * Makes {@link #headerViewManager} check first visible position.
+         */
+        void checkFirstVisiblePos() {
+            headerViewManager.checkFirstVisiblePos();
+        }
+
+        /**
+         * Notifies {@link HeaderViewManager} that the header view should be added, passing next header
+         * position for calculations.
+         *
+         * @param section Index of the top section.
+         */
+        private void addHeaderView(int section) {
+            topSectionType = sectionToType.get(section);
+            SectionAdapter.HeaderViewHolder headerViewHolder = getDuplicatedHeaderVH(topSectionType);
+            SectionAdapterWrapper adapterWrapper = typeToAdapter.get(topSectionType);
+            adapterWrapper.onBindHeaderViewHolder(headerViewHolder);
+            int nextHeaderPos = getSectionFirstPos(section + 1);
+            headerViewManager.addHeaderView(headerViewHolder.itemView, nextHeaderPos);
+        }
+
+        /**
+         * Updates the contents of the duplicated header view if <code>sectionType</code> matches the
+         * current {@link #topSectionType}.
+         *
+         * @param sectionType Type of the updated section.
+         */
+        private void updateHeaderView(short sectionType) {
+            if (sectionType != topSectionType) return;
+            SectionAdapter.HeaderViewHolder headerViewHolder = getDuplicatedHeaderVH(sectionType);
+            SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
+            adapterWrapper.onBindHeaderViewHolder(headerViewHolder);
+        }
+
+        /**
+         * Notifies {@link HeaderViewManager} that the header view should be removed.
+         */
+        private void removeHeaderView() {
+            if (topSectionType != -1) {
+                headerViewManager.removeHeaderView();
+                topSectionType = -1;
+            }
+        }
+
+        /**
+         * Returns header SectionAdapter.ViewHolder for the given section type. Creates one only if it
+         * doesn't exist yet and stores it in {@link #typeToHeaderVH}.
+         *
+         * @param sectionType Type of the section.
+         * @return SectionAdapter.ViewHolder of the header.
+         */
+        private SectionAdapter.HeaderViewHolder getDuplicatedHeaderVH(short sectionType) {
+            SectionAdapter.HeaderViewHolder headerViewHolder = typeToHeaderVH.get(sectionType);
+            if (headerViewHolder == null) {
+                ViewGroup parent = headerViewManager.getHeaderViewParent();
+                SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
+                headerViewHolder = adapterWrapper.onCreateHeaderViewHolder(parent);
+                headerViewHolder.sectionType = sectionType;
+                headerViewHolder.sourcePositionProvider = this;
+                headerViewHolder.positionConverter = SectionDataManager.this;
+                typeToHeaderVH.put(sectionType, headerViewHolder);
+            }
+            return headerViewHolder;
+        }
+
     }
 
-    /*END HEADER VIEW HOLDER POSITION PROVIDER */
+    /* END HEADER MANAGER */
+
+    /**
+     * Returns HeaderManager instance which is null until SectionHeaderLayout is attached.
+     *
+     * @return HeaderManager instance.
+     */
+    HeaderManager getHeaderManager() {
+        return headerManager;
+    }
 
     /**
      * Checks whether the given item view type corresponds to header view.
@@ -724,27 +872,6 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
     }
 
     /**
-     * Returns header SectionAdapter.ViewHolder for the given section type. Creates one only if it
-     * doesn't exist yet and stores it in {@link #typeToHeaderVH}.
-     *
-     * @param sectionType Type of the section.
-     * @return SectionAdapter.ViewHolder of the header.
-     */
-    private SectionAdapter.HeaderViewHolder getDuplicatedHeaderVH(short sectionType) {
-        SectionAdapter.HeaderViewHolder headerViewHolder = typeToHeaderVH.get(sectionType);
-        if (headerViewHolder == null) {
-            ViewGroup parent = headerViewManager.getHeaderViewParent();
-            SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
-            headerViewHolder = adapterWrapper.onCreateHeaderViewHolder(parent);
-            headerViewHolder.sectionType = sectionType;
-            headerViewHolder.sourcePositionProvider = SectionDataManager.this;
-            headerViewHolder.positionConverter = SectionDataManager.this;
-            typeToHeaderVH.put(sectionType, headerViewHolder);
-        }
-        return headerViewHolder;
-    }
-
-    /**
      * Updates by <code>cnt</code> items the partial sum array of item counts starting with section
      * <code>startSection</code>. If <code>updateSection</code> is true, updates the section indexes
      * of the corresponding adapters.
@@ -761,44 +888,6 @@ class SectionDataManager implements SectionManager, SectionItemManager, Position
             }
             int prevSum = sectionToPosSum.get(s);
             sectionToPosSum.set(s, prevSum + cnt);
-        }
-    }
-
-    /**
-     * Notifies {@link HeaderViewManager} that the header view should be added, passing next header
-     * position for calculations.
-     *
-     * @param section Index of the top section.
-     */
-    private void addHeaderView(int section) {
-        topSectionType = sectionToType.get(section);
-        SectionAdapter.HeaderViewHolder headerViewHolder = getDuplicatedHeaderVH(topSectionType);
-        SectionAdapterWrapper adapterWrapper = typeToAdapter.get(topSectionType);
-        adapterWrapper.onBindHeaderViewHolder(headerViewHolder);
-        int nextHeaderPos = getSectionFirstPos(section + 1);
-        headerViewManager.addHeaderView(headerViewHolder.itemView, nextHeaderPos);
-    }
-
-    /**
-     * Updates the contents of the duplicated header view if <code>sectionType</code> matches the
-     * current {@link #topSectionType}.
-     *
-     * @param sectionType Type of the updated section.
-     */
-    private void updateHeaderView(short sectionType) {
-        if (sectionType != topSectionType) return;
-        SectionAdapter.HeaderViewHolder headerViewHolder = getDuplicatedHeaderVH(sectionType);
-        SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
-        adapterWrapper.onBindHeaderViewHolder(headerViewHolder);
-    }
-
-    /**
-     * Notifies {@link HeaderViewManager} that the header view should be removed.
-     */
-    private void removeHeaderView() {
-        if (topSectionType != -1) {
-            headerViewManager.removeHeaderView();
-            topSectionType = -1;
         }
     }
 

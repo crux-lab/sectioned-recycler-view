@@ -335,7 +335,7 @@ public abstract class SectionAdapter<IVH extends SectionAdapter.ItemViewHolder> 
     public abstract static class HeaderViewHolder extends ViewHolder {
 
         short sectionType;
-        HeaderVHPositionProvider sourcePositionProvider;
+        HeaderPosProvider sourcePositionProvider;
 
         public HeaderViewHolder(View itemView) {
             super(itemView);

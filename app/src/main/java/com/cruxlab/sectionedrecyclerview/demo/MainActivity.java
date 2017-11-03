@@ -7,6 +7,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
@@ -17,37 +18,55 @@ import android.widget.TextView;
 
 import com.cruxlab.sectionedrecyclerview.R;
 import com.cruxlab.sectionedrecyclerview.lib.SectionAdapter;
+import com.cruxlab.sectionedrecyclerview.lib.SectionDataManager;
+import com.cruxlab.sectionedrecyclerview.lib.SectionHeaderLayout;
 import com.cruxlab.sectionedrecyclerview.lib.SectionItemSwipeCallback;
-import com.cruxlab.sectionedrecyclerview.lib.SectionManager;
 import com.cruxlab.sectionedrecyclerview.lib.SectionWithHeaderAdapter;
-import com.cruxlab.sectionedrecyclerview.lib.SectionedRVLayout;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
 
-    private SectionManager sectionManager;
     private Drawable deleteIcon;
+    private SectionDataManager sectionDataManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        deleteIcon = ContextCompat.getDrawable(this, R.drawable.ic_remove);
-        SectionedRVLayout srvl = findViewById(R.id.srvl);
-        sectionManager = srvl.getSectionManager();
+
+        RecyclerView recyclerView = findViewById(R.id.recycler_view);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setHasFixedSize(false);
+
+        sectionDataManager = new SectionDataManager();
+        RecyclerView.Adapter adapter = sectionDataManager.getAdapter();
+        recyclerView.setAdapter(adapter);
+
+        ItemTouchHelper.Callback callback = sectionDataManager.getSwipeCallback();
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);
+        itemTouchHelper.attachToRecyclerView(recyclerView);
+
+        SectionHeaderLayout sectionHeaderLayout = findViewById(R.id.section_header_layout);
+        /* Order of attaching is important! */
+        sectionDataManager.attachTo(sectionHeaderLayout);
+        sectionHeaderLayout.attachTo(recyclerView, sectionDataManager);
+
         for (int i = 0; i < 20; i++) {
             if (i % 4 != 3) {
                 int color = (i % 4 == 0) ? Color.YELLOW : (i % 4 == 1) ? Color.RED : Color.BLUE;
                 boolean isHeaderVisible = (i % 4 == 0) || (i % 4 == 1);
                 boolean isHeaderPinned = (i % 4 == 0);
-                DemoSectionWithHeaderAdapter adapter = new DemoSectionWithHeaderAdapter(color, isHeaderVisible, isHeaderPinned);
-                sectionManager.addSection(adapter, new DemoSectionItemSwipeCallback(color));
+                DemoSectionWithHeaderAdapter sectionAdapter = new DemoSectionWithHeaderAdapter(color, isHeaderVisible, isHeaderPinned);
+                sectionDataManager.addSection(sectionAdapter, new DemoSectionItemSwipeCallback(color));
             } else {
-                sectionManager.addSection(new DemoSectionAdapter(), new DemoSectionItemSwipeCallback(Color.GRAY));
+                sectionDataManager.addSection(new DemoSectionAdapter(), new DemoSectionItemSwipeCallback(Color.GRAY));
             }
         }
+
+        deleteIcon = ContextCompat.getDrawable(this, R.drawable.ic_remove);
     }
 
     private class DemoSectionWithHeaderAdapter extends SectionWithHeaderAdapter<ItemViewHolder, HeaderViewHolder> {
@@ -300,10 +319,10 @@ public class MainActivity extends AppCompatActivity {
                     DemoSectionWithHeaderAdapter duplicatedAdapter = new DemoSectionWithHeaderAdapter(adapter.color, adapter.isHeaderVisible(), adapter.isHeaderPinned());
                     duplicatedAdapter.strings = new ArrayList<>(adapter.strings);
                     DemoSectionItemSwipeCallback duplicatedCallback = new DemoSectionItemSwipeCallback(adapter.color);
-                    sectionManager.insertSection(section + 1, duplicatedAdapter, duplicatedCallback);
+                    sectionDataManager.insertSection(section + 1, duplicatedAdapter, duplicatedCallback);
                     //For mandatory update section in headers
-                    for (int s = section + 1 ; s < sectionManager.getSectionCount(); s++) {
-                        sectionManager.updateSection(s);
+                    for (int s = section + 1; s < sectionDataManager.getSectionCount(); s++) {
+                        sectionDataManager.updateSection(s);
                     }
                 }
             });
@@ -315,7 +334,7 @@ public class MainActivity extends AppCompatActivity {
                             adapter.color == Color.RED ? Color.BLUE : Color.YELLOW;
                     DemoSectionWithHeaderAdapter newAdapter = new DemoSectionWithHeaderAdapter(newColor, adapter.isHeaderVisible(), adapter.isHeaderPinned());
                     newAdapter.strings = new ArrayList<>(adapter.strings);
-                    sectionManager.replaceSection(section, newAdapter, new DemoSectionItemSwipeCallback(newColor));
+                    sectionDataManager.replaceSection(section, newAdapter, new DemoSectionItemSwipeCallback(newColor));
                 }
             });
             btnRemove.setOnClickListener(new View.OnClickListener() {
@@ -324,10 +343,10 @@ public class MainActivity extends AppCompatActivity {
                     if (isRemoved) return;
                     isRemoved = true;
                     int section = getSection();
-                    sectionManager.removeSection(section);
+                    sectionDataManager.removeSection(section);
                     //For mandatory update section in headers
-                    for (int s = section; s < sectionManager.getSectionCount(); s++) {
-                        sectionManager.updateSection(s);
+                    for (int s = section; s < sectionDataManager.getSectionCount(); s++) {
+                        sectionDataManager.updateSection(s);
                     }
                 }
             });

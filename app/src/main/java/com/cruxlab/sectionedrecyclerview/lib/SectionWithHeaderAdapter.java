@@ -9,11 +9,11 @@ import android.view.ViewGroup;
  * Besides item views, provides a header view displayed within a SectionedRecyclerView in
  * an individual section.
  *
- * @param <VH>  A class that extends ItemViewHolder that will be used by the adapter to manage item views.
+ * @param <IVH>  A class that extends ItemViewHolder that will be used by the adapter to manage item views.
  * @param <HVH> A class that extends ViewHolder that will be used by the adapter to manage header view.
  */
 
-public abstract class SectionWithHeaderAdapter<VH extends SectionAdapter.ItemViewHolder, HVH extends SectionAdapter.HeaderViewHolder> extends SectionAdapter<VH> {
+public abstract class SectionWithHeaderAdapter<IVH extends SectionAdapter.ItemViewHolder, HVH extends SectionAdapter.HeaderViewHolder> extends SectionAdapter<IVH> {
 
     private boolean isHeaderVisible;
     private boolean isHeaderPinned;
@@ -49,8 +49,8 @@ public abstract class SectionWithHeaderAdapter<VH extends SectionAdapter.ItemVie
      * <p>
      * Note, that it should be called, when header view updates itself (e.g. changes its contents
      * after some user interaction), because otherwise when header view is duplicated and pinned
-     * to the top of the {@link SectionedRVLayout}, these changes won't affect the real header view
-     * in the RecyclerView.
+     * to the top of the {@link SectionHeaderLayout}, these changes won't affect the real header
+     * view in the RecyclerView.
      */
     public void notifyHeaderChanged() {
         if (itemManager == null) return;
