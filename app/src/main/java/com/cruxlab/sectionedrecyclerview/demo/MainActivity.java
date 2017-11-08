@@ -1,8 +1,6 @@
 package com.cruxlab.sectionedrecyclerview.demo;
 
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
@@ -10,38 +8,29 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.TextView;
+import android.widget.Button;
 
 import com.cruxlab.sectionedrecyclerview.R;
-import com.cruxlab.sectionedrecyclerview.lib.SectionAdapter;
+import com.cruxlab.sectionedrecyclerview.demo.adapters.DemoSectionAdapter;
+import com.cruxlab.sectionedrecyclerview.demo.adapters.DemoSectionWithHeaderAdapter;
 import com.cruxlab.sectionedrecyclerview.lib.SectionDataManager;
 import com.cruxlab.sectionedrecyclerview.lib.SectionHeaderLayout;
-import com.cruxlab.sectionedrecyclerview.lib.SectionItemSwipeCallback;
-import com.cruxlab.sectionedrecyclerview.lib.SectionWithHeaderAdapter;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
-
-    private Drawable deleteIcon;
-    private SectionDataManager sectionDataManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Drawable deleteIcon = ContextCompat.getDrawable(this, R.drawable.ic_remove);
 
-        RecyclerView recyclerView = findViewById(R.id.recycler_view);
+        final RecyclerView recyclerView = findViewById(R.id.recycler_view);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setHasFixedSize(false);
 
-        sectionDataManager = new SectionDataManager();
+        final SectionDataManager sectionDataManager = new SectionDataManager();
         RecyclerView.Adapter adapter = sectionDataManager.getAdapter();
         recyclerView.setAdapter(adapter);
 
@@ -49,322 +38,32 @@ public class MainActivity extends AppCompatActivity {
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);
         itemTouchHelper.attachToRecyclerView(recyclerView);
 
-        SectionHeaderLayout sectionHeaderLayout = findViewById(R.id.section_header_layout);
-        /* Order of attaching is important! */
-        sectionDataManager.attachTo(sectionHeaderLayout);
-        sectionHeaderLayout.attachTo(recyclerView, sectionDataManager);
-
         for (int i = 0; i < 20; i++) {
             if (i % 4 != 3) {
                 int color = (i % 4 == 0) ? Color.YELLOW : (i % 4 == 1) ? Color.RED : Color.BLUE;
                 boolean isHeaderVisible = (i % 4 == 0) || (i % 4 == 1);
                 boolean isHeaderPinned = (i % 4 == 0);
-                DemoSectionWithHeaderAdapter sectionAdapter = new DemoSectionWithHeaderAdapter(color, isHeaderVisible, isHeaderPinned);
-                sectionDataManager.addSection(sectionAdapter, new DemoSectionItemSwipeCallback(color));
+                DemoSectionWithHeaderAdapter sectionAdapter = new DemoSectionWithHeaderAdapter(color, sectionDataManager, isHeaderVisible, isHeaderPinned);
+                sectionDataManager.addSection(sectionAdapter, new DemoSectionItemSwipeCallback(color, deleteIcon));
             } else {
-                sectionDataManager.addSection(new DemoSectionAdapter(), new DemoSectionItemSwipeCallback(Color.GRAY));
+                sectionDataManager.addSection(new DemoSectionAdapter(), new DemoSectionItemSwipeCallback(Color.GRAY, deleteIcon));
             }
         }
 
-        deleteIcon = ContextCompat.getDrawable(this, R.drawable.ic_remove);
-    }
-
-    private class DemoSectionWithHeaderAdapter extends SectionWithHeaderAdapter<ItemViewHolder, HeaderViewHolder> {
-
-        public ArrayList<String> strings = new ArrayList<>(Arrays.asList("One", "Two", "Three", "Four", "Five"));
-        public int color;
-
-        DemoSectionWithHeaderAdapter(int color, boolean isHeaderVisible, boolean isHeaderPinned) {
-            super(isHeaderVisible, isHeaderPinned);
-            this.color = color;
-        }
-
-        @Override
-        public MainActivity.HeaderViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.view_holder_view, parent, false);
-            return new MainActivity.HeaderViewHolder(view, color, this);
-        }
-
-        @Override
-        public MainActivity.ItemViewHolder onCreateItemViewHolder(ViewGroup parent, short type) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.view_holder_view, parent, false);
-            return new MainActivity.ItemViewHolder(view, this);
-        }
-
-        @Override
-        public void onBindItemViewHolder(MainActivity.ItemViewHolder holder, int position) {
-            holder.bind(strings.get(position % strings.size()));
-        }
-
-        @Override
-        public void onBindHeaderViewHolder(MainActivity.HeaderViewHolder holder) {
-            holder.bind("Section " + getSection() + ", item count: " + getItemCount());
-        }
-
-        @Override
-        public int getItemCount() {
-            return strings.size();
-        }
-
-        public void duplicateString(int pos) {
-            strings.add(pos + 1, strings.get(pos));
-            notifyItemInserted(pos + 1);
-            notifyHeaderChanged();
-        }
-
-        public void removeString(int pos) {
-            strings.remove(pos);
-            notifyItemRemoved(pos);
-            notifyHeaderChanged();
-        }
-
-        public void changeString(int pos) {
-            strings.set(pos, strings.get(pos) + " changed");
-            notifyItemChanged(pos);
-        }
-
-    }
-
-    private class DemoSectionAdapter extends SectionAdapter<ItemViewHolder> {
-
-        public ArrayList<String> strings = new ArrayList<>(Arrays.asList("Apple", "Orange", "Watermelon"));
-
-        @Override
-        public MainActivity.ItemViewHolder onCreateItemViewHolder(ViewGroup parent, short type) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.view_holder_view, parent, false);
-            return new MainActivity.ItemViewHolder(view, this);
-        }
-        @Override
-        public void onBindItemViewHolder(MainActivity.ItemViewHolder holder, int position) {
-            holder.bind(strings.get(position % strings.size()));
-        }
-
-        @Override
-        public int getItemCount() {
-            return strings.size();
-        }
-
-        public void duplicateString(int pos) {
-            strings.add(pos + 1, strings.get(pos));
-            notifyItemInserted(pos + 1);
-        }
-
-        public void removeString(int pos) {
-            strings.remove(pos);
-            notifyItemRemoved(pos);
-        }
-
-        public void changeString(int pos) {
-            strings.set(pos, strings.get(pos) + " changed");
-            notifyItemChanged(pos);
-        }
-
-    }
-
-    private class DemoSectionItemSwipeCallback extends SectionItemSwipeCallback {
-
-        public int color;
-        private ColorDrawable background;
-
-        DemoSectionItemSwipeCallback(int color) {
-            this.color = color;
-            this.background = new ColorDrawable();
-        }
-
-        @Override
-        public int getSwipeDirFlags(RecyclerView recyclerView, SectionAdapter.ItemViewHolder viewHolder) {
-            return ItemTouchHelper.LEFT;
-        }
-
-        @Override
-        public void onSwiped(SectionAdapter.ItemViewHolder viewHolder, int direction) {
-            ItemViewHolder itemViewHolder = (ItemViewHolder) viewHolder;
-            int sectionPos = itemViewHolder.getSectionAdapterPosition();
-            if (sectionPos == -1) return;
-            if (itemViewHolder.adapter != null) {
-                itemViewHolder.adapter.removeString(sectionPos);
-            } else {
-                itemViewHolder.simpleAdapter.removeString(sectionPos);
+        final SectionHeaderLayout sectionHeaderLayout = findViewById(R.id.section_header_layout);
+        final Button pinHeadersBnt = findViewById(R.id.btn_pin_headers);
+        pinHeadersBnt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (sectionHeaderLayout.isAttached()) {
+                    sectionHeaderLayout.detach();
+                    pinHeadersBnt.setText(R.string.pin_headers);
+                } else {
+                    sectionHeaderLayout.attachTo(recyclerView, sectionDataManager);
+                    pinHeadersBnt.setText(R.string.unpin_headers);
+                }
             }
-        }
-
-        @Override
-        public void onChildDraw(Canvas c, RecyclerView recyclerView, SectionAdapter.ItemViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
-            View itemView = viewHolder.itemView;
-            int itemHeight = itemView.getBottom() - itemView.getTop();
-            background.setColor(color);
-            background.setBounds((int) (itemView.getRight() + dX), itemView.getTop(), itemView.getRight(), itemView.getBottom());
-            background.draw(c);
-            int deleteIconTop = itemView.getTop() + (itemHeight - deleteIcon.getIntrinsicHeight()) / 2;
-            int deleteIconMargin = (itemHeight - deleteIcon.getIntrinsicHeight()) / 2;
-            int deleteIconLeft = itemView.getRight() - deleteIconMargin - deleteIcon.getIntrinsicWidth();
-            int deleteIconRight = itemView.getRight() - deleteIconMargin;
-            int deleteIconBottom = deleteIconTop + deleteIcon.getIntrinsicHeight();
-            deleteIcon.setBounds(deleteIconLeft, deleteIconTop, deleteIconRight, deleteIconBottom);
-            deleteIcon.draw(c);
-            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
-        }
+        });
 
     }
-
-    private class ItemViewHolder extends SectionAdapter.ItemViewHolder {
-
-        private TextView text;
-        private DemoSectionWithHeaderAdapter adapter;
-        private DemoSectionAdapter simpleAdapter;
-        private ImageButton btnDuplicate, btnChange, btnRemove, btnHeader;
-
-        public ItemViewHolder(View itemView, DemoSectionWithHeaderAdapter adapter) {
-            super(itemView);
-            this.adapter = adapter;
-            this.text = itemView.findViewById(R.id.tv_text);
-            this.btnDuplicate = itemView.findViewById(R.id.ibtn_duplicate);
-            this.btnChange = itemView.findViewById(R.id.ibtn_change);
-            this.btnRemove = itemView.findViewById(R.id.ibtn_remove);
-            this.btnHeader = itemView.findViewById(R.id.ibtn_header);
-        }
-
-        public ItemViewHolder(View itemView, DemoSectionAdapter simpleAdapter) {
-            super(itemView);
-            this.simpleAdapter = simpleAdapter;
-            this.text = itemView.findViewById(R.id.tv_text);
-            this.btnDuplicate = itemView.findViewById(R.id.ibtn_duplicate);
-            this.btnChange = itemView.findViewById(R.id.ibtn_change);
-            this.btnRemove = itemView.findViewById(R.id.ibtn_remove);
-            this.btnHeader = itemView.findViewById(R.id.ibtn_header);
-        }
-
-        public void bind(final String string) {
-            text.setText(string);
-            btnDuplicate.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    int sectionPos = getSectionAdapterPosition();
-                    if (sectionPos == -1) return;
-                    if (adapter != null) {
-                        adapter.duplicateString(sectionPos);
-                    } else {
-                        simpleAdapter.duplicateString(sectionPos);
-                    }
-                }
-            });
-            btnChange.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    int sectionPos = getSectionAdapterPosition();
-                    if (sectionPos == -1) return;
-                    if (adapter != null) {
-                        adapter.changeString(sectionPos);
-                    } else {
-                        simpleAdapter.changeString(sectionPos);
-                    }
-                }
-            });
-            btnRemove.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    int sectionPos = getSectionAdapterPosition();
-                    if (sectionPos == -1) return;
-                    if (adapter != null) {
-                        adapter.removeString(sectionPos);
-                    } else {
-                        simpleAdapter.removeString(sectionPos);
-                    }
-                }
-            });
-            btnHeader.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (adapter != null) {
-                        adapter.updateHeaderVisibility(!adapter.isHeaderVisible());
-                        adapter.notifyItemRangeChanged(0, adapter.getItemCount());
-                    }
-                }
-            });
-            if (adapter != null) {
-                btnHeader.setImageResource(adapter.isHeaderVisible() ? R.drawable.ic_visibility : R.drawable.ic_visibility_off);
-            } else {
-                btnHeader.setVisibility(View.GONE);
-            }
-        }
-
-    }
-
-    private class HeaderViewHolder extends SectionAdapter.HeaderViewHolder {
-
-        private DemoSectionWithHeaderAdapter adapter;
-        private TextView text;
-        private int color;
-        private ImageButton btnDuplicate, btnChange, btnRemove, btnHeader;
-        private boolean isRemoved;
-
-        public HeaderViewHolder(View itemView, int color, DemoSectionWithHeaderAdapter adapter) {
-            super(itemView);
-            this.color = color;
-            this.adapter = adapter;
-            this.text = itemView.findViewById(R.id.tv_text);
-            this.btnDuplicate = itemView.findViewById(R.id.ibtn_duplicate);
-            this.btnChange = itemView.findViewById(R.id.ibtn_change);
-            this.btnRemove = itemView.findViewById(R.id.ibtn_remove);
-            this.btnHeader = itemView.findViewById(R.id.ibtn_header);
-        }
-
-        public void bind(final String string) {
-            text.setText(string);
-            itemView.setBackgroundColor(color);
-            btnDuplicate.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    int section = getSection();
-                    DemoSectionWithHeaderAdapter duplicatedAdapter = new DemoSectionWithHeaderAdapter(adapter.color, adapter.isHeaderVisible(), adapter.isHeaderPinned());
-                    duplicatedAdapter.strings = new ArrayList<>(adapter.strings);
-                    DemoSectionItemSwipeCallback duplicatedCallback = new DemoSectionItemSwipeCallback(adapter.color);
-                    sectionDataManager.insertSection(section + 1, duplicatedAdapter, duplicatedCallback);
-                    //For mandatory update section in headers
-                    for (int s = section + 1; s < sectionDataManager.getSectionCount(); s++) {
-                        sectionDataManager.updateSection(s);
-                    }
-                }
-            });
-            btnChange.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    int section = getSection();
-                    int newColor = adapter.color == Color.YELLOW ? Color.RED :
-                            adapter.color == Color.RED ? Color.BLUE : Color.YELLOW;
-                    DemoSectionWithHeaderAdapter newAdapter = new DemoSectionWithHeaderAdapter(newColor, adapter.isHeaderVisible(), adapter.isHeaderPinned());
-                    newAdapter.strings = new ArrayList<>(adapter.strings);
-                    sectionDataManager.replaceSection(section, newAdapter, new DemoSectionItemSwipeCallback(newColor));
-                }
-            });
-            btnRemove.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (isRemoved) return;
-                    isRemoved = true;
-                    int section = getSection();
-                    sectionDataManager.removeSection(section);
-                    //For mandatory update section in headers
-                    for (int s = section; s < sectionDataManager.getSectionCount(); s++) {
-                        sectionDataManager.updateSection(s);
-                    }
-                }
-            });
-            btnHeader.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (adapter != null) {
-                        adapter.updateHeaderPinnedState(!adapter.isHeaderPinned());
-                        adapter.notifyHeaderChanged();
-                    }
-                }
-            });
-            if (adapter != null) {
-                btnHeader.setImageResource(adapter.isHeaderPinned() ? R.drawable.ic_lock : R.drawable.ic_lock_open);
-            } else {
-                btnHeader.setVisibility(View.GONE);
-            }
-        }
-    }
-
 }

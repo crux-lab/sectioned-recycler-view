@@ -44,7 +44,7 @@ public class SectionHeaderLayout extends RelativeLayout {
 
     /**
      * Attaches to the given RecyclerView and SectionDataManager. Adds {@link #onScrollListener} to
-     * the given to the RecyclerView to manage header view while scrolling. RecyclerView should have
+     * the given RecyclerView to manage header view while scrolling. RecyclerView should have
      * vertical LinearLayoutManager.
      *
      * @param recyclerView       RecyclerView to attach to.
@@ -52,10 +52,36 @@ public class SectionHeaderLayout extends RelativeLayout {
      */
     public void attachTo(RecyclerView recyclerView, SectionDataManager sectionDataManager) {
         this.recyclerView = recyclerView;
-        this.layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-        this.headerManager = sectionDataManager.getHeaderManager();
+        layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+        headerManager = sectionDataManager.createHeaderManager(headerViewManager);
         recyclerView.addOnScrollListener(onScrollListener);
         headerManager.checkIsHeaderViewChanged();
+    }
+
+    /**
+     * Returns whether this SectionHeaderLayout has been attached to RecyclerView and
+     * SectionDataManager.
+     *
+     * @return True if it has been attached, false otherwise.
+     */
+    public boolean isAttached() {
+        return headerManager != null;
+    }
+
+    /**
+     * Detaches from RecyclerView and SectionDataManager.
+     */
+    public void detach() {
+        if (!isAttached()) {
+            throw new RuntimeException("SectionHeaderLayout hasn't been attached " +
+                    "to any RecyclerView and SectionDataManager.");
+        }
+        recyclerView.removeOnScrollListener(onScrollListener);
+        headerManager.removeSelf();
+        headerViewManager.removeHeaderView();
+        recyclerView = null;
+        layoutManager = null;
+        headerManager = null;
     }
 
     /**
@@ -127,10 +153,6 @@ public class SectionHeaderLayout extends RelativeLayout {
 
     };
 
-    HeaderViewManager getHeaderViewManager() {
-        return headerViewManager;
-    }
-
     /**
      * Notifies {@link SectionDataManager.HeaderManager} that the RecyclerView was scrolled, so the
      * header view could have been changed.
@@ -188,7 +210,7 @@ public class SectionHeaderLayout extends RelativeLayout {
     private int calcTranslation(int headerHeight, int nextHeaderPos) {
         View nextHeaderView = layoutManager.findViewByPosition(nextHeaderPos);
         if (nextHeaderView != null) {
-            int topOffset = nextHeaderView.getTop() - getTop();
+            int topOffset = nextHeaderView.getTop();
             int offset = headerHeight - topOffset;
             if (offset > 0) return -offset;
         }

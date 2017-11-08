@@ -68,13 +68,12 @@ public class SectionDataManager implements SectionManager, PositionConverter {
     }
 
     /**
-     * Creates {@link HeaderManager} to interact with the given SectionHeaderLayout.
+     * Creates {@link HeaderManager} to interact with {@link SectionHeaderLayout}.
      *
-     * @param sectionHeaderLayout SectionHeaderLayout to attach.
+     * @param headerViewManager HeaderViewManager to interact with.
      */
-    public void attachTo(SectionHeaderLayout sectionHeaderLayout) {
-        HeaderViewManager headerViewManager = sectionHeaderLayout.getHeaderViewManager();
-        headerManager = new HeaderManager(headerViewManager);
+    HeaderManager createHeaderManager(HeaderViewManager headerViewManager) {
+        return headerManager = new HeaderManager(headerViewManager);
     }
 
     /* SECTION MANAGER */
@@ -661,6 +660,11 @@ public class SectionDataManager implements SectionManager, PositionConverter {
             typeToHeaderVH = new SparseArray<>();
         }
 
+
+        void removeSelf() {
+            headerManager = null;
+        }
+
         /* HEADER POSITION PROVIDER */
 
         @Override
@@ -770,15 +774,6 @@ public class SectionDataManager implements SectionManager, PositionConverter {
     }
 
     /* END HEADER MANAGER */
-
-    /**
-     * Returns HeaderManager instance which is null until SectionHeaderLayout is attached.
-     *
-     * @return HeaderManager instance.
-     */
-    HeaderManager getHeaderManager() {
-        return headerManager;
-    }
 
     /**
      * Checks whether the given item view type corresponds to header view.

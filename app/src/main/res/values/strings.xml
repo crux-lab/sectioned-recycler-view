@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">SectionedRecyclerView</string>
+    <string name="pin_headers">Pin headers</string>
+    <string name="unpin_headers">Unpin headers</string>
 </resources>
