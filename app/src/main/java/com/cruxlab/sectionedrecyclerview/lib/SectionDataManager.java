@@ -16,11 +16,11 @@ import java.util.List;
  * <p>
  * Items in RecyclerView are divided into groups - sections. Each section consists of regular items
  * and an optional header (just another item for the RecyclerView.Adapter implementation), which can
- * be represented as views using corresponding {@link SectionAdapter} or {@link SectionWithHeaderAdapter}.
+ * be represented as views using corresponding {@link SimpleSectionAdapter} or {@link SectionAdapter}.
  * <p>
  * Each section obtains own unique type stored in {@link #sectionToType}. It is used to determine
  * that the section which corresponds to the given global adapter position has changed, so the
- * corresponding ViewHolder should be recreated. Each SectionAdapter also can use short values to
+ * corresponding ViewHolder should be recreated. Each BaseSectionAdapter also can use short values to
  * distinguish own items.
  * <p>
  * The main task is to determine, which section corresponds to the given global adapter position and
@@ -84,23 +84,23 @@ public class SectionDataManager implements SectionManager, PositionConverter {
     }
 
     @Override
-    public void addSection(@NonNull SectionAdapter sectionAdapter) {
-        addSection(sectionAdapter, null);
+    public void addSection(@NonNull SimpleSectionAdapter simpleSectionAdapter) {
+        addSection(simpleSectionAdapter, null);
     }
 
     @Override
-    public void addSection(@NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter) {
-        addSection(sectionWithHeaderAdapter, null);
+    public void addSection(@NonNull SectionAdapter sectionAdapter, int headerType) {
+        addSection(sectionAdapter, null, headerType);
     }
 
     @Override
-    public void addSection(@NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback) {
-        addSection(new SectionAdapterWrapper(sectionAdapter), swipeCallback);
+    public void addSection(@NonNull SimpleSectionAdapter simpleSectionAdapter, SectionItemSwipeCallback swipeCallback) {
+        addSection(new SectionAdapterWrapper(simpleSectionAdapter), swipeCallback);
     }
 
     @Override
-    public void addSection(@NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter, SectionItemSwipeCallback swipeCallback) {
-        addSection(new SectionAdapterWrapper(sectionWithHeaderAdapter), swipeCallback);
+    public void addSection(@NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback, int headerType) {
+        addSection(new SectionAdapterWrapper(sectionAdapter, headerType), swipeCallback);
     }
 
     private void addSection(SectionAdapterWrapper adapterWrapper, SectionItemSwipeCallback swipeCallback) {
@@ -123,23 +123,23 @@ public class SectionDataManager implements SectionManager, PositionConverter {
     }
 
     @Override
-    public void insertSection(int section, @NonNull SectionAdapter sectionAdapter) {
-        insertSection(section, sectionAdapter, null);
+    public void insertSection(int section, @NonNull SimpleSectionAdapter simpleSectionAdapter) {
+        insertSection(section, simpleSectionAdapter, null);
     }
 
     @Override
-    public void insertSection(int section, @NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter) {
-        insertSection(section, sectionWithHeaderAdapter, null);
+    public void insertSection(int section, @NonNull SectionAdapter sectionAdapter, int headerType) {
+        insertSection(section, sectionAdapter, null, headerType);
     }
 
     @Override
-    public void insertSection(int section, @NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback) {
-        insertSection(section, new SectionAdapterWrapper(sectionAdapter), swipeCallback);
+    public void insertSection(int section, @NonNull SimpleSectionAdapter simpleSectionAdapter, SectionItemSwipeCallback swipeCallback) {
+        insertSection(section, new SectionAdapterWrapper(simpleSectionAdapter), swipeCallback);
     }
 
     @Override
-    public void insertSection(int section, @NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter, SectionItemSwipeCallback swipeCallback) {
-        insertSection(section, new SectionAdapterWrapper(sectionWithHeaderAdapter), swipeCallback);
+    public void insertSection(int section, @NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback, int headerType) {
+        insertSection(section, new SectionAdapterWrapper(sectionAdapter, headerType), swipeCallback);
     }
 
     private void insertSection(int section, SectionAdapterWrapper adapterWrapper, SectionItemSwipeCallback swipeCallback) {
@@ -164,23 +164,23 @@ public class SectionDataManager implements SectionManager, PositionConverter {
     }
 
     @Override
-    public void replaceSection(int section, @NonNull SectionAdapter sectionAdapter) {
-        replaceSection(section, sectionAdapter, null);
+    public void replaceSection(int section, @NonNull SimpleSectionAdapter simpleSectionAdapter) {
+        replaceSection(section, simpleSectionAdapter, null);
     }
 
     @Override
-    public void replaceSection(int section, @NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter) {
-        replaceSection(section, sectionWithHeaderAdapter, null);
+    public void replaceSection(int section, @NonNull SectionAdapter sectionAdapter, int headerType) {
+        replaceSection(section, sectionAdapter, null, headerType);
     }
 
     @Override
-    public void replaceSection(int section, @NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback) {
-        replaceSection(section, new SectionAdapterWrapper(sectionAdapter), swipeCallback);
+    public void replaceSection(int section, @NonNull SimpleSectionAdapter simpleSectionAdapter, SectionItemSwipeCallback swipeCallback) {
+        replaceSection(section, new SectionAdapterWrapper(simpleSectionAdapter), swipeCallback);
     }
 
     @Override
-    public void replaceSection(int section, @NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter, SectionItemSwipeCallback swipeCallback) {
-        replaceSection(section, new SectionAdapterWrapper(sectionWithHeaderAdapter), swipeCallback);
+    public void replaceSection(int section, @NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback, int headerType) {
+        replaceSection(section, new SectionAdapterWrapper(sectionAdapter, headerType), swipeCallback);
     }
 
     private void replaceSection(int section, SectionAdapterWrapper adapterWrapper, SectionItemSwipeCallback swipeCallback) {
@@ -200,13 +200,9 @@ public class SectionDataManager implements SectionManager, PositionConverter {
         int cnt = getSectionRealItemCount(section);
         int start = getSectionFirstPos(section);
         SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
-        adapterWrapper.setSection(-1);
-        adapterWrapper.setItemManager(null);
+        adapterWrapper.resetAdapter();
         typeToAdapter.remove(sectionType);
         typeToCallback.remove(sectionType);
-        if (headerManager != null) {
-            headerManager.typeToHeaderVH.remove(section);
-        }
         sectionToType.remove(section);
         sectionToPosSum.remove(section);
         updatePosSum(section, -cnt, true);
@@ -240,7 +236,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
     }
 
     @Override
-    public <T extends SectionAdapter> T getSectionAdapter(int section) {
+    public <T extends BaseSectionAdapter> T getSectionAdapter(int section) {
         checkSectionIndex(section);
         short sectionType = sectionToType.get(section);
         SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
@@ -263,19 +259,19 @@ public class SectionDataManager implements SectionManager, PositionConverter {
      * <p>
      * Can be obtained by calling {@link #getAdapter()}.
      *
+     * @see BaseSectionAdapter
      * @see SectionAdapter
-     * @see SectionWithHeaderAdapter
-     * @see SectionAdapter.ItemViewHolder
-     * @see SectionAdapter.HeaderViewHolder
+     * @see BaseSectionAdapter.ItemViewHolder
+     * @see BaseSectionAdapter.HeaderViewHolder
      */
     private RecyclerView.Adapter<ViewHolderWrapper> adapter = new RecyclerView.Adapter<ViewHolderWrapper>() {
 
         /**
          * Uses type to get an appropriate SectionAdapterWrapper, item type within section and to
          * determine, whether item view is a section header. Passes the corresponding call to the
-         * SectionAdapter via {@link SectionAdapterWrapper}, obtaining
-         * {@link SectionAdapter.ViewHolder}. Returns {@link ViewHolderWrapper}, that refers to the
-         * same View. SectionAdapter.ViewHolder holds a reference to it to access the global adapter
+         * BaseSectionAdapter via {@link SectionAdapterWrapper}, obtaining
+         * {@link BaseSectionAdapter.ViewHolder}. Returns {@link ViewHolderWrapper}, that refers to the
+         * same View. BaseSectionAdapter.ViewHolder holds a reference to it to access the global adapter
          * position any time.
          */
         @Override
@@ -283,7 +279,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
             short sectionType = (short) (type);
             short itemType = (short) (type >> 16);
             SectionAdapterWrapper adapterWrapper = typeToAdapter.get(Math.abs(sectionType));
-            SectionAdapter.ViewHolder viewHolder;
+            BaseSectionAdapter.ViewHolder viewHolder;
             if (isTypeHeader(sectionType)) {
                 viewHolder = adapterWrapper.onCreateHeaderViewHolder(parent);
             } else {
@@ -297,8 +293,8 @@ public class SectionDataManager implements SectionManager, PositionConverter {
 
         /**
          * Uses position to determine section type and whether item view is a section header.
-         * Obtains {@link SectionAdapter.ViewHolder} from {@link ViewHolderWrapper} and passes the
-         * corresponding call to the SectionAdapter via {@link SectionAdapterWrapper}.
+         * Obtains {@link BaseSectionAdapter.ViewHolder} from {@link ViewHolderWrapper} and passes the
+         * corresponding call to the BaseSectionAdapter via {@link SectionAdapterWrapper}.
          */
         @Override
         public void onBindViewHolder(ViewHolderWrapper viewHolderWrapper, int position) {
@@ -306,11 +302,11 @@ public class SectionDataManager implements SectionManager, PositionConverter {
             short sectionType = (short) (type);
             SectionAdapterWrapper adapterWrapper = typeToAdapter.get(Math.abs(sectionType));
             if (isTypeHeader(sectionType)) {
-                SectionAdapter.HeaderViewHolder headerViewHolder = (SectionAdapter.HeaderViewHolder) viewHolderWrapper.viewHolder;
+                BaseSectionAdapter.HeaderViewHolder headerViewHolder = (BaseSectionAdapter.HeaderViewHolder) viewHolderWrapper.viewHolder;
                 adapterWrapper.onBindHeaderViewHolder(headerViewHolder);
             } else {
                 int sectionPos = calcPosInSection(position);
-                SectionAdapter.ItemViewHolder itemViewHolder = (SectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder;
+                BaseSectionAdapter.ItemViewHolder itemViewHolder = (BaseSectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder;
                 adapterWrapper.onBindViewHolder(itemViewHolder, sectionPos);
             }
         }
@@ -367,7 +363,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
                 SectionItemSwipeCallback swipeCallback = getSwipeCallback(viewHolder);
                 if (swipeCallback != null && swipeCallback.isSwipeEnabled()) {
                     ViewHolderWrapper viewHolderWrapper = (ViewHolderWrapper) viewHolder;
-                    swipeFlags = swipeCallback.getSwipeDirFlags(recyclerView, (SectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder);
+                    swipeFlags = swipeCallback.getSwipeDirFlags(recyclerView, (BaseSectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder);
                 }
             }
             return makeMovementFlags(0, swipeFlags);
@@ -387,7 +383,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
             SectionItemSwipeCallback swipeCallback = getSwipeCallback(viewHolder);
             if (swipeCallback != null) {
                 ViewHolderWrapper viewHolderWrapper = (ViewHolderWrapper) viewHolder;
-                swipeCallback.onSwiped((SectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder, direction);
+                swipeCallback.onSwiped((BaseSectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder, direction);
             }
         }
 
@@ -402,7 +398,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
                 if (swipeCallback != null) {
                     ViewHolderWrapper viewHolderWrapper = (ViewHolderWrapper) viewHolder;
                     swipeCallback.onChildDraw(c, recyclerView,
-                            (SectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder,
+                            (BaseSectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder,
                             dX, dY, actionState, isCurrentlyActive);
                 }
             } else {
@@ -421,7 +417,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
                 if (swipeCallback != null) {
                     ViewHolderWrapper viewHolderWrapper = (ViewHolderWrapper) viewHolder;
                     swipeCallback.onChildDrawOver(c, recyclerView,
-                            (SectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder,
+                            (BaseSectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder,
                             dX, dY, actionState, isCurrentlyActive);
                 }
             } else {
@@ -439,7 +435,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
                 if (swipeCallback != null) {
                     ViewHolderWrapper viewHolderWrapper = (ViewHolderWrapper) viewHolder;
                     swipeCallback.clearView(recyclerView,
-                            (SectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder);
+                            (BaseSectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder);
                 }
             } else {
                 super.clearView(recyclerView, viewHolder);
@@ -457,7 +453,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
                 if (swipeCallback != null) {
                     ViewHolderWrapper viewHolderWrapper = (ViewHolderWrapper) viewHolder;
                     swipeCallback.onSelectedChanged(
-                            (SectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder, actionState);
+                            (BaseSectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder, actionState);
                 }
             } else {
                 super.onSelectedChanged(viewHolder, actionState);
@@ -645,21 +641,22 @@ public class SectionDataManager implements SectionManager, PositionConverter {
      * and adds/removes/translates the header view via {@link #headerViewManager}.
      * <p>
      * The contents of the current header view can be updated by rebinding the corresponding
-     * {@link SectionAdapter.HeaderViewHolder}. The duplicated {@link SectionAdapter.HeaderViewHolder}
+     * {@link BaseSectionAdapter.HeaderViewHolder}. The duplicated {@link BaseSectionAdapter.HeaderViewHolder}
      * for {@link SectionHeaderLayout} can be obtained by calling {@link #getDuplicatedHeaderVH(short)}.
-     * They are stored in {@link #typeToHeaderVH}, so that each HeaderViewHolder is created only once.
+     * They are stored in {@link #typeToHeader}, so that each HeaderViewHolder is created only once.
      */
     class HeaderManager implements HeaderPosProvider {
 
         short topSectionType = -1;
+        int topHeaderType = SectionAdapter.NO_HEADER_TYPE;
+
         HeaderViewManager headerViewManager;
-        SparseArray<SectionAdapter.HeaderViewHolder> typeToHeaderVH;
+        SparseArray<BaseSectionAdapter.HeaderViewHolder> typeToHeader;
 
         HeaderManager(HeaderViewManager headerViewManager) {
             this.headerViewManager = headerViewManager;
-            typeToHeaderVH = new SparseArray<>();
+            typeToHeader = new SparseArray<>();
         }
-
 
         void removeSelf() {
             headerManager = null;
@@ -679,7 +676,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
         /**
          * Checks, whether the header should be updated (added/removed/translated) based on the first
          * visible position (e.g. called after swipe). To update the contents of the corresponding
-         * header SectionAdapter.ViewHolder you should call {@link #updateHeaderView(short)}.
+         * header BaseSectionAdapter.ViewHolder you should call {@link #updateHeaderView(short)}.
          * <p>
          * Interacts with header view via {@link HeaderViewManager}. Current header view section type
          * is stored in {@link #topSectionType}.
@@ -698,7 +695,15 @@ public class SectionDataManager implements SectionManager, PositionConverter {
                     int nextHeaderPos = getSectionFirstPos(section + 1);
                     headerViewManager.translateHeaderView(nextHeaderPos);
                 } else {
-                    addHeaderView(section);
+                    int headerType = adapterWrapper.getHeaderType();
+                    if (headerType == topHeaderType) {
+                        topSectionType = sectionType;
+                        updateHeaderView(topSectionType);
+                        int nextHeaderPos = getSectionFirstPos(section + 1);
+                        headerViewManager.translateHeaderView(nextHeaderPos);
+                    } else {
+                        addHeaderView(section);
+                    }
                 }
             } else {
                 removeHeaderView();
@@ -720,8 +725,10 @@ public class SectionDataManager implements SectionManager, PositionConverter {
          */
         private void addHeaderView(int section) {
             topSectionType = sectionToType.get(section);
-            SectionAdapter.HeaderViewHolder headerViewHolder = getDuplicatedHeaderVH(topSectionType);
             SectionAdapterWrapper adapterWrapper = typeToAdapter.get(topSectionType);
+            topHeaderType = adapterWrapper.getHeaderType();
+            BaseSectionAdapter.HeaderViewHolder headerViewHolder = getDuplicatedHeaderVH(topSectionType);
+            headerViewHolder.sectionType = topSectionType;
             adapterWrapper.onBindHeaderViewHolder(headerViewHolder);
             int nextHeaderPos = getSectionFirstPos(section + 1);
             headerViewManager.addHeaderView(headerViewHolder.itemView, nextHeaderPos);
@@ -735,8 +742,9 @@ public class SectionDataManager implements SectionManager, PositionConverter {
          */
         private void updateHeaderView(short sectionType) {
             if (sectionType != topSectionType) return;
-            SectionAdapter.HeaderViewHolder headerViewHolder = getDuplicatedHeaderVH(sectionType);
+            BaseSectionAdapter.HeaderViewHolder headerViewHolder = getDuplicatedHeaderVH(sectionType);
             SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
+            headerViewHolder.sectionType = sectionType;
             adapterWrapper.onBindHeaderViewHolder(headerViewHolder);
         }
 
@@ -747,26 +755,30 @@ public class SectionDataManager implements SectionManager, PositionConverter {
             if (topSectionType != -1) {
                 headerViewManager.removeHeaderView();
                 topSectionType = -1;
+                topHeaderType = SectionAdapter.NO_HEADER_TYPE;
             }
         }
 
         /**
-         * Returns header SectionAdapter.ViewHolder for the given section type. Creates one only if it
-         * doesn't exist yet and stores it in {@link #typeToHeaderVH}.
+         * Returns HeaderViewHolder for the given section type. Creates one only if it doesn't exist
+         * yet and stores it in {@link #typeToHeader}.
          *
          * @param sectionType Type of the section.
-         * @return SectionAdapter.ViewHolder of the header.
+         * @return BaseSectionAdapter.ViewHolder of the header.
          */
-        private SectionAdapter.HeaderViewHolder getDuplicatedHeaderVH(short sectionType) {
-            SectionAdapter.HeaderViewHolder headerViewHolder = typeToHeaderVH.get(sectionType);
+        private BaseSectionAdapter.HeaderViewHolder getDuplicatedHeaderVH(short sectionType) {
+            SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
+            int headerType = adapterWrapper.getHeaderType();
+            if (headerType == SectionAdapter.NO_HEADER_TYPE) {
+                return null;
+            }
+            BaseSectionAdapter.HeaderViewHolder headerViewHolder = typeToHeader.get(headerType);
             if (headerViewHolder == null) {
                 ViewGroup parent = headerViewManager.getHeaderViewParent();
-                SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
                 headerViewHolder = adapterWrapper.onCreateHeaderViewHolder(parent);
-                headerViewHolder.sectionType = sectionType;
                 headerViewHolder.sourcePositionProvider = this;
                 headerViewHolder.positionConverter = SectionDataManager.this;
-                typeToHeaderVH.put(sectionType, headerViewHolder);
+                typeToHeader.put(headerType, headerViewHolder);
             }
             return headerViewHolder;
         }
@@ -999,7 +1011,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
         int found = adapterWrapper.getItemCount();
         if (shouldBe != found) {
             throw new RuntimeException("Inconsistency detected. Section item count should be "
-                    + shouldBe + ", but SectionAdapter returned " + found + ".");
+                    + shouldBe + ", but BaseSectionAdapter returned " + found + ".");
         }
     }
 

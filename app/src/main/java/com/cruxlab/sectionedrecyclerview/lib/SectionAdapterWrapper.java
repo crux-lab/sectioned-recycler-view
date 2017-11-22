@@ -3,72 +3,73 @@ package com.cruxlab.sectionedrecyclerview.lib;
 import android.view.ViewGroup;
 
 /**
- * Contains {@link SectionAdapter} or {@link SectionWithHeaderAdapter}. Passes calls to non null
- * adapter instance, handling unsupported calls for SectionAdapter without header.
+ * Contains {@link SimpleSectionAdapter} or {@link SectionAdapter}. Passes calls to non null
+ * adapter instance, handling unsupported calls for SimpleSectionAdapter without header.
  */
 class SectionAdapterWrapper {
 
+    private final SimpleSectionAdapter simpleSectionAdapter;
     private final SectionAdapter sectionAdapter;
-    private final SectionWithHeaderAdapter sectionWithHeaderAdapter;
 
-    SectionAdapterWrapper(SectionAdapter sectionAdapter) {
+    SectionAdapterWrapper(SimpleSectionAdapter simpleSectionAdapter) {
+        if (simpleSectionAdapter == null) {
+            throw new IllegalArgumentException("SimpleSectionAdapter cannot be null.");
+        }
+        this.simpleSectionAdapter = simpleSectionAdapter;
+        this.sectionAdapter = null;
+    }
+
+    SectionAdapterWrapper(SectionAdapter sectionAdapter, int headerType) {
         if (sectionAdapter == null) {
             throw new IllegalArgumentException("SectionAdapter cannot be null.");
         }
         this.sectionAdapter = sectionAdapter;
-        this.sectionWithHeaderAdapter = null;
+        sectionAdapter.headerType = headerType;
+        this.simpleSectionAdapter = null;
     }
 
-    SectionAdapterWrapper(SectionWithHeaderAdapter sectionWithHeaderAdapter) {
-        if (sectionWithHeaderAdapter == null) {
-            throw new IllegalArgumentException("SectionWithHeaderAdapter cannot be null.");
-        }
-        this.sectionWithHeaderAdapter = sectionWithHeaderAdapter;
-        this.sectionAdapter = null;
-    }
-
-    SectionAdapter.ItemViewHolder onCreateViewHolder(ViewGroup parent, short type) {
-        if (sectionWithHeaderAdapter != null) {
-            return sectionWithHeaderAdapter.onCreateItemViewHolder(parent, type);
-        } else {
+    BaseSectionAdapter.ItemViewHolder onCreateViewHolder(ViewGroup parent, short type) {
+        if (sectionAdapter != null) {
             return sectionAdapter.onCreateItemViewHolder(parent, type);
+        } else {
+            return simpleSectionAdapter.onCreateItemViewHolder(parent, type);
         }
     }
 
-    SectionAdapter.HeaderViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
-        if (sectionWithHeaderAdapter != null) {
-            return sectionWithHeaderAdapter.onCreateHeaderViewHolder(parent);
+    BaseSectionAdapter.HeaderViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
+        if (sectionAdapter != null) {
+            return sectionAdapter.onCreateHeaderViewHolder(parent);
         } else {
             return null;
         }
     }
     @SuppressWarnings("unchecked")
-    void onBindViewHolder(SectionAdapter.ItemViewHolder holder, int position) {
-        if (sectionWithHeaderAdapter != null) {
-            sectionWithHeaderAdapter.onBindItemViewHolder(holder, position);
-        } else {
+    void onBindViewHolder(BaseSectionAdapter.ItemViewHolder holder, int position) {
+        if (sectionAdapter != null) {
             sectionAdapter.onBindItemViewHolder(holder, position);
+        } else {
+            simpleSectionAdapter.onBindItemViewHolder(holder, position);
         }
     }
 
     @SuppressWarnings("unchecked")
-    void onBindHeaderViewHolder(SectionAdapter.HeaderViewHolder holder) {
-        if (sectionWithHeaderAdapter != null) {
-            sectionWithHeaderAdapter.onBindHeaderViewHolder(holder);
+    void onBindHeaderViewHolder(BaseSectionAdapter.HeaderViewHolder holder) {
+        if (sectionAdapter != null) {
+            sectionAdapter.onBindHeaderViewHolder(holder);
         }
     }
 
     short getItemViewType(int position) {
-        if (sectionWithHeaderAdapter != null) {
-            return sectionWithHeaderAdapter.getItemViewType(position);
-        } else {
+        if (sectionAdapter != null) {
             return sectionAdapter.getItemViewType(position);
+        } else {
+            return simpleSectionAdapter.getItemViewType(position);
         }
     }
 
     boolean isHeaderVisible() {
-        return sectionWithHeaderAdapter != null &&
-                sectionWithHeaderAdapter.isHeaderVisible();
+        return sectionAdapter != null &&
+                sectionAdapter.isHeaderVisible();
     }
 
     int getHeaderVisibilityInt() {
@@ -76,48 +77,63 @@ class SectionAdapterWrapper {
     }
 
     boolean isHeaderPinned() {
-        return sectionWithHeaderAdapter != null &&
-                sectionWithHeaderAdapter.isHeaderPinned();
+        return sectionAdapter != null &&
+                sectionAdapter.isHeaderPinned();
     }
 
     void setSection(int section) {
-        if (sectionWithHeaderAdapter != null) {
-            sectionWithHeaderAdapter.section = section;
-        } else {
+        if (sectionAdapter != null) {
             sectionAdapter.section = section;
+        } else {
+            simpleSectionAdapter.section = section;
         }
     }
 
     int getSection() {
-        if (sectionWithHeaderAdapter != null) {
-            return sectionWithHeaderAdapter.section;
-        } else {
+        if (sectionAdapter != null) {
             return sectionAdapter.section;
+        } else {
+            return simpleSectionAdapter.section;
         }
     }
 
     @SuppressWarnings("unchecked")
-    <T extends SectionAdapter> T getAdapter() {
-        if (sectionWithHeaderAdapter != null) {
-            return (T) sectionWithHeaderAdapter;
-        } else {
+    <T extends BaseSectionAdapter> T getAdapter() {
+        if (sectionAdapter != null) {
             return (T) sectionAdapter;
+        } else {
+            return (T) simpleSectionAdapter;
         }
     }
 
     void setItemManager(SectionItemManager itemManager) {
-        if (sectionWithHeaderAdapter != null) {
-            sectionWithHeaderAdapter.setItemManager(itemManager);
-        } else {
+        if (sectionAdapter != null) {
             sectionAdapter.setItemManager(itemManager);
+        } else {
+            simpleSectionAdapter.setItemManager(itemManager);
         }
     }
 
     int getItemCount() {
-        if (sectionWithHeaderAdapter != null) {
-            return sectionWithHeaderAdapter.getItemCount();
-        } else {
+        if (sectionAdapter != null) {
             return sectionAdapter.getItemCount();
+        } else {
+            return simpleSectionAdapter.getItemCount();
+        }
+    }
+
+    int getHeaderType() {
+        if (sectionAdapter != null) {
+            return sectionAdapter.headerType;
+        }
+        return SectionAdapter.NO_HEADER_TYPE;
+    }
+
+    void resetAdapter() {
+        setSection(-1);
+        setItemManager(null);
+        if (sectionAdapter != null) {
+            sectionAdapter.headerType = SectionAdapter.NO_HEADER_TYPE;
         }
     }
 

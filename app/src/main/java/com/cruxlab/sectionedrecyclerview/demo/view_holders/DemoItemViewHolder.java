@@ -6,17 +6,17 @@ import android.widget.TextView;
 
 import com.cruxlab.sectionedrecyclerview.R;
 import com.cruxlab.sectionedrecyclerview.demo.adapters.DemoSectionAdapter;
-import com.cruxlab.sectionedrecyclerview.demo.adapters.DemoSectionWithHeaderAdapter;
-import com.cruxlab.sectionedrecyclerview.lib.SectionAdapter;
+import com.cruxlab.sectionedrecyclerview.demo.adapters.DemoSimpleSectionAdapter;
+import com.cruxlab.sectionedrecyclerview.lib.BaseSectionAdapter;
 
-public class DemoItemViewHolder extends SectionAdapter.ItemViewHolder {
+public class DemoItemViewHolder extends BaseSectionAdapter.ItemViewHolder {
 
     private TextView text;
-    private DemoSectionWithHeaderAdapter adapter;
-    private DemoSectionAdapter simpleAdapter;
+    private DemoSectionAdapter adapter;
+    private DemoSimpleSectionAdapter simpleAdapter;
     private ImageButton btnDuplicate, btnChange, btnRemove, btnHeader;
 
-    public DemoItemViewHolder(View itemView, DemoSectionWithHeaderAdapter adapter) {
+    public DemoItemViewHolder(View itemView, DemoSectionAdapter adapter) {
         super(itemView);
         this.adapter = adapter;
         this.text = itemView.findViewById(R.id.tv_text);
@@ -26,7 +26,7 @@ public class DemoItemViewHolder extends SectionAdapter.ItemViewHolder {
         this.btnHeader = itemView.findViewById(R.id.ibtn_header);
     }
 
-    public DemoItemViewHolder(View itemView, DemoSectionAdapter simpleAdapter) {
+    public DemoItemViewHolder(View itemView, DemoSimpleSectionAdapter simpleAdapter) {
         super(itemView);
         this.simpleAdapter = simpleAdapter;
         this.text = itemView.findViewById(R.id.tv_text);
@@ -90,11 +90,11 @@ public class DemoItemViewHolder extends SectionAdapter.ItemViewHolder {
         }
     }
 
-    public DemoSectionWithHeaderAdapter getAdapter() {
+    public DemoSectionAdapter getAdapter() {
         return adapter;
     }
 
-    public DemoSectionAdapter getSimpleAdapter() {
+    public DemoSimpleSectionAdapter getSimpleAdapter() {
         return simpleAdapter;
     }
 

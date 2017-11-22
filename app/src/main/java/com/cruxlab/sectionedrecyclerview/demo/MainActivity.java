@@ -13,11 +13,13 @@ import android.widget.Button;
 
 import com.cruxlab.sectionedrecyclerview.R;
 import com.cruxlab.sectionedrecyclerview.demo.adapters.DemoSectionAdapter;
-import com.cruxlab.sectionedrecyclerview.demo.adapters.DemoSectionWithHeaderAdapter;
+import com.cruxlab.sectionedrecyclerview.demo.adapters.DemoSimpleSectionAdapter;
 import com.cruxlab.sectionedrecyclerview.lib.SectionDataManager;
 import com.cruxlab.sectionedrecyclerview.lib.SectionHeaderLayout;
 
 public class MainActivity extends AppCompatActivity {
+
+    public static final int HEADER_TYPE_DEFAULT = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,10 +45,10 @@ public class MainActivity extends AppCompatActivity {
                 int color = (i % 4 == 0) ? Color.YELLOW : (i % 4 == 1) ? Color.RED : Color.BLUE;
                 boolean isHeaderVisible = (i % 4 == 0) || (i % 4 == 1);
                 boolean isHeaderPinned = (i % 4 == 0);
-                DemoSectionWithHeaderAdapter sectionAdapter = new DemoSectionWithHeaderAdapter(color, sectionDataManager, isHeaderVisible, isHeaderPinned);
-                sectionDataManager.addSection(sectionAdapter, new DemoSectionItemSwipeCallback(color, deleteIcon));
+                DemoSectionAdapter sectionAdapter = new DemoSectionAdapter(color, sectionDataManager, isHeaderVisible, isHeaderPinned);
+                sectionDataManager.addSection(sectionAdapter, new DemoSectionItemSwipeCallback(color, deleteIcon), HEADER_TYPE_DEFAULT);
             } else {
-                sectionDataManager.addSection(new DemoSectionAdapter(), new DemoSectionItemSwipeCallback(Color.GRAY, deleteIcon));
+                sectionDataManager.addSection(new DemoSimpleSectionAdapter(), new DemoSectionItemSwipeCallback(Color.GRAY, deleteIcon));
             }
         }
 

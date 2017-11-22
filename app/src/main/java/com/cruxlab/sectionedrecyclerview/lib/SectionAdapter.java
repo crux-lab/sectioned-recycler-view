@@ -1,355 +1,113 @@
 package com.cruxlab.sectionedrecyclerview.lib;
 
 import android.support.v7.widget.RecyclerView;
-import android.view.View;
 import android.view.ViewGroup;
 
-import java.util.List;
-
 /**
- * Base class for a SectionAdapter.
+ * Base Adapter class for a section with header.
  * <p>
- * Provides a binding from an app-specific data set to views that are displayed within
- * a SectionedRecyclerView in an individual section.
- * <p>
- * Similar to {@link android.support.v7.widget.RecyclerView.Adapter}.
+ * Besides item views, provides a header view displayed within a RecyclerView in an individual section.
  *
  * @param <IVH> A class that extends ItemViewHolder that will be used by the adapter to manage item views.
+ * @param <HVH> A class that extends ViewHolder that will be used by the adapter to manage header view.
  */
-public abstract class SectionAdapter<IVH extends SectionAdapter.ItemViewHolder> {
 
-    int section = -1;
-    SectionItemManager itemManager;
+public abstract class SectionAdapter<IVH extends BaseSectionAdapter.ItemViewHolder, HVH extends BaseSectionAdapter.HeaderViewHolder> extends BaseSectionAdapter<IVH> {
+
+    public static int NO_HEADER_TYPE = -1;
+
+    int headerType = NO_HEADER_TYPE;
+    private boolean isHeaderVisible;
+    private boolean isHeaderPinned;
+
+    public SectionAdapter(boolean isHeaderVisible, boolean isHeaderPinned) {
+        this.isHeaderVisible = isHeaderVisible;
+        this.isHeaderPinned = isHeaderPinned;
+    }
 
     /**
-     * Returns the total number of items in the section data set held by the adapter.
-     *
-     * @return The total number of items in this section.
-     */
-    public abstract int getItemCount();
-
-    /**
-     * Called when SectionDataManager needs a new {@link SectionAdapter.ItemViewHolder} of the given
-     * type to represent an item in this section.
+     * Called when SectionDataManager needs a new {@link BaseSectionAdapter.HeaderViewHolder} of the given
+     * type to represent a header in this section.
      * <p>
      * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#onCreateViewHolder(ViewGroup, int)}.
      *
-     * @param parent The ViewGroup into which the new item view will be added after it is bound to
+     * @param parent The ViewGroup into which the new header view will be added after it is bound to
      *               an adapter position.
-     * @param type   The view type of the new View.
      */
-    public abstract IVH onCreateItemViewHolder(ViewGroup parent, short type);
+    public abstract HVH onCreateHeaderViewHolder(ViewGroup parent);
 
     /**
-     * Called by SectionDataManager to display the data at the specified section position. This
-     * method should update the contents of the {@link SectionAdapter.ItemViewHolder#itemView} to
-     * reflect the item at the given position.
+     * Called by SectionDataManager to display header data. This method should update the contents
+     * of the header {@link BaseSectionAdapter.HeaderViewHolder#itemView}.
      * <p>
      * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#onBindViewHolder(RecyclerView.ViewHolder, int)}.
      *
-     * @param holder   The ViewHolder which should be updated to represent the contents of the
-     *                 item at the given position in the section data set.
-     * @param position The position of the item within the adapter's data set.
+     * @param holder The ViewHolder which should be updated to represent the contents of the header.
      */
-    public abstract void onBindItemViewHolder(IVH holder, int position);
+    public abstract void onBindHeaderViewHolder(HVH holder);
 
     /**
-     * Return the view type of the item within this section at <code>position</code> for the purposes
-     * of view recycling.
+     * Notifies SectionDataManager that the header has been changed.
      * <p>
-     * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#getItemViewType(int)}.
+     * Note, that it should be called, when header view updates itself (e.g. changes its contents
+     * after some user interaction), because otherwise when header view is duplicated and pinned
+     * to the top of the {@link SectionHeaderLayout}, these changes won't affect the real header
+     * view in the RecyclerView.
+     */
+    public void notifyHeaderChanged() {
+        if (itemManager == null) return;
+        itemManager.notifyHeaderChanged(section);
+    }
+
+    /**
+     * Updates header visibility and notifies SectionDataManager about changes.
      *
-     * @param position Position to query.
-     * @return Short value identifying the type of the view needed to represent the item at
-     *         <code>position</code> in this section. Type codes need not be contiguous.
+     * @param visible New header visibility.
      */
-    public short getItemViewType(int position) {
-        return 0;
+    public void updateHeaderVisibility(boolean visible) {
+        if (itemManager == null) return;
+        if (visible == isHeaderVisible) return;
+        isHeaderVisible = visible;
+        itemManager.notifyHeaderVisibilityChanged(section, visible);
     }
 
     /**
-     * Notifies SectionDataManager that the item in this section at <code>pos</code> has been
-     * inserted.
-     * <p>
-     * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#notifyItemInserted(int)}.
+     * Updates header pinned state and notifies SectionDataManager about changes.
      *
-     * @param pos Inserted item position.
+     * @param pinned New header pinned state.
      */
-    public final void notifyItemInserted(int pos) {
-        if (itemManager != null) {
-            itemManager.notifyInserted(section, pos);
-        }
+    public void updateHeaderPinnedState(boolean pinned) {
+        if (itemManager == null) return;
+        if (pinned == isHeaderPinned) return;
+        isHeaderPinned = pinned;
+        itemManager.notifyHeaderPinnedStateChanged(section, pinned);
     }
 
     /**
-     * Notifies SectionDataManager that the items in this section in the given list of positions
-     * have been inserted.
+     * Returns whether header is currently visible.
      *
-     * @param posList Varargs of inserted positions.
+     * @return Header visibility.
      */
-    public final void notifyItemInserted(int... posList) {
-        for (int pos : posList) {
-            notifyItemInserted(pos);
-        }
+    public final boolean isHeaderVisible() {
+        return isHeaderVisible;
     }
 
     /**
-     * Notifies SectionDataManager that the items in this section in the given list of positions
-     * have been inserted.
+     * Returns whether header is currently pinned.
      *
-     * @param posList List of inserted positions.
+     * @return Header pinned state.
      */
-    public final void notifyItemInserted(List<Integer> posList) {
-        for (int pos : posList) {
-            notifyItemInserted(pos);
-        }
+    public final boolean isHeaderPinned() {
+        return isHeaderPinned;
     }
 
     /**
-     * Notifies SectionDataManager that <code>cnt</code> items starting at <code>startPos</code>
-     * in this section have been inserted.
-     * <p>
-     * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#notifyItemRangeInserted(int, int)}.
+     * Returns header type currently associated with this adapter or {@link SectionAdapter#NO_HEADER_TYPE}.
      *
-     * @param startPos Position of the first item that was inserted.
-     * @param cnt      Number of items inserted.
+     * @return Header type.
      */
-    public final void notifyItemRangeInserted(int startPos, int cnt) {
-        if (itemManager != null) {
-            itemManager.notifyRangeInserted(section, startPos, cnt);
-        }
-    }
-
-    /**
-     * Notifies SectionDataManager that the item in this section at <code>pos</code> has been
-     * removed.
-     * <p>
-     * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#notifyItemRemoved(int)}.
-     *
-     * @param pos Removed item position.
-     */
-    public final void notifyItemRemoved(int pos) {
-        if (itemManager != null) {
-            itemManager.notifyRemoved(section, pos);
-        }
-    }
-
-    /**
-     * Notifies SectionDataManager that the items in this section in the given list of positions
-     * have been removed.
-     *
-     * @param posList Varargs of removed positions.
-     */
-    public final void notifyItemRemoved(int... posList) {
-        for (int pos : posList) {
-            notifyItemRemoved(pos);
-        }
-    }
-
-    /**
-     * Notifies SectionDataManager that the items in this section in the given list of positions
-     * have been removed.
-     *
-     * @param posList List of removed positions.
-     */
-    public final void notifyItemRemoved(List<Integer> posList) {
-        for (int pos : posList) {
-            notifyItemRemoved(pos);
-        }
-    }
-
-    /**
-     * Notifies SectionDataManager that <code>cnt</code> items starting at <code>startPos</code>
-     * in this section have been removed.
-     * <p>
-     * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#notifyItemRangeRemoved(int, int)}.
-     *
-     * @param startPos Position of the first item that was removed.
-     * @param cnt      Number of items removed.
-     */
-    public final void notifyItemRangeRemoved(int startPos, int cnt) {
-        if (itemManager != null) {
-            itemManager.notifyRangeRemoved(section, startPos, cnt);
-        }
-    }
-
-    /**
-     * Notifies SectionDataManager that the item in this section at <code>pos</code>
-     * has been changed.
-     * <p>
-     * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#notifyItemChanged(int)}.
-     *
-     * @param pos Changed item position.
-     */
-    public final void notifyItemChanged(int pos) {
-        if (itemManager != null) {
-            itemManager.notifyChanged(section, pos);
-        }
-    }
-
-    /**
-     * Notifies SectionDataManager that the items in this section in the given list of positions
-     * have been changed.
-     *
-     * @param posList Varargs of changed positions.
-     */
-    public final void notifyItemChanged(int... posList) {
-        for (int pos : posList) {
-            notifyItemChanged(pos);
-        }
-    }
-
-    /**
-     * Notifies SectionDataManager that the items in this section in the given list of positions
-     * have been changed.
-     *
-     * @param posList List of changed positions.
-     */
-    public final void notifyItemChanged(List<Integer> posList) {
-        for (int pos : posList) {
-            notifyItemChanged(pos);
-        }
-    }
-
-    /**
-     * Notifies SectionDataManager that <code>cnt</code> items starting at <code>startPos</code>
-     * in this section have been changed.
-     * <p>
-     * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#notifyItemRangeChanged(int, int)}.
-     *
-     * @param startPos Position of the first item that was changed.
-     * @param cnt      Number of items changed.
-     */
-    public final void notifyItemRangeChanged(int startPos, int cnt) {
-        if (itemManager != null) {
-            itemManager.notifyRangeChanged(section, startPos, cnt);
-        }
-    }
-
-    /**
-     * Notifies SectionDataManager that the item at <code>fromPosition</code> has been moved
-     * to <code>toPosition</code>.
-     * <p>
-     * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#notifyItemMoved(int, int)}.
-     *
-     * @param fromPos Previous position of the item.
-     * @param toPos   New position of the item.
-     */
-    public final void notifyItemMoved(int fromPos, int toPos) {
-        if (itemManager != null) {
-            itemManager.notifyMoved(section, fromPos, toPos);
-        }
-    }
-
-    /**
-     * Returns the 0-based index of the section currently represented by this SectionAdapter in
-     * SectionedRecyclerView.
-     *
-     * @return Current section index.
-     */
-    public final int getSection() {
-        return section;
-    }
-
-    void setItemManager(SectionItemManager itemManager) {
-        this.itemManager = itemManager;
-    }
-
-    /**
-     * Base ViewHolder class for SectionAdapter.
-     * <p>
-     * Describes a view and metadata about its place within the SectionedRecyclerView.
-     * <p>
-     * Similar to {@link android.support.v7.widget.RecyclerView.ViewHolder}.
-     */
-    public abstract static class ViewHolder {
-
-        public final View itemView;
-        PositionConverter positionConverter;
-        ViewHolderWrapper viewHolderWrapper;
-
-        public ViewHolder(View itemView) {
-            if (itemView == null) {
-                throw new IllegalArgumentException("ItemView cannot be null when creating ViewHolder.");
-            }
-            this.itemView = itemView;
-        }
-
-        /**
-         * Returns the global adapter position in the {@link RecyclerView.Adapter} represented by
-         * this ViewHolder or -1, if this ViewHolder hasn't been used in any SectionedRV.
-         * <p>
-         * Similar to {@link RecyclerView.ViewHolder#getAdapterPosition()}.
-         *
-         * @return Global adapter position or -1.
-         */
-        public int getGlobalAdapterPosition() {
-            return viewHolderWrapper != null ? viewHolderWrapper.getAdapterPosition() : -1;
-        }
-
-        /**
-         * Returns the section index that corresponds to this ViewHolder or -1, if this ViewHolder
-         * hasn't been used in any SectionedRV.
-         *
-         * @return Index of the section or -1.
-         */
-        public final int getSection() {
-            int adapterPos = getGlobalAdapterPosition();
-            return positionConverter != null ? positionConverter.calcSection(adapterPos) : -1;
-        }
-
-    }
-
-    /**
-     * Base ViewHolder class for item view in SectionAdapter.
-     * <p>
-     * Describes an item view and metadata about its place within the SectionedRecyclerView and
-     * SectionAdapter. Provides item view position within its section.
-     */
-    public abstract static class ItemViewHolder extends ViewHolder {
-
-        public ItemViewHolder(View itemView) {
-            super(itemView);
-        }
-
-        /**
-         * Returns the position in the corresponding SectionAdapter represented by this ViewHolder
-         * or -1, if this ViewHolder hasn't been used in any SectionedRV.
-         *
-         * @return Section adapter position.
-         */
-        public final int getSectionAdapterPosition() {
-            int adapterPos = getGlobalAdapterPosition();
-            return positionConverter != null ? positionConverter.calcPosInSection(adapterPos) : -1;
-        }
-
-    }
-
-    /**
-     * Base ViewHolder class for header view in SectionAdapter.
-     * <p>
-     * Describes a header view and metadata about its place within the SectionedRecyclerView. When
-     * the corresponding header is duplicated, it uses {@link #sourcePositionProvider} to obtain
-     * the global adapter position.
-     */
-    public abstract static class HeaderViewHolder extends ViewHolder {
-
-        short sectionType;
-        HeaderPosProvider sourcePositionProvider;
-
-        public HeaderViewHolder(View itemView) {
-            super(itemView);
-        }
-
-        @Override
-        public final int getGlobalAdapterPosition() {
-            if (sourcePositionProvider != null) {
-                return sourcePositionProvider.getHeaderAdapterPos(sectionType);
-            } else {
-                return super.getGlobalAdapterPosition();
-            }
-        }
-
+    public final int getHeaderType() {
+        return headerType;
     }
 
 }

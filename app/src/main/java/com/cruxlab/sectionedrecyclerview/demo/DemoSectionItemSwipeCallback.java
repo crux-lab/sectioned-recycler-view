@@ -9,7 +9,7 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 
 import com.cruxlab.sectionedrecyclerview.demo.view_holders.DemoItemViewHolder;
-import com.cruxlab.sectionedrecyclerview.lib.SectionAdapter;
+import com.cruxlab.sectionedrecyclerview.lib.BaseSectionAdapter;
 import com.cruxlab.sectionedrecyclerview.lib.SectionItemSwipeCallback;
 
 public class DemoSectionItemSwipeCallback extends SectionItemSwipeCallback {
@@ -25,12 +25,12 @@ public class DemoSectionItemSwipeCallback extends SectionItemSwipeCallback {
     }
 
     @Override
-    public int getSwipeDirFlags(RecyclerView recyclerView, SectionAdapter.ItemViewHolder viewHolder) {
+    public int getSwipeDirFlags(RecyclerView recyclerView, BaseSectionAdapter.ItemViewHolder viewHolder) {
         return ItemTouchHelper.LEFT;
     }
 
     @Override
-    public void onSwiped(SectionAdapter.ItemViewHolder viewHolder, int direction) {
+    public void onSwiped(BaseSectionAdapter.ItemViewHolder viewHolder, int direction) {
         DemoItemViewHolder itemViewHolder = (DemoItemViewHolder) viewHolder;
         int sectionPos = itemViewHolder.getSectionAdapterPosition();
         if (sectionPos == -1) return;
@@ -42,7 +42,7 @@ public class DemoSectionItemSwipeCallback extends SectionItemSwipeCallback {
     }
 
     @Override
-    public void onChildDraw(Canvas c, RecyclerView recyclerView, SectionAdapter.ItemViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+    public void onChildDraw(Canvas c, RecyclerView recyclerView, BaseSectionAdapter.ItemViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
         View itemView = viewHolder.itemView;
         int itemHeight = itemView.getBottom() - itemView.getTop();
         background.setColor(color);

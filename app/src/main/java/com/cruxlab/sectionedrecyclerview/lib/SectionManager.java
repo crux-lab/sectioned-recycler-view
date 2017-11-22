@@ -4,149 +4,167 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 /**
- * Interface for interaction with SectionedRecyclerView and managing its sections.
+ * Interface for interaction with RecyclerView and managing its sections.
  * <p>
- * Each section is represented by a {@link SectionAdapter} or {@link SectionWithHeaderAdapter},
+ * Each section is represented by a {@link SimpleSectionAdapter} or {@link SectionAdapter},
  * which provides a binding from an app-specific data set to views, and an optional
  * {@link SectionItemSwipeCallback}, which lets you control swipe behavior of each item view within
  * the section.
  * <p>
  * Most methods require an index of the section to interact with. It can be
- * received from adapter by calling {@link SectionAdapter#getSection()}.
+ * received from adapter by calling {@link BaseSectionAdapter#getSection()}.
  */
 public interface SectionManager {
 
     /**
-     * Returns the total number of sections in the SectionedRecyclerView.
+     * Returns the total number of sections in the RecyclerView.
      *
      * @return The total number of sections.
      */
     int getSectionCount();
 
     /**
-     * Appends the section represented by the specified SectionAdapter to the end of the
-     * SectionedRecyclerView.
+     * Appends the section represented by the specified SimpleSectionAdapter to the end of the
+     * RecyclerView.
      *
-     * @param sectionAdapter SectionAdapter to represent the appended section.
+     * @param simpleSectionAdapter SimpleSectionAdapter to represent the appended section.
      */
-    void addSection(@NonNull SectionAdapter sectionAdapter);
+    void addSection(@NonNull SimpleSectionAdapter simpleSectionAdapter);
 
     /**
-     * Appends the section represented by the specified SectionWithHeaderAdapter to the end of the
-     * SectionedRecyclerView.
+     * Appends the section represented by the specified SectionAdapter to the end of the RecyclerView.
+     * Header type is used to cache {@link BaseSectionAdapter.HeaderViewHolder}s displayed at the top
+     * of the {@link SectionHeaderLayout}, so different SectionAdapters with the same header view
+     * should return the same value.
      *
-     * @param sectionWithHeaderAdapter SectionWithHeaderAdapter to represent the appended section.
+     * @param sectionAdapter SectionAdapter to represent the appended section.
+     * @param headerType     Type to represent its header view.
      */
-    void addSection(@NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter);
+    void addSection(@NonNull SectionAdapter sectionAdapter, int headerType);
+
+    /**
+     * Appends the section represented by the specified SimpleSectionAdapter and SectionItemSwipeCallback
+     * to the end of the RecyclerView.
+     *
+     * @param simpleSectionAdapter SimpleSectionAdapter to represent the appended section.
+     * @param swipeCallback        SectionItemSwipeCallback to represent the appended section.
+     */
+    void addSection(@NonNull SimpleSectionAdapter simpleSectionAdapter, SectionItemSwipeCallback swipeCallback);
 
     /**
      * Appends the section represented by the specified SectionAdapter and SectionItemSwipeCallback
-     * to the end of the SectionedRecyclerView.
+     * to the end of the RecyclerView. Header type is used to cache {@link BaseSectionAdapter.HeaderViewHolder}s
+     * displayed at the top of the {@link SectionHeaderLayout}, so different SectionAdapters with
+     * the same header view should return the same value.
      *
      * @param sectionAdapter SectionAdapter to represent the appended section.
      * @param swipeCallback  SectionItemSwipeCallback to represent the appended section.
+     * @param headerType     Type to represent its header view.
      */
-    void addSection(@NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback);
+    void addSection(@NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback, int headerType);
 
     /**
-     * Appends the section represented by the specified SectionWithHeaderAdapter and SectionItemSwipeCallback
-     * to the end of the SectionedRecyclerView.
+     * Inserts the section represented by the specified SimpleSectionAdapter to the specified position
+     * in the RecyclerView.
      *
-     * @param sectionWithHeaderAdapter SectionWithHeaderAdapter to represent the appended section.
-     * @param swipeCallback            SectionItemSwipeCallback to represent the appended section.
+     * @param section              Index at which the section is to be inserted.
+     * @param simpleSectionAdapter SimpleSectionAdapter to represent the inserted section.
      */
-    void addSection(@NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter, SectionItemSwipeCallback swipeCallback);
+    void insertSection(int section, @NonNull SimpleSectionAdapter simpleSectionAdapter);
 
     /**
      * Inserts the section represented by the specified SectionAdapter to the specified position
-     * in the SectionedRecyclerView.
+     * in the RecyclerView. Header type is used to cache {@link BaseSectionAdapter.HeaderViewHolder}s
+     * displayed at the top of the {@link SectionHeaderLayout}, so different SectionAdapters with
+     * the same header view should return the same value.
      *
      * @param section        Index at which the section is to be inserted.
      * @param sectionAdapter SectionAdapter to represent the inserted section.
+     * @param headerType     Type to represent its header view.
      */
-    void insertSection(int section, @NonNull SectionAdapter sectionAdapter);
+    void insertSection(int section, @NonNull SectionAdapter sectionAdapter, int headerType);
 
     /**
-     * Inserts the section represented by the specified SectionWithHeaderAdapter to the specified position
-     * in the SectionedRecyclerView.
+     * Inserts the section represented by the specified SimpleSectionAdapter and SectionItemSwipeCallback
+     * to the specified position in the RecyclerView.
      *
-     * @param section                  Index at which the section is to be inserted.
-     * @param sectionWithHeaderAdapter SectionWithHeaderAdapter to represent the inserted section.
+     * @param section              Index at which the section is to be inserted.
+     * @param simpleSectionAdapter SimpleSectionAdapter to represent the inserted section.
+     * @param swipeCallback        SectionItemSwipeCallback to represent the inserted section.
      */
-    void insertSection(int section, @NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter);
+    void insertSection(int section, @NonNull SimpleSectionAdapter simpleSectionAdapter,
+                       SectionItemSwipeCallback swipeCallback);
+
 
     /**
      * Inserts the section represented by the specified SectionAdapter and SectionItemSwipeCallback
-     * to the specified position in the SectionedRecyclerView.
+     * to the specified position in the RecyclerView. Header type is used to cache
+     * {@link BaseSectionAdapter.HeaderViewHolder}s displayed at the top of the {@link SectionHeaderLayout},
+     * so different SectionAdapters with the same header view should return the same value.
      *
      * @param section        Index at which the section is to be inserted.
      * @param sectionAdapter SectionAdapter to represent the inserted section.
      * @param swipeCallback  SectionItemSwipeCallback to represent the inserted section.
+     * @param headerType     Type to represent its header view.
      */
     void insertSection(int section, @NonNull SectionAdapter sectionAdapter,
-                       SectionItemSwipeCallback swipeCallback);
-
+                       SectionItemSwipeCallback swipeCallback, int headerType);
 
     /**
-     * Inserts the section represented by the specified SectionWithHeaderAdapter and SectionItemSwipeCallback
-     * to the specified position in the SectionedRecyclerView.
+     * Replaces the section at the specified position in the RecyclerView with the section
+     * represented by the specified SimpleSectionAdapter.
      *
-     * @param section                  Index at which the section is to be inserted.
-     * @param sectionWithHeaderAdapter SectionWithHeaderAdapter to represent the inserted section.
-     * @param swipeCallback            SectionItemSwipeCallback to represent the inserted section.
+     * @param section              Index of the section to replace.
+     * @param simpleSectionAdapter SimpleSectionAdapter to represent the section to replace.
      */
-    void insertSection(int section, @NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter,
-                       SectionItemSwipeCallback swipeCallback);
+    void replaceSection(int section, @NonNull SimpleSectionAdapter simpleSectionAdapter);
 
     /**
-     * Replaces the section at the specified position in the SectionedRecyclerView with the section
-     * represented by the specified SectionAdapter.
+     * Replaces the section at the specified position in the RecyclerView with the section
+     * represented by the specified SectionAdapter. Header type is used to cache
+     * {@link BaseSectionAdapter.HeaderViewHolder}s displayed at the top of the {@link SectionHeaderLayout},
+     * so different SectionAdapters with the same header view should return the same value.
      *
      * @param section        Index of the section to replace.
      * @param sectionAdapter SectionAdapter to represent the section to replace.
+     * @param headerType     Type to represent its header view.
      */
-    void replaceSection(int section, @NonNull SectionAdapter sectionAdapter);
+    void replaceSection(int section, @NonNull SectionAdapter sectionAdapter, int headerType);
 
     /**
-     * Replaces the section at the specified position in the SectionedRecyclerView with the section
-     * represented by the specified SectionWithHeaderAdapter.
+     * Replaces the section at the specified position in the RecyclerView with the section
+     * represented by the specified SimpleSectionAdapter and SectionItemSwipeCallback.
      *
-     * @param section                  Index of the section to replace.
-     * @param sectionWithHeaderAdapter SectionWithHeaderAdapter to represent the section to replace.
+     * @param section              Index of the section to replace.
+     * @param simpleSectionAdapter SimpleSectionAdapter to represent the section to replace.
+     * @param swipeCallback        SectionItemSwipeCallback to represent the section to replace.
      */
-    void replaceSection(int section, @NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter);
+    void replaceSection(int section, @NonNull SimpleSectionAdapter simpleSectionAdapter,
+                        SectionItemSwipeCallback swipeCallback);
 
     /**
-     * Replaces the section at the specified position in the SectionedRecyclerView with the section
-     * represented by the specified SectionAdapter and SectionItemSwipeCallback.
+     * Replaces the section at the specified position in the RecyclerView with the section
+     * represented by the specified SectionAdapter and SectionItemSwipeCallback. Header type is used
+     * to cache {@link BaseSectionAdapter.HeaderViewHolder}s displayed at the top of the {@link SectionHeaderLayout},
+     * so different SectionAdapters with the same header view should return the same value.
      *
      * @param section        Index of the section to replace.
      * @param sectionAdapter SectionAdapter to represent the section to replace.
      * @param swipeCallback  SectionItemSwipeCallback to represent the section to replace.
+     * @param headerType     Type to represent its header view.
      */
     void replaceSection(int section, @NonNull SectionAdapter sectionAdapter,
-                        SectionItemSwipeCallback swipeCallback);
+                        SectionItemSwipeCallback swipeCallback, int headerType);
 
     /**
-     * Replaces the section at the specified position in the SectionedRecyclerView with the section
-     * represented by the specified SectionWithHeaderAdapter and SectionItemSwipeCallback.
-     *
-     * @param section                  Index of the section to replace.
-     * @param sectionWithHeaderAdapter SectionWithHeaderAdapter to represent the section to replace.
-     * @param swipeCallback            SectionItemSwipeCallback to represent the section to replace.
-     */
-    void replaceSection(int section, @NonNull SectionWithHeaderAdapter sectionWithHeaderAdapter,
-                        SectionItemSwipeCallback swipeCallback);
-
-    /**
-     * Removes the section at the specified position in the SectionedRecyclerView.
+     * Removes the section at the specified position in the RecyclerView.
      *
      * @param section Index of the section to remove.
      */
     void removeSection(int section);
 
     /**
-     * Updates the section at the specified position in the SectionedRecyclerView.
+     * Updates the section at the specified position in the RecyclerView.
      *
      * @param section Index of the section to update.
      */
@@ -154,7 +172,7 @@ public interface SectionManager {
 
     /**
      * Sets the specified SectionItemSwipeCallback to the section at the specified position in the
-     * SectionedRecyclerView.
+     * RecyclerView.
      *
      * @param section       Index of the section to be represented by the callback.
      * @param swipeCallback SectionItemSwipeCallback to represent the specified section.
@@ -163,25 +181,25 @@ public interface SectionManager {
 
     /**
      * Removes SectionItemSwipeCallback from the section at the specified position in the
-     * SectionedRecyclerView.
+     * RecyclerView.
      *
      * @param section Index of the section to remove the callback from.
      */
     void removeSwipeCallback(int section);
 
     /**
-     * Returns the SectionAdapter which represents the specifies section in the
-     * SectionedRecyclerView.
+     * Returns the successor of the BaseSectionAdapter which represents the specifies section in the
+     * RecyclerView.
      *
      * @param section Index of the section to be represented.
-     * @return SectionAdapter which represents the specifies section.
+     * @return Successor of the BaseSectionAdapter which represents the specifies section.
      */
 
-    <T extends SectionAdapter> T getSectionAdapter(int section);
+    <T extends BaseSectionAdapter> T getSectionAdapter(int section);
 
     /**
      * Returns the SectionItemSwipeCallback which represents the specifies section in the
-     * SectionedRecyclerView or null.
+     * RecyclerView or null.
      *
      * @param section Index of the section to be represented.
      * @return SectionItemSwipeCallback which represents the specifies section or null.

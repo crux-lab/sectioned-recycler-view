@@ -1,7 +1,7 @@
 package com.cruxlab.sectionedrecyclerview.lib;
 
 /**
- * Interface for interaction between {@link SectionAdapter} and SectionedRecyclerView.
+ * Interface for interaction between {@link BaseSectionAdapter} and RecyclerView.
  */
 interface SectionItemManager {
 

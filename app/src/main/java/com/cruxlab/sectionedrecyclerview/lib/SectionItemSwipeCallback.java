@@ -6,18 +6,18 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 
 /**
- * This class lets you control swipe behavior of each item view in {@link SectionAdapter}
+ * This class lets you control swipe behavior of each item view in {@link BaseSectionAdapter}
  * and also receive callbacks when user performs touch actions.
  * <p>
  * To control which actions user can take on each view, you should override
- * {@link #getSwipeDirFlags(RecyclerView, SectionAdapter.ItemViewHolder)} and return appropriate
+ * {@link #getSwipeDirFlags(RecyclerView, BaseSectionAdapter.ItemViewHolder)} and return appropriate
  * set of direction flags combining ({@link ItemTouchHelper.Callback#LEFT},
  * {@link ItemTouchHelper.Callback#RIGHT}, {@link ItemTouchHelper.Callback#START}
  * and {@link ItemTouchHelper.Callback#END} or 0 if no movement is allowed.
  * <p>
  * When a View is swiped, ItemTouchHelper animates it until it goes out of bounds, then calls
- * {@link #onSwiped(SectionAdapter.ItemViewHolder, int)}. At this point, you should update your
- * adapter (e.g. remove the item) and call related SectionWithHeaderAdapter#notify event.
+ * {@link #onSwiped(BaseSectionAdapter.ItemViewHolder, int)}. At this point, you should update your
+ * adapter (e.g. remove the item) and call related SectionAdapter#notify event.
  * <p>
  * You can also customize how your View's respond to user interactions and disable swipe
  * for all views {@link #isSwipeEnabled()}.
@@ -38,7 +38,7 @@ public abstract class SectionItemSwipeCallback {
      * @return A binary OR of swipe direction flags.
      */
     public abstract int getSwipeDirFlags(RecyclerView recyclerView,
-                                         SectionAdapter.ItemViewHolder viewHolder);
+                                         BaseSectionAdapter.ItemViewHolder viewHolder);
     /**
      * Called when a ViewHolder is swiped by the user.
      * <p>
@@ -47,7 +47,7 @@ public abstract class SectionItemSwipeCallback {
      * @param viewHolder The ViewHolder which has been swiped by the user.
      * @param direction  The direction to which the ViewHolder is swiped.
      */
-    public abstract void onSwiped(SectionAdapter.ItemViewHolder viewHolder, int direction);
+    public abstract void onSwiped(BaseSectionAdapter.ItemViewHolder viewHolder, int direction);
 
     /**
      * Called by ItemTouchHelper on RecyclerView's onDraw callback.
@@ -70,7 +70,7 @@ public abstract class SectionItemSwipeCallback {
      *                          false it is simply animating back to its original state.
      */
     public void onChildDraw(Canvas c, RecyclerView recyclerView,
-                            SectionAdapter.ItemViewHolder viewHolder,
+                            BaseSectionAdapter.ItemViewHolder viewHolder,
                             float dX, float dY, int actionState, boolean isCurrentlyActive) {
         ItemTouchHelper.Callback.getDefaultUIUtil().onDraw(c, recyclerView, viewHolder.itemView,
                 dX, dY, actionState, isCurrentlyActive);
@@ -97,7 +97,7 @@ public abstract class SectionItemSwipeCallback {
      *                          false it is simply animating back to its original state.
      */
     public void onChildDrawOver(Canvas c, RecyclerView recyclerView,
-                                SectionAdapter.ItemViewHolder viewHolder,
+                                BaseSectionAdapter.ItemViewHolder viewHolder,
                                 float dX, float dY, int actionState, boolean isCurrentlyActive) {
         ItemTouchHelper.Callback.getDefaultUIUtil().onDrawOver(c, recyclerView, viewHolder.itemView,
                 dX, dY, actionState, isCurrentlyActive);
@@ -115,7 +115,7 @@ public abstract class SectionItemSwipeCallback {
  *                        {@link ItemTouchHelper#ACTION_STATE_SWIPE}.
      */
     @CallSuper
-    public void onSelectedChanged(SectionAdapter.ItemViewHolder viewHolder, int actionState) {
+    public void onSelectedChanged(BaseSectionAdapter.ItemViewHolder viewHolder, int actionState) {
         if (viewHolder != null) {
             ItemTouchHelper.Callback.getDefaultUIUtil().onSelected(viewHolder.itemView);
         }
@@ -132,7 +132,7 @@ public abstract class SectionItemSwipeCallback {
      * @param recyclerView The RecyclerView which is controlled by the ItemTouchHelper.
      * @param viewHolder   The View that was interacted by the user.
      */
-    public void clearView(RecyclerView recyclerView, SectionAdapter.ItemViewHolder viewHolder) {
+    public void clearView(RecyclerView recyclerView, BaseSectionAdapter.ItemViewHolder viewHolder) {
         ItemTouchHelper.Callback.getDefaultUIUtil().clearView(viewHolder.itemView);
     }
 
