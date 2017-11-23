@@ -14,7 +14,7 @@ import android.widget.Button;
 import com.cruxlab.sectionedrecyclerview.R;
 import com.cruxlab.sectionedrecyclerview.demo.adapters.DemoSectionAdapter;
 import com.cruxlab.sectionedrecyclerview.demo.adapters.DemoSimpleSectionAdapter;
-import com.cruxlab.sectionedrecyclerview.lib.SectionDataManager;
+import com.cruxlab.sectionedrecyclerview.lib.SectionsDataManager;
 import com.cruxlab.sectionedrecyclerview.lib.SectionHeaderLayout;
 
 public class MainActivity extends AppCompatActivity {
@@ -32,11 +32,11 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setHasFixedSize(false);
 
-        final SectionDataManager sectionDataManager = new SectionDataManager();
-        RecyclerView.Adapter adapter = sectionDataManager.getAdapter();
+        final SectionsDataManager sectionsDataManager = new SectionsDataManager();
+        RecyclerView.Adapter adapter = sectionsDataManager.getAdapter();
         recyclerView.setAdapter(adapter);
 
-        ItemTouchHelper.Callback callback = sectionDataManager.getSwipeCallback();
+        ItemTouchHelper.Callback callback = sectionsDataManager.getSwipeCallback();
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);
         itemTouchHelper.attachToRecyclerView(recyclerView);
 
@@ -45,10 +45,10 @@ public class MainActivity extends AppCompatActivity {
                 int color = (i % 4 == 0) ? Color.YELLOW : (i % 4 == 1) ? Color.RED : Color.BLUE;
                 boolean isHeaderVisible = (i % 4 == 0) || (i % 4 == 1);
                 boolean isHeaderPinned = (i % 4 == 0);
-                DemoSectionAdapter sectionAdapter = new DemoSectionAdapter(color, sectionDataManager, isHeaderVisible, isHeaderPinned);
-                sectionDataManager.addSection(sectionAdapter, new DemoSectionItemSwipeCallback(color, deleteIcon), HEADER_TYPE_DEFAULT);
+                DemoSectionAdapter sectionAdapter = new DemoSectionAdapter(color, sectionsDataManager, isHeaderVisible, isHeaderPinned);
+                sectionsDataManager.addSection(sectionAdapter, new DemoSectionItemSwipeCallback(color, deleteIcon), HEADER_TYPE_DEFAULT);
             } else {
-                sectionDataManager.addSection(new DemoSimpleSectionAdapter(), new DemoSectionItemSwipeCallback(Color.GRAY, deleteIcon));
+                sectionsDataManager.addSection(new DemoSimpleSectionAdapter(), new DemoSectionItemSwipeCallback(Color.GRAY, deleteIcon));
             }
         }
 
@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
                     sectionHeaderLayout.detach();
                     pinHeadersBnt.setText(R.string.pin_headers);
                 } else {
-                    sectionHeaderLayout.attachTo(recyclerView, sectionDataManager);
+                    sectionHeaderLayout.attachTo(recyclerView, sectionsDataManager);
                     pinHeadersBnt.setText(R.string.unpin_headers);
                 }
             }

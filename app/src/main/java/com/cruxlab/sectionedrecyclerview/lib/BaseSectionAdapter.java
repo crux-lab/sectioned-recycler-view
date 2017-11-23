@@ -30,7 +30,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
     public abstract int getItemCount();
 
     /**
-     * Called when SectionDataManager needs a new {@link BaseSectionAdapter.ItemViewHolder} of the given
+     * Called when SectionsDataManager needs a new {@link BaseSectionAdapter.ItemViewHolder} of the given
      * type to represent an item in this section.
      * <p>
      * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#onCreateViewHolder(ViewGroup, int)}.
@@ -42,7 +42,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
     public abstract IVH onCreateItemViewHolder(ViewGroup parent, short type);
 
     /**
-     * Called by SectionDataManager to display the data at the specified section position. This
+     * Called by SectionsDataManager to display the data at the specified section position. This
      * method should update the contents of the {@link BaseSectionAdapter.ItemViewHolder#itemView}
      * to reflect the item at the given position.
      * <p>
@@ -69,7 +69,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
     }
 
     /**
-     * Notifies SectionDataManager that the item in this section at <code>pos</code> has been
+     * Notifies SectionsDataManager that the item in this section at <code>pos</code> has been
      * inserted.
      * <p>
      * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#notifyItemInserted(int)}.
@@ -83,7 +83,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
     }
 
     /**
-     * Notifies SectionDataManager that the items in this section in the given list of positions
+     * Notifies SectionsDataManager that the items in this section in the given list of positions
      * have been inserted.
      *
      * @param posList Varargs of inserted positions.
@@ -95,7 +95,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
     }
 
     /**
-     * Notifies SectionDataManager that the items in this section in the given list of positions
+     * Notifies SectionsDataManager that the items in this section in the given list of positions
      * have been inserted.
      *
      * @param posList List of inserted positions.
@@ -107,7 +107,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
     }
 
     /**
-     * Notifies SectionDataManager that <code>cnt</code> items starting at <code>startPos</code>
+     * Notifies SectionsDataManager that <code>cnt</code> items starting at <code>startPos</code>
      * in this section have been inserted.
      * <p>
      * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#notifyItemRangeInserted(int, int)}.
@@ -122,7 +122,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
     }
 
     /**
-     * Notifies SectionDataManager that the item in this section at <code>pos</code> has been
+     * Notifies SectionsDataManager that the item in this section at <code>pos</code> has been
      * removed.
      * <p>
      * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#notifyItemRemoved(int)}.
@@ -136,7 +136,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
     }
 
     /**
-     * Notifies SectionDataManager that the items in this section in the given list of positions
+     * Notifies SectionsDataManager that the items in this section in the given list of positions
      * have been removed.
      *
      * @param posList Varargs of removed positions.
@@ -148,7 +148,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
     }
 
     /**
-     * Notifies SectionDataManager that the items in this section in the given list of positions
+     * Notifies SectionsDataManager that the items in this section in the given list of positions
      * have been removed.
      *
      * @param posList List of removed positions.
@@ -160,7 +160,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
     }
 
     /**
-     * Notifies SectionDataManager that <code>cnt</code> items starting at <code>startPos</code>
+     * Notifies SectionsDataManager that <code>cnt</code> items starting at <code>startPos</code>
      * in this section have been removed.
      * <p>
      * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#notifyItemRangeRemoved(int, int)}.
@@ -175,7 +175,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
     }
 
     /**
-     * Notifies SectionDataManager that the item in this section at <code>pos</code>
+     * Notifies SectionsDataManager that the item in this section at <code>pos</code>
      * has been changed.
      * <p>
      * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#notifyItemChanged(int)}.
@@ -189,7 +189,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
     }
 
     /**
-     * Notifies SectionDataManager that the items in this section in the given list of positions
+     * Notifies SectionsDataManager that the items in this section in the given list of positions
      * have been changed.
      *
      * @param posList Varargs of changed positions.
@@ -201,7 +201,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
     }
 
     /**
-     * Notifies SectionDataManager that the items in this section in the given list of positions
+     * Notifies SectionsDataManager that the items in this section in the given list of positions
      * have been changed.
      *
      * @param posList List of changed positions.
@@ -213,7 +213,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
     }
 
     /**
-     * Notifies SectionDataManager that <code>cnt</code> items starting at <code>startPos</code>
+     * Notifies SectionsDataManager that <code>cnt</code> items starting at <code>startPos</code>
      * in this section have been changed.
      * <p>
      * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#notifyItemRangeChanged(int, int)}.
@@ -228,7 +228,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
     }
 
     /**
-     * Notifies SectionDataManager that the item at <code>fromPosition</code> has been moved
+     * Notifies SectionsDataManager that the item at <code>fromPosition</code> has been moved
      * to <code>toPosition</code>.
      * <p>
      * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#notifyItemMoved(int, int)}.

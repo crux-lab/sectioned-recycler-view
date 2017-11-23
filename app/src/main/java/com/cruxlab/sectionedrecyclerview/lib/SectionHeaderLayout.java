@@ -15,7 +15,7 @@ import android.widget.RelativeLayout;
  * Header view is located on top of RecyclerView at the top of the layout and is always layout's
  * last child.
  * <p>
- * Header view is managed by {@link SectionDataManager.HeaderManager} via {@link #headerViewManager}.
+ * Header view is managed by {@link SectionsDataManager.HeaderManager} via {@link #headerViewManager}.
  * It is changed in two cases: while scrolling or after data set changes. First case is handled in
  * RecyclerView's {@link #onScrollListener}, second one in headerViewManager's callback. In
  * both cases HeaderManager updates header view state if necessary.
@@ -24,7 +24,7 @@ public class SectionHeaderLayout extends RelativeLayout {
 
     private RecyclerView recyclerView;
     private LinearLayoutManager layoutManager;
-    private SectionDataManager.HeaderManager headerManager;
+    private SectionsDataManager.HeaderManager headerManager;
 
     public SectionHeaderLayout(Context context) {
         super(context);
@@ -43,24 +43,24 @@ public class SectionHeaderLayout extends RelativeLayout {
     }
 
     /**
-     * Attaches to the given RecyclerView and SectionDataManager. Adds {@link #onScrollListener} to
+     * Attaches to the given RecyclerView and SectionsDataManager. Adds {@link #onScrollListener} to
      * the given RecyclerView to manage header view while scrolling. RecyclerView should have
      * vertical LinearLayoutManager.
      *
      * @param recyclerView       RecyclerView to attach to.
-     * @param sectionDataManager SectionDataManager to attach to.
+     * @param sectionsDataManager SectionsDataManager to attach to.
      */
-    public void attachTo(RecyclerView recyclerView, SectionDataManager sectionDataManager) {
+    public void attachTo(RecyclerView recyclerView, SectionsDataManager sectionsDataManager) {
         this.recyclerView = recyclerView;
         layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-        headerManager = sectionDataManager.createHeaderManager(headerViewManager);
+        headerManager = sectionsDataManager.createHeaderManager(headerViewManager);
         recyclerView.addOnScrollListener(onScrollListener);
         headerManager.checkIsHeaderViewChanged();
     }
 
     /**
      * Returns whether this SectionHeaderLayout has been attached to RecyclerView and
-     * SectionDataManager.
+     * SectionsDataManager.
      *
      * @return True if it has been attached, false otherwise.
      */
@@ -69,12 +69,12 @@ public class SectionHeaderLayout extends RelativeLayout {
     }
 
     /**
-     * Detaches from RecyclerView and SectionDataManager.
+     * Detaches from RecyclerView and SectionsDataManager.
      */
     public void detach() {
         if (!isAttached()) {
             throw new RuntimeException("SectionHeaderLayout hasn't been attached " +
-                    "to any RecyclerView and SectionDataManager.");
+                    "to any RecyclerView and SectionsDataManager.");
         }
         recyclerView.removeOnScrollListener(onScrollListener);
         headerManager.removeSelf();
@@ -85,7 +85,7 @@ public class SectionHeaderLayout extends RelativeLayout {
     }
 
     /**
-     * HeaderViewManager implementation, that is used by {@link SectionDataManager.HeaderManager}
+     * HeaderViewManager implementation, that is used by {@link SectionsDataManager.HeaderManager}
      * to interact with the header view.
      */
     private HeaderViewManager headerViewManager = new HeaderViewManager() {
@@ -154,7 +154,7 @@ public class SectionHeaderLayout extends RelativeLayout {
     };
 
     /**
-     * Notifies {@link SectionDataManager.HeaderManager} that the RecyclerView was scrolled, so the
+     * Notifies {@link SectionsDataManager.HeaderManager} that the RecyclerView was scrolled, so the
      * header view could have been changed.
      */
     private RecyclerView.OnScrollListener onScrollListener = new RecyclerView.OnScrollListener() {
@@ -168,7 +168,7 @@ public class SectionHeaderLayout extends RelativeLayout {
     };
 
     /**
-     * Notifies {@link SectionDataManager.HeaderManager} that the header view could have been
+     * Notifies {@link SectionsDataManager.HeaderManager} that the header view could have been
      * changed. Uses {@link #runJustBeforeBeingDrawn(View, Runnable)} to provide a correct first
      * visible item position after the update.
      */

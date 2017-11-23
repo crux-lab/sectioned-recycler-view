@@ -20,8 +20,8 @@ import java.util.List;
  * <p>
  * Each section obtains own unique type stored in {@link #sectionToType}. It is used to determine
  * that the section which corresponds to the given global adapter position has changed, so the
- * corresponding ViewHolder should be recreated. Each BaseSectionAdapter also can use short values to
- * distinguish own items.
+ * corresponding ViewHolder should be recreated. Each BaseSectionAdapter also can use short values
+ * to distinguish own items.
  * <p>
  * The main task is to determine, which section corresponds to the given global adapter position and
  * whether it is a header or a regular item in it. To do it efficiently partial sum array is used
@@ -31,20 +31,23 @@ import java.util.List;
  * and ItemTouchHelper.Callback {@link #swipeCallback} implementations.
  *
  */
-public class SectionDataManager implements SectionManager, PositionConverter {
+public class SectionsDataManager implements SectionManager, PositionConverter {
 
     private short freeType = 1;
     private ArrayList<Integer> sectionToPosSum;
     private ArrayList<Short> sectionToType;
     private SparseArray<SectionAdapterWrapper> typeToAdapter;
     private SparseArray<SectionItemSwipeCallback> typeToCallback;
+    private SparseArray<Integer> headerTypeToCnt;
+
     private HeaderManager headerManager;
 
-    public SectionDataManager() {
+    public SectionsDataManager() {
         sectionToPosSum = new ArrayList<>();
         sectionToType = new ArrayList<>();
         typeToAdapter = new SparseArray<>();
         typeToCallback = new SparseArray<>();
+        headerTypeToCnt = new SparseArray<>();
     }
 
     /***
@@ -90,6 +93,8 @@ public class SectionDataManager implements SectionManager, PositionConverter {
 
     @Override
     public void addSection(@NonNull SectionAdapter sectionAdapter, int headerType) {
+        int curCnt = headerTypeToCnt.get(headerType, 0);
+        headerTypeToCnt.put(headerType, curCnt + 1);
         addSection(sectionAdapter, null, headerType);
     }
 
@@ -100,6 +105,8 @@ public class SectionDataManager implements SectionManager, PositionConverter {
 
     @Override
     public void addSection(@NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback, int headerType) {
+        int curCnt = headerTypeToCnt.get(headerType, 0);
+        headerTypeToCnt.put(headerType, curCnt + 1);
         addSection(new SectionAdapterWrapper(sectionAdapter, headerType), swipeCallback);
     }
 
@@ -129,6 +136,8 @@ public class SectionDataManager implements SectionManager, PositionConverter {
 
     @Override
     public void insertSection(int section, @NonNull SectionAdapter sectionAdapter, int headerType) {
+        int curCnt = headerTypeToCnt.get(headerType, 0);
+        headerTypeToCnt.put(headerType, curCnt + 1);
         insertSection(section, sectionAdapter, null, headerType);
     }
 
@@ -139,6 +148,8 @@ public class SectionDataManager implements SectionManager, PositionConverter {
 
     @Override
     public void insertSection(int section, @NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback, int headerType) {
+        int curCnt = headerTypeToCnt.get(headerType, 0);
+        headerTypeToCnt.put(headerType, curCnt + 1);
         insertSection(section, new SectionAdapterWrapper(sectionAdapter, headerType), swipeCallback);
     }
 
@@ -180,6 +191,8 @@ public class SectionDataManager implements SectionManager, PositionConverter {
 
     @Override
     public void replaceSection(int section, @NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback, int headerType) {
+        int curCnt = headerTypeToCnt.get(headerType, 0);
+        headerTypeToCnt.put(headerType, curCnt + 1);
         replaceSection(section, new SectionAdapterWrapper(sectionAdapter, headerType), swipeCallback);
     }
 
@@ -200,6 +213,14 @@ public class SectionDataManager implements SectionManager, PositionConverter {
         int cnt = getSectionRealItemCount(section);
         int start = getSectionFirstPos(section);
         SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
+        if (adapterWrapper.getHeaderType() != SectionAdapter.NO_HEADER_TYPE) {
+            int curCnt = headerTypeToCnt.get(adapterWrapper.getHeaderType());
+            if (curCnt == 1) {
+                headerTypeToCnt.remove(adapterWrapper.getHeaderType());
+            } else {
+                headerTypeToCnt.put(adapterWrapper.getHeaderType(), curCnt - 1);
+            }
+        }
         adapterWrapper.resetAdapter();
         typeToAdapter.remove(sectionType);
         typeToCallback.remove(sectionType);
@@ -217,7 +238,8 @@ public class SectionDataManager implements SectionManager, PositionConverter {
         checkSectionIndex(section);
         adapter.notifyItemRangeChanged(getSectionFirstPos(section), getSectionRealItemCount(section));
         if (headerManager != null) {
-            headerManager.updateHeaderView(sectionToType.get(section));
+            short sectionType = sectionToType.get(section);
+            headerManager.updateHeaderView(sectionType);
         }
     }
 
@@ -287,7 +309,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
             }
             ViewHolderWrapper viewHolderWrapper = new ViewHolderWrapper(viewHolder);
             viewHolder.viewHolderWrapper = viewHolderWrapper;
-            viewHolder.positionConverter = SectionDataManager.this;
+            viewHolder.positionConverter = SectionsDataManager.this;
             return viewHolderWrapper;
         }
 
@@ -777,7 +799,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
                 ViewGroup parent = headerViewManager.getHeaderViewParent();
                 headerViewHolder = adapterWrapper.onCreateHeaderViewHolder(parent);
                 headerViewHolder.sourcePositionProvider = this;
-                headerViewHolder.positionConverter = SectionDataManager.this;
+                headerViewHolder.positionConverter = SectionsDataManager.this;
                 typeToHeader.put(headerType, headerViewHolder);
             }
             return headerViewHolder;

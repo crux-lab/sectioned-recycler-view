@@ -26,7 +26,7 @@ public abstract class SectionAdapter<IVH extends BaseSectionAdapter.ItemViewHold
     }
 
     /**
-     * Called when SectionDataManager needs a new {@link BaseSectionAdapter.HeaderViewHolder} of the given
+     * Called when SectionsDataManager needs a new {@link BaseSectionAdapter.HeaderViewHolder} of the given
      * type to represent a header in this section.
      * <p>
      * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#onCreateViewHolder(ViewGroup, int)}.
@@ -37,7 +37,7 @@ public abstract class SectionAdapter<IVH extends BaseSectionAdapter.ItemViewHold
     public abstract HVH onCreateHeaderViewHolder(ViewGroup parent);
 
     /**
-     * Called by SectionDataManager to display header data. This method should update the contents
+     * Called by SectionsDataManager to display header data. This method should update the contents
      * of the header {@link BaseSectionAdapter.HeaderViewHolder#itemView}.
      * <p>
      * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#onBindViewHolder(RecyclerView.ViewHolder, int)}.
@@ -47,7 +47,7 @@ public abstract class SectionAdapter<IVH extends BaseSectionAdapter.ItemViewHold
     public abstract void onBindHeaderViewHolder(HVH holder);
 
     /**
-     * Notifies SectionDataManager that the header has been changed.
+     * Notifies SectionsDataManager that the header has been changed.
      * <p>
      * Note, that it should be called, when header view updates itself (e.g. changes its contents
      * after some user interaction), because otherwise when header view is duplicated and pinned
@@ -60,7 +60,7 @@ public abstract class SectionAdapter<IVH extends BaseSectionAdapter.ItemViewHold
     }
 
     /**
-     * Updates header visibility and notifies SectionDataManager about changes.
+     * Updates header visibility and notifies SectionsDataManager about changes.
      *
      * @param visible New header visibility.
      */
@@ -72,7 +72,7 @@ public abstract class SectionAdapter<IVH extends BaseSectionAdapter.ItemViewHold
     }
 
     /**
-     * Updates header pinned state and notifies SectionDataManager about changes.
+     * Updates header pinned state and notifies SectionsDataManager about changes.
      *
      * @param pinned New header pinned state.
      */
