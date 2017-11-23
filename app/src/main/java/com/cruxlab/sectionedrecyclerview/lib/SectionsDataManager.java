@@ -93,8 +93,6 @@ public class SectionsDataManager implements SectionManager, PositionConverter {
 
     @Override
     public void addSection(@NonNull SectionAdapter sectionAdapter, int headerType) {
-        int curCnt = headerTypeToCnt.get(headerType, 0);
-        headerTypeToCnt.put(headerType, curCnt + 1);
         addSection(sectionAdapter, null, headerType);
     }
 
@@ -136,8 +134,6 @@ public class SectionsDataManager implements SectionManager, PositionConverter {
 
     @Override
     public void insertSection(int section, @NonNull SectionAdapter sectionAdapter, int headerType) {
-        int curCnt = headerTypeToCnt.get(headerType, 0);
-        headerTypeToCnt.put(headerType, curCnt + 1);
         insertSection(section, sectionAdapter, null, headerType);
     }
 
@@ -217,6 +213,9 @@ public class SectionsDataManager implements SectionManager, PositionConverter {
             int curCnt = headerTypeToCnt.get(adapterWrapper.getHeaderType());
             if (curCnt == 1) {
                 headerTypeToCnt.remove(adapterWrapper.getHeaderType());
+                if (headerManager != null) {
+                    headerManager.typeToHeader.remove(adapterWrapper.getHeaderType());
+                }
             } else {
                 headerTypeToCnt.put(adapterWrapper.getHeaderType(), curCnt - 1);
             }
