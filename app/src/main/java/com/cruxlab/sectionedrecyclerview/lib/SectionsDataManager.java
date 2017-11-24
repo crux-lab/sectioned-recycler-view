@@ -103,12 +103,13 @@ public class SectionsDataManager implements SectionManager, PositionConverter {
 
     @Override
     public void addSection(@NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback, int headerType) {
-        int curCnt = headerTypeToCnt.get(headerType, 0);
-        headerTypeToCnt.put(headerType, curCnt + 1);
+        checkHeaderType(headerType);
+        updateHeaderTypeCnt(headerType, 1);
         addSection(new SectionAdapterWrapper(sectionAdapter, headerType), swipeCallback);
     }
 
     private void addSection(SectionAdapterWrapper adapterWrapper, SectionItemSwipeCallback swipeCallback) {
+        checkFreeType();
         adapterWrapper.setSection(getSectionCount());
         adapterWrapper.setItemManager(sectionItemManager);
         int start = getTotalItemCount();
@@ -144,12 +145,13 @@ public class SectionsDataManager implements SectionManager, PositionConverter {
 
     @Override
     public void insertSection(int section, @NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback, int headerType) {
-        int curCnt = headerTypeToCnt.get(headerType, 0);
-        headerTypeToCnt.put(headerType, curCnt + 1);
+        checkHeaderType(headerType);
+        updateHeaderTypeCnt(headerType, 1);
         insertSection(section, new SectionAdapterWrapper(sectionAdapter, headerType), swipeCallback);
     }
 
     private void insertSection(int section, SectionAdapterWrapper adapterWrapper, SectionItemSwipeCallback swipeCallback) {
+        checkFreeType();
         checkSectionIndex(section, true);
         adapterWrapper.setSection(section);
         adapterWrapper.setItemManager(sectionItemManager);
@@ -187,8 +189,8 @@ public class SectionsDataManager implements SectionManager, PositionConverter {
 
     @Override
     public void replaceSection(int section, @NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback, int headerType) {
-        int curCnt = headerTypeToCnt.get(headerType, 0);
-        headerTypeToCnt.put(headerType, curCnt + 1);
+        checkHeaderType(1);
+        updateHeaderTypeCnt(headerType, 1);
         replaceSection(section, new SectionAdapterWrapper(sectionAdapter, headerType), swipeCallback);
     }
 
@@ -210,15 +212,7 @@ public class SectionsDataManager implements SectionManager, PositionConverter {
         int start = getSectionFirstPos(section);
         SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
         if (adapterWrapper.getHeaderType() != SectionAdapter.NO_HEADER_TYPE) {
-            int curCnt = headerTypeToCnt.get(adapterWrapper.getHeaderType());
-            if (curCnt == 1) {
-                headerTypeToCnt.remove(adapterWrapper.getHeaderType());
-                if (headerManager != null) {
-                    headerManager.typeToHeader.remove(adapterWrapper.getHeaderType());
-                }
-            } else {
-                headerTypeToCnt.put(adapterWrapper.getHeaderType(), curCnt - 1);
-            }
+            updateHeaderTypeCnt(adapterWrapper.getHeaderType(), -1);
         }
         adapterWrapper.resetAdapter();
         typeToAdapter.remove(sectionType);
@@ -486,7 +480,7 @@ public class SectionsDataManager implements SectionManager, PositionConverter {
     /* END SWIPE CALLBACK */
     /* SECTION ITEM MANAGER */
 
-    SectionItemManager sectionItemManager = new SectionItemManager() {
+    private SectionItemManager sectionItemManager = new SectionItemManager() {
 
         @Override
         public void notifyInserted(int section, int pos) {
@@ -661,10 +655,14 @@ public class SectionsDataManager implements SectionManager, PositionConverter {
      * It determines, which header view corresponds to the first visible adapter position,
      * and adds/removes/translates the header view via {@link #headerViewManager}.
      * <p>
+     * Duplicated {@link BaseSectionAdapter.HeaderViewHolder}s for {@link SectionHeaderLayout} can
+     * be obtained by calling {@link #getDuplicatedHeaderVH(short)}. Every {@link SectionAdapter}'s
+     * header is associated with a header type. It indicates that different SectionAdapters can use
+     * the same HeaderViewHolder. HeaderViewHolder for any header type is created only once, cached
+     * and stored in {@link #typeToHeader}.
+     * <p>
      * The contents of the current header view can be updated by rebinding the corresponding
-     * {@link BaseSectionAdapter.HeaderViewHolder}. The duplicated {@link BaseSectionAdapter.HeaderViewHolder}
-     * for {@link SectionHeaderLayout} can be obtained by calling {@link #getDuplicatedHeaderVH(short)}.
-     * They are stored in {@link #typeToHeader}, so that each HeaderViewHolder is created only once.
+     * {@link BaseSectionAdapter.HeaderViewHolder}.
      */
     class HeaderManager implements HeaderPosProvider {
 
@@ -900,6 +898,26 @@ public class SectionsDataManager implements SectionManager, PositionConverter {
     }
 
     /**
+     * Updates by <code>val</code> count of the adapters with header associated with the given
+     * header type.
+     *
+     * @param headerType Type of the header.
+     * @param val        Value to update by.
+     */
+    private void updateHeaderTypeCnt(int headerType, int val) {
+        int curCnt = headerTypeToCnt.get(headerType, 0);
+        int newCnt = curCnt + val;
+        if (newCnt > 0) {
+            headerTypeToCnt.put(headerType, newCnt);
+        } else {
+            headerTypeToCnt.remove(headerType);
+            if (headerManager != null) {
+                headerManager.typeToHeader.remove(headerType);
+            }
+        }
+    }
+
+    /**
      * Updates by <code>cnt</code> items the partial sum array of item counts starting with section
      * <code>startSection</code>. If <code>updateSection</code> is true, updates the section indexes
      * of the corresponding adapters.
@@ -1061,6 +1079,26 @@ public class SectionsDataManager implements SectionManager, PositionConverter {
         if (!checkIndex(lastPos, itemCnt)) {
             throw new IndexOutOfBoundsException("Position count " +  cnt + " starting from position "
                     + startPos + " is out of range. Current item count is " +  itemCnt + ".");
+        }
+    }
+
+    /**
+     * Raises an exception if the given header type equals to {@link SectionAdapter#NO_HEADER_TYPE}.
+     *
+     * @param headerType Type of the header to check.
+     */
+    private void checkHeaderType(int headerType) {
+        if (headerType == SectionAdapter.NO_HEADER_TYPE) {
+            throw new IllegalArgumentException("Header type cannot be equal to NO_HEADER_TYPE that is -1.");
+        }
+    }
+
+    /**
+     * Raises an exception when <code>freeType</code> exceeded {@link Short#MAX_VALUE} and overflowed.
+     */
+    private void checkFreeType() {
+        if (freeType < 0) {
+            throw new RuntimeException("Exceeded number of created sections, so there is no available section type.");
         }
     }
 

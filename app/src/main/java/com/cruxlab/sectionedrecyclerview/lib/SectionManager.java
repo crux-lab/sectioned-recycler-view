@@ -11,8 +11,8 @@ import android.support.annotation.Nullable;
  * {@link SectionItemSwipeCallback}, which lets you control swipe behavior of each item view within
  * the section.
  * <p>
- * Most methods require an index of the section to interact with. It can be
- * received from adapter by calling {@link BaseSectionAdapter#getSection()}.
+ * Most of the methods require an index of the section to interact with. It can be received from
+ * adapter by calling {@link BaseSectionAdapter#getSection()}.
  */
 public interface SectionManager {
 
@@ -33,9 +33,10 @@ public interface SectionManager {
 
     /**
      * Appends the section represented by the specified SectionAdapter to the end of the RecyclerView.
+     * <p>
      * Header type is used to cache {@link BaseSectionAdapter.HeaderViewHolder}s displayed at the top
      * of the {@link SectionHeaderLayout}, so different SectionAdapters with the same header view
-     * should return the same value.
+     * should return the same value. It can be any integer except {@link SectionAdapter#NO_HEADER_TYPE}.
      *
      * @param sectionAdapter SectionAdapter to represent the appended section.
      * @param headerType     Type to represent its header view.
@@ -53,9 +54,11 @@ public interface SectionManager {
 
     /**
      * Appends the section represented by the specified SectionAdapter and SectionItemSwipeCallback
-     * to the end of the RecyclerView. Header type is used to cache {@link BaseSectionAdapter.HeaderViewHolder}s
-     * displayed at the top of the {@link SectionHeaderLayout}, so different SectionAdapters with
-     * the same header view should return the same value.
+     * to the end of the RecyclerView.
+     * <p>
+     * Header type is used to cache {@link BaseSectionAdapter.HeaderViewHolder}s displayed at the top
+     * of the {@link SectionHeaderLayout}, so different SectionAdapters with the same header view
+     * should return the same value. It can be any integer except {@link SectionAdapter#NO_HEADER_TYPE}.
      *
      * @param sectionAdapter SectionAdapter to represent the appended section.
      * @param swipeCallback  SectionItemSwipeCallback to represent the appended section.
@@ -74,9 +77,11 @@ public interface SectionManager {
 
     /**
      * Inserts the section represented by the specified SectionAdapter to the specified position
-     * in the RecyclerView. Header type is used to cache {@link BaseSectionAdapter.HeaderViewHolder}s
-     * displayed at the top of the {@link SectionHeaderLayout}, so different SectionAdapters with
-     * the same header view should return the same value.
+     * in the RecyclerView.
+     * <p>
+     * Header type is used to cache {@link BaseSectionAdapter.HeaderViewHolder}s displayed at the top
+     * of the {@link SectionHeaderLayout}, so different SectionAdapters with the same header view
+     * should return the same value. It can be any integer except {@link SectionAdapter#NO_HEADER_TYPE}.
      *
      * @param section        Index at which the section is to be inserted.
      * @param sectionAdapter SectionAdapter to represent the inserted section.
@@ -98,9 +103,11 @@ public interface SectionManager {
 
     /**
      * Inserts the section represented by the specified SectionAdapter and SectionItemSwipeCallback
-     * to the specified position in the RecyclerView. Header type is used to cache
-     * {@link BaseSectionAdapter.HeaderViewHolder}s displayed at the top of the {@link SectionHeaderLayout},
-     * so different SectionAdapters with the same header view should return the same value.
+     * to the specified position in the RecyclerView.
+     * <p>
+     * Header type is used to cache {@link BaseSectionAdapter.HeaderViewHolder}s displayed at the top
+     * of the {@link SectionHeaderLayout}, so different SectionAdapters with the same header view
+     * should return the same value. It can be any integer except {@link SectionAdapter#NO_HEADER_TYPE}.
      *
      * @param section        Index at which the section is to be inserted.
      * @param sectionAdapter SectionAdapter to represent the inserted section.
@@ -121,9 +128,11 @@ public interface SectionManager {
 
     /**
      * Replaces the section at the specified position in the RecyclerView with the section
-     * represented by the specified SectionAdapter. Header type is used to cache
-     * {@link BaseSectionAdapter.HeaderViewHolder}s displayed at the top of the {@link SectionHeaderLayout},
-     * so different SectionAdapters with the same header view should return the same value.
+     * represented by the specified SectionAdapter.
+     * <p>
+     * Header type is used to cache {@link BaseSectionAdapter.HeaderViewHolder}s displayed at the top
+     * of the {@link SectionHeaderLayout}, so different SectionAdapters with the same header view
+     * should return the same value. It can be any integer except {@link SectionAdapter#NO_HEADER_TYPE}.
      *
      * @param section        Index of the section to replace.
      * @param sectionAdapter SectionAdapter to represent the section to replace.
@@ -144,9 +153,11 @@ public interface SectionManager {
 
     /**
      * Replaces the section at the specified position in the RecyclerView with the section
-     * represented by the specified SectionAdapter and SectionItemSwipeCallback. Header type is used
-     * to cache {@link BaseSectionAdapter.HeaderViewHolder}s displayed at the top of the {@link SectionHeaderLayout},
-     * so different SectionAdapters with the same header view should return the same value.
+     * represented by the specified SectionAdapter and SectionItemSwipeCallback.
+     * <p>
+     * Header type is used to cache {@link BaseSectionAdapter.HeaderViewHolder}s displayed at the top
+     * of the {@link SectionHeaderLayout}, so different SectionAdapters with the same header view
+     * should return the same value. It can be any integer except {@link SectionAdapter#NO_HEADER_TYPE}.
      *
      * @param section        Index of the section to replace.
      * @param sectionAdapter SectionAdapter to represent the section to replace.
