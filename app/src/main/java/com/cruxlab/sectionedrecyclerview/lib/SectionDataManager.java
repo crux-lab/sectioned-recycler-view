@@ -9,7 +9,9 @@ import android.util.SparseArray;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Stores and manages all data for RecyclerView sections.
@@ -23,22 +25,27 @@ import java.util.List;
  * corresponding ViewHolder should be recreated. Each BaseSectionAdapter also can use short values
  * to distinguish own items.
  * <p>
+ * Each section with header specifies a header type when added. It is used to make RecyclerView reuse
+ * HeaderViewHolders for different sections. {@link HeaderManager} also uses it to cache and store
+ * duplicated HeaderViewHolder, that are created only once for any header type.
+ * <p>
  * The main task is to determine, which section corresponds to the given global adapter position and
  * whether it is a header or a regular item in it. To do it efficiently partial sum array is used
  * {@link #sectionToPosSum}, where on the i-th position is the number of items in RecyclerView in all
  * sections before i-th inclusive, and binary search (e.g. {@link #calcSection(int)}).
  * For details on how RecyclerView interacts with sections see the RecyclerView.Adapter {@link #adapter}
  * and ItemTouchHelper.Callback {@link #swipeCallback} implementations.
- *
  */
 public class SectionDataManager implements SectionManager, PositionConverter {
+
+    private static final short NO_SECTION_TYPE = 0;
 
     private short freeType = 1;
     private ArrayList<Integer> sectionToPosSum;
     private ArrayList<Short> sectionToType;
     private SparseArray<SectionAdapterWrapper> typeToAdapter;
     private SparseArray<SectionItemSwipeCallback> typeToCallback;
-    private SparseArray<Integer> headerTypeToCnt;
+    private SparseArray<Set<Short>> headerTypeToSectionTypes;
 
     private HeaderManager headerManager;
 
@@ -47,10 +54,10 @@ public class SectionDataManager implements SectionManager, PositionConverter {
         sectionToType = new ArrayList<>();
         typeToAdapter = new SparseArray<>();
         typeToCallback = new SparseArray<>();
-        headerTypeToCnt = new SparseArray<>();
+        headerTypeToSectionTypes = new SparseArray<>();
     }
 
-    /***
+    /**
      * Returns Adapter for RecyclerView, which interacts with sections passing calls to
      * SectionAdapters.
      *
@@ -92,7 +99,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
     }
 
     @Override
-    public void addSection(@NonNull SectionAdapter sectionAdapter, int headerType) {
+    public void addSection(@NonNull SectionAdapter sectionAdapter, short headerType) {
         addSection(sectionAdapter, null, headerType);
     }
 
@@ -102,9 +109,9 @@ public class SectionDataManager implements SectionManager, PositionConverter {
     }
 
     @Override
-    public void addSection(@NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback, int headerType) {
+    public void addSection(@NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback, short headerType) {
         checkHeaderType(headerType);
-        updateHeaderTypeCnt(headerType, 1);
+        addSectionWithHeaderType(headerType, freeType);
         addSection(new SectionAdapterWrapper(sectionAdapter, headerType), swipeCallback);
     }
 
@@ -134,7 +141,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
     }
 
     @Override
-    public void insertSection(int section, @NonNull SectionAdapter sectionAdapter, int headerType) {
+    public void insertSection(int section, @NonNull SectionAdapter sectionAdapter, short headerType) {
         insertSection(section, sectionAdapter, null, headerType);
     }
 
@@ -144,9 +151,9 @@ public class SectionDataManager implements SectionManager, PositionConverter {
     }
 
     @Override
-    public void insertSection(int section, @NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback, int headerType) {
+    public void insertSection(int section, @NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback, short headerType) {
         checkHeaderType(headerType);
-        updateHeaderTypeCnt(headerType, 1);
+        addSectionWithHeaderType(headerType, freeType);
         insertSection(section, new SectionAdapterWrapper(sectionAdapter, headerType), swipeCallback);
     }
 
@@ -178,7 +185,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
     }
 
     @Override
-    public void replaceSection(int section, @NonNull SectionAdapter sectionAdapter, int headerType) {
+    public void replaceSection(int section, @NonNull SectionAdapter sectionAdapter, short headerType) {
         replaceSection(section, sectionAdapter, null, headerType);
     }
 
@@ -188,9 +195,9 @@ public class SectionDataManager implements SectionManager, PositionConverter {
     }
 
     @Override
-    public void replaceSection(int section, @NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback, int headerType) {
-        checkHeaderType(1);
-        updateHeaderTypeCnt(headerType, 1);
+    public void replaceSection(int section, @NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback, short headerType) {
+        checkHeaderType(headerType);
+        addSectionWithHeaderType(headerType, freeType);
         replaceSection(section, new SectionAdapterWrapper(sectionAdapter, headerType), swipeCallback);
     }
 
@@ -212,7 +219,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
         int start = getSectionFirstPos(section);
         SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
         if (adapterWrapper.getHeaderType() != SectionAdapter.NO_HEADER_TYPE) {
-            updateHeaderTypeCnt(adapterWrapper.getHeaderType(), -1);
+            removeSectionWithType(adapterWrapper.getHeaderType(), sectionType);
         }
         adapterWrapper.resetAdapter();
         typeToAdapter.remove(sectionType);
@@ -282,8 +289,8 @@ public class SectionDataManager implements SectionManager, PositionConverter {
     private RecyclerView.Adapter<ViewHolderWrapper> adapter = new RecyclerView.Adapter<ViewHolderWrapper>() {
 
         /**
-         * Uses type to get an appropriate SectionAdapterWrapper, item type within section and to
-         * determine, whether item view is a section header. Passes the corresponding call to the
+         * Uses type to get an appropriate SectionAdapterWrapper, item type within section or
+         * header type, if an item view is a section header. Passes the corresponding call to the
          * BaseSectionAdapter via {@link SectionAdapterWrapper}, obtaining
          * {@link BaseSectionAdapter.ViewHolder}. Returns {@link ViewHolderWrapper}, that refers to the
          * same View. BaseSectionAdapter.ViewHolder holds a reference to it to access the global adapter
@@ -291,13 +298,17 @@ public class SectionDataManager implements SectionManager, PositionConverter {
          */
         @Override
         public ViewHolderWrapper onCreateViewHolder(ViewGroup parent, int type) {
-            short sectionType = (short) (type);
-            short itemType = (short) (type >> 16);
-            SectionAdapterWrapper adapterWrapper = typeToAdapter.get(Math.abs(sectionType));
             BaseSectionAdapter.ViewHolder viewHolder;
-            if (isTypeHeader(sectionType)) {
+            if (isTypeHeader(type)) {
+                short headerType = (short) type;
+                Set<Short> sectionTypes = headerTypeToSectionTypes.get(headerType);
+                short sectionType = sectionTypes.iterator().next();
+                SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
                 viewHolder = adapterWrapper.onCreateHeaderViewHolder(parent);
             } else {
+                short itemType = (short) (type);
+                short sectionType = (short) (type >> 16);
+                SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
                 viewHolder = adapterWrapper.onCreateViewHolder(parent, itemType);
             }
             ViewHolderWrapper viewHolderWrapper = new ViewHolderWrapper(viewHolder);
@@ -307,20 +318,23 @@ public class SectionDataManager implements SectionManager, PositionConverter {
         }
 
         /**
-         * Uses position to determine section type and whether item view is a section header.
+         * Uses position to determine section type and header type, if item view is a section header.
          * Obtains {@link BaseSectionAdapter.ViewHolder} from {@link ViewHolderWrapper} and passes the
          * corresponding call to the BaseSectionAdapter via {@link SectionAdapterWrapper}.
          */
         @Override
         public void onBindViewHolder(ViewHolderWrapper viewHolderWrapper, int position) {
             int type = getItemViewType(position);
-            short sectionType = (short) (type);
-            SectionAdapterWrapper adapterWrapper = typeToAdapter.get(Math.abs(sectionType));
-            if (isTypeHeader(sectionType)) {
+            if (isTypeHeader(type)) {
+                int section = calcSection(position);
+                short sectionType = sectionToType.get(section);
+                SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
                 BaseSectionAdapter.HeaderViewHolder headerViewHolder = (BaseSectionAdapter.HeaderViewHolder) viewHolderWrapper.viewHolder;
                 adapterWrapper.onBindHeaderViewHolder(headerViewHolder);
             } else {
+                short sectionType = (short) (type >> 16);
                 int sectionPos = calcPosInSection(position);
+                SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
                 BaseSectionAdapter.ItemViewHolder itemViewHolder = (BaseSectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder;
                 adapterWrapper.onBindViewHolder(itemViewHolder, sectionPos);
             }
@@ -332,13 +346,13 @@ public class SectionDataManager implements SectionManager, PositionConverter {
         }
 
         /**
-         * Item view type allows to determine section type, item type within section and whether
-         * item view is a section header. It is an integer, consisted of two shorts as follows:
-         * <code>(itemType << 16) + sectionType</code>,
+         * Item view type allows to determine section or header type, item type within section and
+         * whether item view is a section header. It is an integer, consisted of two shorts as follows:
+         * <code>(sectionType << 16) + (itemType or headerType)</code>,
          * where <code>itemType</code> is an item type within section, obtained from
-         * SectionAdapterWrapper, and <code>sectionType</code> is a section type, calculated from
-         * adapter position, which is negative (multiplied by -1) when the given item view
-         * corresponds to a section header.
+         * SectionAdapterWrapper, <code>headerType</code> is a type to distinguish and reuse headers
+         * and <code>sectionType</code> is a section type, calculated from adapter position.
+         * When the given position corresponds to a header, section type is 0.
          */
         @Override
         public int getItemViewType(int pos) {
@@ -346,9 +360,12 @@ public class SectionDataManager implements SectionManager, PositionConverter {
             short sectionType = sectionToType.get(section);
             int sectionPos = calcPosInSection(pos);
             SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
-            short itemType = adapterWrapper.getItemViewType(sectionPos);
-            if (adapterWrapper.isHeaderVisible() && getSectionFirstPos(section) == pos) sectionType *= -1;
-            return (itemType << 16) + sectionType;
+            if (adapterWrapper.isHeaderVisible() && getSectionFirstPos(section) == pos) {
+                return adapterWrapper.getHeaderType();
+            } else {
+                short itemType = adapterWrapper.getItemViewType(sectionPos);
+                return (sectionType << 16) + itemType;
+            }
         }
 
     };
@@ -666,8 +683,8 @@ public class SectionDataManager implements SectionManager, PositionConverter {
      */
     class HeaderManager implements HeaderPosProvider {
 
-        short topSectionType = -1;
-        int topHeaderType = SectionAdapter.NO_HEADER_TYPE;
+        short topSectionType = NO_SECTION_TYPE;
+        short topHeaderType = SectionAdapter.NO_HEADER_TYPE;
 
         HeaderViewManager headerViewManager;
         SparseArray<BaseSectionAdapter.HeaderViewHolder> typeToHeader;
@@ -714,7 +731,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
                     int nextHeaderPos = getSectionFirstPos(section + 1);
                     headerViewManager.translateHeaderView(nextHeaderPos);
                 } else {
-                    int headerType = adapterWrapper.getHeaderType();
+                    short headerType = adapterWrapper.getHeaderType();
                     if (headerType == topHeaderType) {
                         topSectionType = sectionType;
                         updateHeaderView(topSectionType);
@@ -771,9 +788,9 @@ public class SectionDataManager implements SectionManager, PositionConverter {
          * Notifies {@link HeaderViewManager} that the header view should be removed.
          */
         private void removeHeaderView() {
-            if (topSectionType != -1) {
+            if (topSectionType != NO_SECTION_TYPE) {
                 headerViewManager.removeHeaderView();
-                topSectionType = -1;
+                topSectionType = NO_SECTION_TYPE;
                 topHeaderType = SectionAdapter.NO_HEADER_TYPE;
             }
         }
@@ -787,7 +804,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
          */
         private BaseSectionAdapter.HeaderViewHolder getDuplicatedHeaderVH(short sectionType) {
             SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
-            int headerType = adapterWrapper.getHeaderType();
+            short headerType = adapterWrapper.getHeaderType();
             if (headerType == SectionAdapter.NO_HEADER_TYPE) {
                 return null;
             }
@@ -814,7 +831,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
      * @return True if the given type corresponds to header, false otherwise.
      */
     private boolean isTypeHeader(int type) {
-        return type < 0;
+        return (type >> 16) == NO_SECTION_TYPE;
     }
 
     /**
@@ -898,19 +915,31 @@ public class SectionDataManager implements SectionManager, PositionConverter {
     }
 
     /**
-     * Updates by <code>val</code> count of the adapters with header associated with the given
-     * header type.
+     * Adds the given section type to {@link #headerTypeToSectionTypes}, that means that the
+     * corresponding adapter is able to create HeaderViewHolder with the given header type.
      *
-     * @param headerType Type of the header.
-     * @param val        Value to update by.
+     * @param headerType  Type of the header.
+     * @param sectionType Type of the section to add.
      */
-    private void updateHeaderTypeCnt(int headerType, int val) {
-        int curCnt = headerTypeToCnt.get(headerType, 0);
-        int newCnt = curCnt + val;
-        if (newCnt > 0) {
-            headerTypeToCnt.put(headerType, newCnt);
-        } else {
-            headerTypeToCnt.remove(headerType);
+    private void addSectionWithHeaderType(short headerType, short sectionType) {
+        Set<Short> sectionTypes = headerTypeToSectionTypes.get(headerType, new HashSet<Short>());
+        sectionTypes.add(sectionType);
+        headerTypeToSectionTypes.put(headerType, sectionTypes);
+
+    }
+
+    /**
+     * Removes the given section type from {@link #headerTypeToSectionTypes}. Removes cached HeaderViewHolder
+     * from HeaderManager's storage if there are no more adapters with the given header type.
+     *
+     * @param headerType  Type of the header.
+     * @param sectionType Type of the section to remove.
+     */
+    private void removeSectionWithType(short headerType, short sectionType) {
+        Set<Short> sectionTypes = headerTypeToSectionTypes.get(headerType, new HashSet<Short>());
+        sectionTypes.remove(sectionType);
+        if (sectionTypes.isEmpty()) {
+            headerTypeToSectionTypes.remove(headerType);
             if (headerManager != null) {
                 headerManager.typeToHeader.remove(headerType);
             }
@@ -1087,7 +1116,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
      *
      * @param headerType Type of the header to check.
      */
-    private void checkHeaderType(int headerType) {
+    private void checkHeaderType(short headerType) {
         if (headerType == SectionAdapter.NO_HEADER_TYPE) {
             throw new IllegalArgumentException("Header type cannot be equal to NO_HEADER_TYPE that is -1.");
         }

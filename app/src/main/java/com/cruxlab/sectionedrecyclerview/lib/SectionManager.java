@@ -41,7 +41,7 @@ public interface SectionManager {
      * @param sectionAdapter SectionAdapter to represent the appended section.
      * @param headerType     Type to represent its header view.
      */
-    void addSection(@NonNull SectionAdapter sectionAdapter, int headerType);
+    void addSection(@NonNull SectionAdapter sectionAdapter, short headerType);
 
     /**
      * Appends the section represented by the specified SimpleSectionAdapter and SectionItemSwipeCallback
@@ -64,7 +64,7 @@ public interface SectionManager {
      * @param swipeCallback  SectionItemSwipeCallback to represent the appended section.
      * @param headerType     Type to represent its header view.
      */
-    void addSection(@NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback, int headerType);
+    void addSection(@NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback, short headerType);
 
     /**
      * Inserts the section represented by the specified SimpleSectionAdapter to the specified position
@@ -87,7 +87,7 @@ public interface SectionManager {
      * @param sectionAdapter SectionAdapter to represent the inserted section.
      * @param headerType     Type to represent its header view.
      */
-    void insertSection(int section, @NonNull SectionAdapter sectionAdapter, int headerType);
+    void insertSection(int section, @NonNull SectionAdapter sectionAdapter, short headerType);
 
     /**
      * Inserts the section represented by the specified SimpleSectionAdapter and SectionItemSwipeCallback
@@ -115,7 +115,7 @@ public interface SectionManager {
      * @param headerType     Type to represent its header view.
      */
     void insertSection(int section, @NonNull SectionAdapter sectionAdapter,
-                       SectionItemSwipeCallback swipeCallback, int headerType);
+                       SectionItemSwipeCallback swipeCallback, short headerType);
 
     /**
      * Replaces the section at the specified position in the RecyclerView with the section
@@ -138,7 +138,7 @@ public interface SectionManager {
      * @param sectionAdapter SectionAdapter to represent the section to replace.
      * @param headerType     Type to represent its header view.
      */
-    void replaceSection(int section, @NonNull SectionAdapter sectionAdapter, int headerType);
+    void replaceSection(int section, @NonNull SectionAdapter sectionAdapter, short headerType);
 
     /**
      * Replaces the section at the specified position in the RecyclerView with the section
@@ -165,7 +165,7 @@ public interface SectionManager {
      * @param headerType     Type to represent its header view.
      */
     void replaceSection(int section, @NonNull SectionAdapter sectionAdapter,
-                        SectionItemSwipeCallback swipeCallback, int headerType);
+                        SectionItemSwipeCallback swipeCallback, short headerType);
 
     /**
      * Removes the section at the specified position in the RecyclerView.

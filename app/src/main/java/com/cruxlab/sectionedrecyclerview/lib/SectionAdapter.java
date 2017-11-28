@@ -14,9 +14,9 @@ import android.view.ViewGroup;
 
 public abstract class SectionAdapter<IVH extends BaseSectionAdapter.ItemViewHolder, HVH extends BaseSectionAdapter.HeaderViewHolder> extends BaseSectionAdapter<IVH> {
 
-    public static int NO_HEADER_TYPE = -1;
+    public static short NO_HEADER_TYPE = -1;
 
-    int headerType = NO_HEADER_TYPE;
+    short headerType = NO_HEADER_TYPE;
     private boolean isHeaderVisible;
     private boolean isHeaderPinned;
 

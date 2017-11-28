@@ -19,7 +19,7 @@ class SectionAdapterWrapper {
         this.sectionAdapter = null;
     }
 
-    SectionAdapterWrapper(SectionAdapter sectionAdapter, int headerType) {
+    SectionAdapterWrapper(SectionAdapter sectionAdapter, short headerType) {
         if (sectionAdapter == null) {
             throw new IllegalArgumentException("SectionAdapter cannot be null.");
         }
@@ -122,7 +122,7 @@ class SectionAdapterWrapper {
         }
     }
 
-    int getHeaderType() {
+    short getHeaderType() {
         if (sectionAdapter != null) {
             return sectionAdapter.headerType;
         }

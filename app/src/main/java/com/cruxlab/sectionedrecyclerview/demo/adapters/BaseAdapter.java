@@ -16,7 +16,7 @@ public abstract class BaseAdapter<HVH extends HeaderVH> extends SectionAdapter<I
 
     public ArrayList<String> strings;
     public SectionManager sectionManager;
-    public int type;
+    public short type;
     public int color;
 
     public BaseAdapter(int color, SectionManager sectionManager, boolean isHeaderVisible, boolean isHeaderPinned) {
