@@ -12,9 +12,9 @@ import com.cruxlab.sectionedrecyclerview.lib.SectionManager;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class SectionAdapter2 extends BaseAdapter<HeaderVH> {
+public class SimpleAdapter extends BaseAdapter<HeaderVH> {
 
-    public SectionAdapter2(int color, SectionManager sectionManager, boolean isHeaderVisible, boolean isHeaderPinned) {
+    public SimpleAdapter(int color, SectionManager sectionManager, boolean isHeaderVisible, boolean isHeaderPinned) {
         super(color, sectionManager, isHeaderVisible, isHeaderPinned);
         this.type = 2;
         this.strings = new ArrayList<>(Arrays.asList(
@@ -27,19 +27,19 @@ public class SectionAdapter2 extends BaseAdapter<HeaderVH> {
 
     @Override
     public BaseAdapter getCopy() {
-        SectionAdapter2 copy = new SectionAdapter2(color, sectionManager, isHeaderVisible(), isHeaderPinned());
+        SimpleAdapter copy = new SimpleAdapter(color, sectionManager, isHeaderVisible(), isHeaderPinned());
         copy.strings = new ArrayList<>(strings);
         return copy;
     }
 
     @Override
     public BaseAdapter getNext() {
-        return new SectionAdapter3(color, sectionManager, isHeaderVisible(), isHeaderPinned());
+        return new SmartAdapter(color, sectionManager, isHeaderVisible(), isHeaderPinned());
     }
 
     @Override
     public HeaderVH onCreateHeaderViewHolder(ViewGroup parent) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_view_holder2, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.simple_header_vh, parent, false);
         return new HeaderVH(view);
     }
 

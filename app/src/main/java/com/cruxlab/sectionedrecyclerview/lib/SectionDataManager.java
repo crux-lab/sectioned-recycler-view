@@ -31,7 +31,7 @@ import java.util.List;
  * and ItemTouchHelper.Callback {@link #swipeCallback} implementations.
  *
  */
-public class SectionsDataManager implements SectionManager, PositionConverter {
+public class SectionDataManager implements SectionManager, PositionConverter {
 
     private short freeType = 1;
     private ArrayList<Integer> sectionToPosSum;
@@ -42,7 +42,7 @@ public class SectionsDataManager implements SectionManager, PositionConverter {
 
     private HeaderManager headerManager;
 
-    public SectionsDataManager() {
+    public SectionDataManager() {
         sectionToPosSum = new ArrayList<>();
         sectionToType = new ArrayList<>();
         typeToAdapter = new SparseArray<>();
@@ -302,7 +302,7 @@ public class SectionsDataManager implements SectionManager, PositionConverter {
             }
             ViewHolderWrapper viewHolderWrapper = new ViewHolderWrapper(viewHolder);
             viewHolder.viewHolderWrapper = viewHolderWrapper;
-            viewHolder.positionConverter = SectionsDataManager.this;
+            viewHolder.positionConverter = SectionDataManager.this;
             return viewHolderWrapper;
         }
 
@@ -796,7 +796,7 @@ public class SectionsDataManager implements SectionManager, PositionConverter {
                 ViewGroup parent = headerViewManager.getHeaderViewParent();
                 headerViewHolder = adapterWrapper.onCreateHeaderViewHolder(parent);
                 headerViewHolder.sourcePositionProvider = this;
-                headerViewHolder.positionConverter = SectionsDataManager.this;
+                headerViewHolder.positionConverter = SectionDataManager.this;
                 typeToHeader.put(headerType, headerViewHolder);
             }
             return headerViewHolder;

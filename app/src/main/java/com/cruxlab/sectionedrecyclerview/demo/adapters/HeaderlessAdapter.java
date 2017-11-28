@@ -22,7 +22,7 @@ public class HeaderlessAdapter extends SimpleSectionAdapter<SimpleItemVH> {
 
     @Override
     public SimpleItemVH onCreateItemViewHolder(ViewGroup parent, short type) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_view_holder1, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.simple_item_vh, parent, false);
         return new SimpleItemVH(view);
     }
 
