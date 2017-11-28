@@ -868,7 +868,7 @@ public class SectionsDataManager implements SectionManager, PositionConverter {
      * @return First global adapter position.
      */
     private int getSectionFirstPos(int section) {
-        checkSectionIndex(section);
+        checkSectionIndex(section, true);
         return section > 0 ? sectionToPosSum.get(section - 1) : 0;
     }
 
