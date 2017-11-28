@@ -8,20 +8,24 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 
-import com.cruxlab.sectionedrecyclerview.demo.view_holders.DemoItemViewHolder;
+import com.cruxlab.sectionedrecyclerview.demo.view_holders.ItemVH;
 import com.cruxlab.sectionedrecyclerview.lib.BaseSectionAdapter;
 import com.cruxlab.sectionedrecyclerview.lib.SectionItemSwipeCallback;
 
-public class DemoSectionItemSwipeCallback extends SectionItemSwipeCallback {
+public class DemoSwipeCallback extends SectionItemSwipeCallback {
 
     public int color;
     public Drawable deleteIcon;
     private ColorDrawable background;
 
-    public DemoSectionItemSwipeCallback(int color, Drawable deleteIcon) {
+    public DemoSwipeCallback(int color, Drawable deleteIcon) {
         this.color = color;
         this.background = new ColorDrawable();
         this.deleteIcon = deleteIcon;
+    }
+
+    public DemoSwipeCallback(DemoSwipeCallback other) {
+        this(other.color, other.deleteIcon);
     }
 
     @Override
@@ -31,14 +35,10 @@ public class DemoSectionItemSwipeCallback extends SectionItemSwipeCallback {
 
     @Override
     public void onSwiped(BaseSectionAdapter.ItemViewHolder viewHolder, int direction) {
-        DemoItemViewHolder itemViewHolder = (DemoItemViewHolder) viewHolder;
+        ItemVH itemViewHolder = (ItemVH) viewHolder;
         int sectionPos = itemViewHolder.getSectionAdapterPosition();
         if (sectionPos == -1) return;
-        if (itemViewHolder.getAdapter() != null) {
-            itemViewHolder.getAdapter().removeNumber(sectionPos);
-        } else {
-            itemViewHolder.getSimpleAdapter().removeFruit(sectionPos);
-        }
+        itemViewHolder.removeItem(sectionPos);
     }
 
     @Override

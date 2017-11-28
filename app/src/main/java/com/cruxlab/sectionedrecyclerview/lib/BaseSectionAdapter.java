@@ -278,7 +278,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
 
         /**
          * Returns the global adapter position in the {@link RecyclerView.Adapter} represented by
-         * this ViewHolder or -1, if this ViewHolder hasn't been used in any SectionedRV.
+         * this ViewHolder or -1, if this ViewHolder hasn't been used in any RecyclerView.
          * <p>
          * Similar to {@link RecyclerView.ViewHolder#getAdapterPosition()}.
          *
@@ -290,7 +290,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
 
         /**
          * Returns the section index that corresponds to this ViewHolder or -1, if this ViewHolder
-         * hasn't been used in any SectionedRV.
+         * hasn't been used in any RecyclerView.
          *
          * @return Index of the section or -1.
          */
@@ -315,7 +315,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
 
         /**
          * Returns the position in the corresponding BaseSectionAdapter represented by this ViewHolder
-         * or -1, if this ViewHolder hasn't been used in any SectionedRV.
+         * or -1, if this ViewHolder hasn't been used in any RecyclerView.
          *
          * @return Section adapter position.
          */
