@@ -1,8 +1,8 @@
 # Sectioned RecyclerView with pinnable (floating/sticky) headers
-This library allows you to divide items in your RecyclerView into groups called sections. Each section is represented by an adapter and can have a header. SectionAdapter is similar to Androidâ€™s [RecyclerView.Adapter](https://developer.android.com/reference/android/support/v7/widget/RecyclerView.Adapter.html), which creates and binds ViewHolders. Header can be pinned, which means, that it will be displayed at the top of the RecyclerView above the corresponding section items. Pinned headers change automatically while scrolling or after data set changes. You can also customize item swiping behaviour for each section individually.
+This library allows you to divide items in your RecyclerView into groups called sections. Each section is represented by an adapter and can have a header. SectionAdapter is similar to Android’s [RecyclerView.Adapter](https://developer.android.com/reference/android/support/v7/widget/RecyclerView.Adapter.html), which creates and binds ViewHolders. Header can be pinned, which means, that it will be displayed at the top of the RecyclerView above the corresponding section items. Pinned headers change automatically while scrolling or after data set changes. You can also customize item swiping behaviour for each section individually.
 ## Demo
 ![](https://thumbs.gfycat.com/FewDependableBassethound-size_restricted.gif)
-## Advantages version
+## Advantages
 * **Simplicilty.** Classes provided by this library are similar to Android ones.
 * **Flexibility.** Your RecyclerView stays compatable with almost any external third-party library or API. 
 * **Floating headers feature.** An iOS style floating header behaves the same as an item in the RecyclerView, so you don't have to handle the interaction with it separately.
@@ -70,7 +70,7 @@ public class MyItemViewHolder extends BaseSectionAdapter.ItemViewHolder {
 
 }
 ```
-As you can see, these classes are similar to Androidâ€™s [RecyclerView.Adapter](https://developer.android.com/reference/android/support/v7/widget/RecyclerView.Adapter.html) and [RecyclerView.ViewHolder](https://developer.android.com/reference/android/support/v7/widget/RecyclerView.ViewHolder.html).\
+As you can see, these classes are similar to Android’s [RecyclerView.Adapter](https://developer.android.com/reference/android/support/v7/widget/RecyclerView.Adapter.html) and [RecyclerView.ViewHolder](https://developer.android.com/reference/android/support/v7/widget/RecyclerView.ViewHolder.html).\
 Adapter for a section with header has some additional methods to ovverride:
 ```java
 public class MyAdapter extends SectionAdapter<MyItemViewHolder, MyHeaderViewHolder> {
@@ -180,9 +180,9 @@ Note, that section headers are unswipeable.
 * You can create up to 32,767 sections.
 * Sectiones added via SectionDataManager are indexed beginning with the zero subscript and can be accessed by their index later.
 * Any ViewHolder can call `getGlobalAdapterPosition()` or `getGlobalLayoutPosition()` to access its positions in the global RecyclerView adapter among items of all sections including their headers. It also can get the index of a section it belongs to, which is calculated based on the adapter position, calling `getSection()`.
-* ItemViewHolder can retrieve its position in the correpsonding adapter by calling `getSectionAdapterPosition()`.\
+* ItemViewHolder can retrieve its position in the correpsonding adapter by calling `getSectionAdapterPosition()`.
 Methods above can return -1 when the ViewHolder is not used in any RecyclerView.
 * For compaility with future Android RecyclerView API's and other libraries you can use `PositionConverter` interface to convert positions (e.g. retrieved from real ViewHolders) yourself.
 ---
-Made with :heart: by Elizabeth Popova\
+Made with :heart: by Elizabeth Popova
 Contact me: elizaveta.popova@coderivium.com
