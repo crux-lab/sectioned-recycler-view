@@ -118,7 +118,7 @@ To use floating headers feature, you have to place your RecyclerView into Sectio
             
  </com.cruxlab.sectionedrecyclerview.lib.SectionHeaderLayout>
 ```
- The enable displaying pinned headers, attach SectionHeaderLayout to your RecyclerView and SectionDataManager:
+To enable displaying pinned headers, attach SectionHeaderLayout to your RecyclerView and SectionDataManager:
 ```java
 SectionHeaderLayout sectionHeaderLayout = findViewById(R.id.section_header_layout);
 sectionHeaderLayout.attachTo(recyclerView, sectionDataManager);
