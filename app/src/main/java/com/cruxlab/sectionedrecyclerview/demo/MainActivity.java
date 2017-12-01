@@ -9,8 +9,8 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 
 import com.cruxlab.sectionedrecyclerview.R;
 import com.cruxlab.sectionedrecyclerview.demo.adapters.BaseAdapter;
-import com.cruxlab.sectionedrecyclerview.demo.adapters.HeaderlessAdapter;
 import com.cruxlab.sectionedrecyclerview.demo.adapters.DefaultAdapter;
+import com.cruxlab.sectionedrecyclerview.demo.adapters.HeaderlessAdapter;
 import com.cruxlab.sectionedrecyclerview.demo.adapters.SimpleAdapter;
 import com.cruxlab.sectionedrecyclerview.demo.adapters.SmartAdapter;
 import com.cruxlab.sectionedrecyclerview.lib.SectionDataManager;
@@ -27,25 +27,31 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         initFields();
 
-        // Initialize RecyclerView with vertical LinearLayoutManager.
+        // Initialize your RecyclerView with vertical LinearLayoutManager:
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setHasFixedSize(false);
 
         // Create SectionDataManager and set its adapter to the RecyclerView.
-        // After that you can use SectionDataManager instance, that provides SectionManager interface,
-        // to add/replace/remove sections.
+        // After that you can use SectionDataManager, that implements SectionManager interface,
+        // to add/remove/replace sections in your RecyclerView.
         SectionDataManager sectionDataManager = new SectionDataManager();
         RecyclerView.Adapter adapter = sectionDataManager.getAdapter();
         recyclerView.setAdapter(adapter);
 
-        // To attach ItemTouchHelper to your RecyclerView use SectionDataManager's swipe callback.
-        // It allows you to pass SectionItemSwipeCallbacks to SectionManager to customize swiping behavior
-        // of each section items separately.
+        // You can customize item swiping behaviour for each section individually.
+        // To enable this feature, create ItemTouchHelper initialized with SectionDataManager's callback
+        // and attach it to your RecyclerView:
         ItemTouchHelper.Callback callback = sectionDataManager.getSwipeCallback();
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);
         itemTouchHelper.attachToRecyclerView(recyclerView);
+
+        // To enable displaying pinned headers, attach SectionHeaderLayout to your RecyclerView and
+        // SectionDataManager. After this you can manage header pinned state with your adapter.
+        // You can disable displaying pinned headers any time by calling detach().
+        SectionHeaderLayout sectionHeaderLayout = findViewById(R.id.section_header_layout);
+        sectionHeaderLayout.attachTo(recyclerView, sectionDataManager);
 
         for (int i = 0; i < 12; i++) {
             if (i % 4 == 3) {
@@ -63,16 +69,12 @@ public class MainActivity extends AppCompatActivity {
                 sectionAdapter = new SmartAdapter(color, sectionDataManager, true, true);
             }
             DemoSwipeCallback swipeCallback = callbacks[i / 4 % 3];
-            // Adding a section with header to the end of the list, passing SectionAdapter, DemoSwipeCallback to customize swiping
-            // behavior for items in this section and a header type, that is used to determine, that sections have the same
-            // HeaderViewHolder for further caching and reusing.
+            // Adding a section with header to the end of the list, passing SectionAdapter,
+            // DemoSwipeCallback to customize swiping behavior for items in this section and
+            // a header type, that is used to determine, that sections have the same HeaderViewHolder
+            // for further caching and reusing.
             sectionDataManager.addSection(sectionAdapter, swipeCallback, sectionAdapter.type);
         }
-
-        // To enable pinned headers feature attach SectionHeaderLayout to your RecyclerView and its SectionDataManager.
-        // You can disable it by calling sectionHeaderLayout.detach().
-        SectionHeaderLayout sectionHeaderLayout = findViewById(R.id.section_header_layout);
-        sectionHeaderLayout.attachTo(recyclerView, sectionDataManager);
     }
 
     private void initFields() {

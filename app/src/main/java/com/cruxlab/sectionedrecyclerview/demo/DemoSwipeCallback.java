@@ -24,10 +24,6 @@ public class DemoSwipeCallback extends SectionItemSwipeCallback {
         this.deleteIcon = deleteIcon;
     }
 
-    public DemoSwipeCallback(DemoSwipeCallback other) {
-        this(other.color, other.deleteIcon);
-    }
-
     @Override
     public int getSwipeDirFlags(RecyclerView recyclerView, BaseSectionAdapter.ItemViewHolder viewHolder) {
         return ItemTouchHelper.LEFT;
@@ -37,6 +33,9 @@ public class DemoSwipeCallback extends SectionItemSwipeCallback {
     public void onSwiped(BaseSectionAdapter.ItemViewHolder viewHolder, int direction) {
         ItemVH itemViewHolder = (ItemVH) viewHolder;
         int sectionPos = itemViewHolder.getSectionAdapterPosition();
+        // This method can return -1 when getAdapterPosition() of the corresponding
+        // RecyclerView.ViewHolder returns -1 or when this ViewHolder isn't used
+        // in any RecyclerView.
         if (sectionPos == -1) return;
         itemViewHolder.removeItem(sectionPos);
     }

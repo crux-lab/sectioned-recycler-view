@@ -28,16 +28,19 @@ public abstract class BaseAdapter<HVH extends HeaderVH> extends SectionAdapter<I
     public abstract BaseAdapter getCopy();
     public abstract BaseAdapter getNext();
 
+    // Inserting the same item to the RecyclerView.
     public void duplicateItem(int pos) {
         strings.add(pos + 1, strings.get(pos));
         notifyItemInserted(pos + 1);
     }
 
+    // Removing an item from the RecyclerView.
     public void removeItem(int pos) {
         strings.remove(pos);
         notifyItemRemoved(pos);
     }
 
+    // Updating item's text.
     public void changeItem(int pos) {
         strings.set(pos, strings.get(pos) + " *changed*");
         notifyItemChanged(pos);

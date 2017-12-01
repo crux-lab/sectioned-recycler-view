@@ -26,11 +26,11 @@ public class SimpleItemVH extends BaseSectionAdapter.ItemViewHolder {
         btnDuplicate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // The adapter position is used to calculate this ViewHolder's position in section.
-                // So, this method returns -1 when getAdapterPosition() of the real ViewHolder returns -1 or
-                // when this ViewHolder hasn't been used in any RecyclerView.
-                // In our case it can happen when we click on a delete button of the view whose removal animation
-                // is still in progress.
+                // The adapter position is used to calculate what section index corresponds to this
+                // ViewHolder. So, this method returns -1 when the ViewHolder is not used in any
+                // RecyclerView.
+                // In our case it can happen when we click on a delete button of the view whose removal
+                // animation is still in progress.
                 int sectionPos = getSectionAdapterPosition();
                 if (sectionPos == -1) return;
 
@@ -41,11 +41,11 @@ public class SimpleItemVH extends BaseSectionAdapter.ItemViewHolder {
         btnChange.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // The adapter position is used to calculate this ViewHolder's position in section.
-                // So, this method returns -1 when getAdapterPosition() of the real ViewHolder returns -1 or
-                // when this ViewHolder hasn't been used in any RecyclerView.
-                // In our case it can happen when we click on a delete button of the view whose removal animation
-                // is still in progress.
+                // The adapter position is used to calculate what section index corresponds to this
+                // ViewHolder. So, this method returns -1 when the ViewHolder is not used in any
+                // RecyclerView.
+                // In our case it can happen when we click on a delete button of the view whose removal
+                // animation is still in progress.
                 int sectionPos = getSectionAdapterPosition();
                 if (sectionPos == -1) return;
 
@@ -55,11 +55,11 @@ public class SimpleItemVH extends BaseSectionAdapter.ItemViewHolder {
         btnRemove.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // The adapter position is used to calculate this ViewHolder's position in section.
-                // So, this method returns -1 when getAdapterPosition() of the real ViewHolder returns -1 or
-                // when this ViewHolder hasn't been used in any RecyclerView.
-                // In our case it can happen when we click on a delete button of the view whose removal animation
-                // is still in progress.
+                // The adapter position is used to calculate what section index corresponds to this
+                // ViewHolder. So, this method returns -1 when the ViewHolder is not used in any
+                // RecyclerView.
+                // In our case it can happen when we click on a delete button of the view whose removal
+                // animation is still in progress.
                 int sectionPos = getSectionAdapterPosition();
                 if (sectionPos == -1) return;
 

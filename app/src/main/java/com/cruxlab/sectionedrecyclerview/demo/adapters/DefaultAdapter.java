@@ -17,8 +17,8 @@ public class DefaultAdapter extends BaseAdapter<HeaderVH> {
         super(color, sectionManager, isHeaderVisible, isHeaderPinned);
         this.type = 1;
         this.strings = new ArrayList<>(Arrays.asList(
-                "Items in this RecyclerView are divided into groups - sections.",
-                "Each section has an adapter to represent its items and an optional header.",
+                "Items in this RecyclerView are divided into groups called sections.",
+                "Each section is represented by an adapter and can have a header.",
                 "Just like RecyclerView.Adapter section adapter creates and binds ViewHolders."));
     }
 

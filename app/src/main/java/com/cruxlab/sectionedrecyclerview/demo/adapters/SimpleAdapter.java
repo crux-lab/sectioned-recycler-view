@@ -20,9 +20,9 @@ public class SimpleAdapter extends BaseAdapter<HeaderVH> {
         this.strings = new ArrayList<>(Arrays.asList(
                 "Each section can manage its header visibility.",
                 "Section headers can pin to the top of the RecyclerView automatically.",
-                "Top header behaves just like a regular list item (e.g. handle clicks).",
-                "To enable this feature you should attach SectionHeaderLayout to your sectioned RecyclerView.",
-                "SectionHeaderLayout should be RecyclerView's direct parent."));
+                "Top header behaves just like a regular list item (e.g. handles clicks).",
+                "To enable this feature you should attach SectionHeaderLayout to your RecyclerView and SectionDataManager.",
+                "RecyclerView should be SectionHeaderLayout's direct child."));
     }
 
     @Override

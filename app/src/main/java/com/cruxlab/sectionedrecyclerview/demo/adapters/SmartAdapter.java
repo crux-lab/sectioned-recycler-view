@@ -18,8 +18,8 @@ public class SmartAdapter extends BaseAdapter<SmartHeaderVH> {
         super(color, sectionManager, isHeaderVisible, isHeaderPinned);
         this.type = 3;
         this.strings = new ArrayList<>(Arrays.asList(
-                "Swipe left to remove item from the list.",
-                "You can customise swiping behavior for each section separately.",
+                "Swipe left to remove an item from the list.",
+                "You can customize item swiping behavior for each section individually.",
                 "Section headers are unswipeable."));
     }
 

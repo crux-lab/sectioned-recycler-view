@@ -28,11 +28,11 @@ public class ItemVH extends com.cruxlab.sectionedrecyclerview.lib.BaseSectionAda
         btnDuplicate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // The adapter position is used to calculate this ViewHolder's position in section.
-                // So, this method returns -1 when getAdapterPosition() of the real ViewHolder returns -1 or
-                // when this ViewHolder hasn't been used in any RecyclerView.
-                // In our case it can happen when we click on a delete button of the view whose removal animation
-                // is still in progress.
+                // The adapter position is used to calculate what section index corresponds to this
+                // ViewHolder. So, this method returns -1 when the ViewHolder is not used in any
+                // RecyclerView.
+                // In our case it can happen when we click on a delete button of the view whose removal
+                // animation is still in progress.
                 int sectionPos = getSectionAdapterPosition();
                 if (sectionPos == -1) return;
 
@@ -43,11 +43,11 @@ public class ItemVH extends com.cruxlab.sectionedrecyclerview.lib.BaseSectionAda
         btnChange.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // The adapter position is used to calculate this ViewHolder's position in section.
-                // So, this method returns -1 when getAdapterPosition() of the real ViewHolder returns -1 or
-                // when this ViewHolder hasn't been used in any RecyclerView.
-                // In our case it can happen when we click on a delete button of the view whose removal animation
-                // is still in progress.
+                // The adapter position is used to calculate what section index corresponds to this
+                // ViewHolder. So, this method returns -1 when the ViewHolder is not used in any
+                // RecyclerView.
+                // In our case it can happen when we click on a delete button of the view whose removal
+                // animation is still in progress.
                 int sectionPos = getSectionAdapterPosition();
                 if (sectionPos == -1) return;
 
@@ -57,11 +57,11 @@ public class ItemVH extends com.cruxlab.sectionedrecyclerview.lib.BaseSectionAda
         btnRemove.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // The adapter position is used to calculate this ViewHolder's position in section.
-                // So, this method returns -1 when getAdapterPosition() of the real ViewHolder returns -1 or
-                // when this ViewHolder hasn't been used in any RecyclerView.
-                // In our case it can happen when we click on a delete button of the view whose removal animation
-                // is still in progress.
+                // The adapter position is used to calculate what section index corresponds to this
+                // ViewHolder. So, this method returns -1 when the ViewHolder is not used in any
+                // RecyclerView.
+                // In our case it can happen when we click on a delete button of the view whose removal
+                // animation is still in progress.
                 int sectionPos = getSectionAdapterPosition();
                 if (sectionPos == -1) return;
 
@@ -73,21 +73,21 @@ public class ItemVH extends com.cruxlab.sectionedrecyclerview.lib.BaseSectionAda
             public void onClick(View view) {
                 adapter.updateHeaderVisibility(!adapter.isHeaderVisible());
 
-                // The adapter position is used to calculate what section index corresponds to this ViewHolder.
-                // So, this method returns -1 when getAdapterPosition() of the real ViewHolder returns -1 or
-                // when this ViewHolder hasn't been used in any RecyclerView.
-                // In our case it can happen when we click on a delete button of the view whose removal animation
-                // is still in progress.
+                // The adapter position is used to calculate what section index corresponds to this
+                // ViewHolder. So, this method returns -1 when the ViewHolder is not used in any
+                // RecyclerView.
+                // In our case it can happen when we click on a delete button of the view whose removal
+                // animation is still in progress.
                 int section = getSection();
                 if (section < 0) return;
 
-                // We update all items of this section to change a show/hide icon.
+                // We update all items of this section to change the visibility icon.
                 // We can also update all items (and header) calling
                 // adapter.sectionManager.updateSection(getSection()).
                 adapter.notifyItemRangeChanged(0, adapter.getItemCount());
             }
         });
-        // We update visibiliy icon only when binding this ViewHolder.
+        // We update visibility icon only when binding this ViewHolder.
         btnHeader.setImageResource(adapter.isHeaderVisible() ? R.drawable.ic_visibility : R.drawable.ic_visibility_off);
     }
 

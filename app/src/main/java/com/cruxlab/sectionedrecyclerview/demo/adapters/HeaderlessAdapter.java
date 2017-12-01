@@ -36,6 +36,7 @@ public class HeaderlessAdapter extends SimpleSectionAdapter<SimpleItemVH> {
         return strings.size();
     }
 
+    // Inserting some same items to the RecyclerView.
     public void duplicateItems(int pos) {
         String text = strings.get(pos);
         int cnt = new Random().nextInt(3) + 1;
@@ -45,6 +46,7 @@ public class HeaderlessAdapter extends SimpleSectionAdapter<SimpleItemVH> {
         notifyItemRangeInserted(pos + 1, cnt);
     }
 
+    // Removing this and next same items from the RecyclerView.
     public void removeItems(int pos) {
         String text = strings.get(pos);
         int cnt = 0;
@@ -55,6 +57,7 @@ public class HeaderlessAdapter extends SimpleSectionAdapter<SimpleItemVH> {
         notifyItemRangeRemoved(pos, cnt);
     }
 
+    // Updating this and next same item's text.
     public void changeItems(int pos) {
         String text = strings.get(pos);
         int changePos = pos;
