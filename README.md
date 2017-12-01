@@ -1,5 +1,5 @@
 # Sectioned RecyclerView with pinnable (floating/sticky) headers
-This library allows you to divide items in your RecyclerView into groups called sections. Each section is represented by an adapter and can have a header. SectionAdapter is similar to Android’s [RecyclerView.Adapter](https://developer.android.com/reference/android/support/v7/widget/RecyclerView.Adapter.html), which creates and binds ViewHolders. Header can be pinned, which means, that it will be displayed at the top of the RecyclerView above the corresponding section items. Pinned headers change automatically while scrolling or after data set changes. You can also customize item swiping behaviour for each section individually.
+This library allows you to divide items in your RecyclerView into groups called sections. Each section is represented by an adapter and can have a header. SectionAdapter is similar to Android’s [RecyclerView.Adapter](https://developer.android.com/reference/android/support/v7/widget/RecyclerView.Adapter.html), which creates and binds ViewHolders. The header can be pinned, which means, that it will be displayed at the top of the RecyclerView above the corresponding section items. Pinned headers change automatically while scrolling or after dataset changes. You can also customize item swiping behavior for each section individually.
 ## Demo
 ![](https://thumbs.gfycat.com/FewDependableBassethound-size_restricted.gif)
 
@@ -9,7 +9,7 @@ You can find demo project code [here](https://bitbucket.org/coderivium/sectioned
 * **Simplicilty.** Classes provided by this library are similar to Android ones.
 * **Flexibility.** Your RecyclerView stays compatable with almost any external third-party library or API. 
 * **Floating headers feature.** An iOS style floating header behaves the same as an item in the RecyclerView, so you don't have to handle the interaction with it separately.
-* **Swiping feature.** You can customize item swiping behaviour for each section individually.
+* **Swiping feature.** You can customize item swiping behavior for each section individually.
 * **ViewHolders reusing.** List item ViewHolders are reused as usual, pinned headers are cached and reused using own implentation.
 ## Usage
 #### Initialization
@@ -75,7 +75,7 @@ public class MyItemViewHolder extends BaseSectionAdapter.ItemViewHolder {
 ```
 As you can see, these classes are similar to Android’s [RecyclerView.Adapter](https://developer.android.com/reference/android/support/v7/widget/RecyclerView.Adapter.html) and [RecyclerView.ViewHolder](https://developer.android.com/reference/android/support/v7/widget/RecyclerView.ViewHolder.html).
 
-Adapter for a section with header has some additional methods to ovverride:
+Adapter for a section with header has some additional methods to override:
 ```java
 public class MyAdapter extends SectionAdapter<MyItemViewHolder, MyHeaderViewHolder> {
 
@@ -132,8 +132,8 @@ You can disable disaplying pinned headers any time by calling:
 sectionHeaderLayout.detach();
 ```
 Note, that you should NOT update header view contents manually (e.g. while handling click event), because when header is pinned to the top, its view is duplicated and these changes won't affect an original item in the RecyclerView. You should call `notifyHeaderChanged()` instead to guarantee that your changes will be applied to both views while binding.
-#### Swiping behaviour
-You can customize item swiping behaviour for each section individually. To enable this feature, create ItemTouchHelper initialized with SectionDataManager's callback and attach it to your RecyclerView:
+#### Swiping behavior
+You can customize item swiping behavior for each section individually. To enable this feature, create ItemTouchHelper initialized with SectionDataManager's callback and attach it to your RecyclerView:
 ```java
 ItemTouchHelper.Callback callback = sectionDataManager.getSwipeCallback();
 ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);
@@ -156,7 +156,7 @@ public class MySwipeCallback extends SectionItemSwipeCallback {
 
     @Override
     public void onSwiped(BaseSectionAdapter.ItemViewHolder viewHolder, int direction) {
-    	// Do something
+        // Do something
         MyItemViewHolder itemViewHolder = (MyItemViewHolder) viewHolder;
         int sectionPos = itemViewHolder.getSectionAdapterPosition();
         // This method can return -1 when getAdapterPosition() of the corresponding
@@ -190,7 +190,7 @@ Note, that section headers are unswipeable.
 * Any ViewHolder can call `getGlobalAdapterPosition()` or `getGlobalLayoutPosition()` to access its positions in the global RecyclerView adapter among items of all sections including their headers. It also can get the index of a section it belongs to, which is calculated based on the adapter position, calling `getSection()`.
 * ItemViewHolder can retrieve its position in the corresponding adapter by calling `getSectionAdapterPosition()`.
 Methods above can return -1 when the ViewHolder is not used in any RecyclerView.
-* For compaility with future Android RecyclerView APIs and other libraries you can use `PositionConverter` interface to convert positions (e.g. retrieved from real ViewHolders) yourself.
+* For compatibility with future Android RecyclerView APIs and other libraries you can use `PositionConverter` interface to convert positions (e.g. retrieved from real ViewHolders) yourself.
 ---
 Made with :heart: by Elizabeth Popova
 
