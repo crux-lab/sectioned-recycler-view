@@ -7,8 +7,8 @@ This library allows you to divide items in your RecyclerView into groups called 
 You can find demo project code [here](https://bitbucket.org/coderivium/sectioned-recycler-view/src/538ed8d6000e1d930c023482d140d08d005c51b5/app/src/main/java/com/cruxlab/sectionedrecyclerview/demo/?at=master). 
 ## Advantages
 * **Simplicilty.** Classes provided by this library are similar to Android ones.
-* **Flexibility.** Your RecyclerView stays compatable with almost any external third-party library or API. 
-* **Floating headers feature.** An iOS style floating header behaves the same as an item in the RecyclerView, so you don't have to handle the interaction with it separately.
+* **Flexibility.** Your RecyclerView stays compatible with almost any external third-party library or API. 
+* **Floating headers feature.** An iOS style floating header behaves the same way as an item in the RecyclerView, so you don't have to handle the interaction with it separately.
 * **Swiping feature.** You can customize item swiping behavior for each section individually.
 * **ViewHolders reusing.** List item ViewHolders are reused as usual, pinned headers are cached and reused using own implentation.
 ## Usage
@@ -26,7 +26,7 @@ SectionDataManager sectionDataManager = new SectionDataManager();
 RecyclerView.Adapter adapter = sectionDataManager.getAdapter();
 recyclerView.setAdapter(adapter);
 ```  
-After that you can use SectionDataManager, that implements SectionManager interface, to add/remove/replace sections in your RecyclerView.
+After that you can use SectionDataManager that implements SectionManager interface to add/remove/replace sections in your RecyclerView.
 ```java
 sectionDataManager.addSection(new MySimpleAdapter());
 int cnt = sectionDataManager.getSectionCount();
@@ -131,7 +131,7 @@ You can disable disaplying pinned headers any time by calling:
 ```java
 sectionHeaderLayout.detach();
 ```
-Note, that you should NOT update header view contents manually (e.g. while handling click event), because when header is pinned to the top, its view is duplicated and these changes won't affect an original item in the RecyclerView. You should call `notifyHeaderChanged()` instead to guarantee that your changes will be applied to both views while binding.
+Note, that you should NOT update header view contents manually (e.g. while handling click event), because when header is pinned to the top, its view is duplicated and these changes won't affect the original item in the RecyclerView. You should call `notifyHeaderChanged()` instead to guarantee that your changes will be applied to both views while binding.
 #### Swiping behavior
 You can customize item swiping behavior for each section individually. To enable this feature, create ItemTouchHelper initialized with SectionDataManager's callback and attach it to your RecyclerView:
 ```java
@@ -187,9 +187,9 @@ Note, that section headers are unswipeable.
 #### Extra
 * The number of sections you can add to the SectionDataManager during its lifetime is limited to 32,767.
 * Sections added via SectionDataManager are indexed beginning with the zero subscript and can be accessed by their index later.
-* Any ViewHolder can call `getGlobalAdapterPosition()` or `getGlobalLayoutPosition()` to access its positions in the global RecyclerView adapter among items of all sections including their headers. It also can get the index of a section it belongs to, which is calculated based on the adapter position, calling `getSection()`.
+* Any ViewHolder can call `getGlobalAdapterPosition()` or `getGlobalLayoutPosition()` to access its positions in the global RecyclerView adapter among items of all sections including their headers. It also can get the index of the section it belongs to, which is calculated based on the adapter position, calling `getSection()`.
 * ItemViewHolder can retrieve its position in the corresponding adapter by calling `getSectionAdapterPosition()`.
-Methods above can return -1 when the ViewHolder is not used in any RecyclerView.
+The methods above can return -1 when the ViewHolder is not used in any RecyclerView.
 * For compatibility with future Android RecyclerView APIs and other libraries you can use `PositionConverter` interface to convert positions (e.g. retrieved from real ViewHolders) yourself.
 ---
 Made with :heart: by Elizabeth Popova
