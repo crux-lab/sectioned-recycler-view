@@ -1,10 +1,10 @@
 # Sectioned RecyclerView with pinnable (floating/sticky) headers
-This library allows you to divide items in your RecyclerView into groups called sections. Each section is represented by an adapter and can have a header. SectionAdapter is similar to Android’s [RecyclerView.Adapter](https://developer.android.com/reference/android/support/v7/widget/RecyclerView.Adapter.html), which creates and binds ViewHolders. The header can be pinned, which means, that it will be displayed at the top of the RecyclerView above the corresponding section items. Pinned headers change automatically while scrolling or after dataset changes. You can also customize item swiping behavior for each section individually.
+This library allows you to divide items in your RecyclerView into groups called sections. Each section is represented by an adapter and can have a header. SectionAdapter is similar to Androidâ€™s [RecyclerView.Adapter](https://developer.android.com/reference/android/support/v7/widget/RecyclerView.Adapter.html), which creates and binds ViewHolders. The header can be pinned, which means, that it will be displayed at the top of the RecyclerView above the corresponding section items. Pinned headers change automatically while scrolling or after dataset changes. You can also customize item swiping behavior for each section individually.
 ## Demo
 ![](https://thumbs.gfycat.com/FewDependableBassethound-size_restricted.gif)
 
 
-You can find demo project code [here](https://bitbucket.org/coderivium/sectioned-recycler-view/src/538ed8d6000e1d930c023482d140d08d005c51b5/app/src/main/java/com/cruxlab/sectionedrecyclerview/demo/?at=master). 
+You can find demo project code [here](https://github.com/crux-lab/sectioned-recycler-view/tree/master/app/src/main/java/com/cruxlab/sectionedrecyclerview/demo). 
 ## Advantages
 * **Simplicilty.** Classes provided by this library are similar to Android ones.
 * **Flexibility.** Your RecyclerView stays compatible with almost any external third-party library or API. 
@@ -73,7 +73,7 @@ public class MyItemViewHolder extends BaseSectionAdapter.ItemViewHolder {
 
 }
 ```
-As you can see, these classes are similar to Android’s [RecyclerView.Adapter](https://developer.android.com/reference/android/support/v7/widget/RecyclerView.Adapter.html) and [RecyclerView.ViewHolder](https://developer.android.com/reference/android/support/v7/widget/RecyclerView.ViewHolder.html).
+As you can see, these classes are similar to Androidâ€™s [RecyclerView.Adapter](https://developer.android.com/reference/android/support/v7/widget/RecyclerView.Adapter.html) and [RecyclerView.ViewHolder](https://developer.android.com/reference/android/support/v7/widget/RecyclerView.ViewHolder.html).
 
 Adapter for a section with header has some additional methods to override:
 ```java
@@ -191,6 +191,9 @@ Note, that section headers are unswipeable.
 * ItemViewHolder can retrieve its position in the corresponding adapter by calling `getSectionAdapterPosition()`.
 The methods above can return -1 when the ViewHolder is not used in any RecyclerView.
 * For compatibility with future Android RecyclerView APIs and other libraries you can use `PositionConverter` interface to convert positions (e.g., retrieved from real ViewHolders) yourself.
+## License
+This project is licensed under the MIT License - see the LICENSE [file](https://github.com/crux-lab/sectioned-recycler-view/blob/master/LICENSE) for details.
+
 ---
 Made with :heart: by Elizabeth Popova
 
