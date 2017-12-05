@@ -10,7 +10,7 @@ You can find demo project code [here](https://bitbucket.org/coderivium/sectioned
 * **Flexibility.** Your RecyclerView stays compatible with almost any external third-party library or API. 
 * **Floating headers feature.** An iOS style floating header behaves the same way as an item in the RecyclerView, so you don't have to handle the interaction with it separately.
 * **Swiping feature.** You can customize item swiping behavior for each section individually.
-* **ViewHolders reusing.** List item ViewHolders are reused as usual, pinned headers are cached and reused using own implentation.
+* **ViewHolders reusing.** List item ViewHolders are reused as usual, pinned headers are cached and reused with the help of own implementation.
 ## Usage
 #### Initialization
 Initialize your RecyclerView with vertical LinearLayoutManager:
@@ -131,7 +131,7 @@ You can disable disaplying pinned headers any time by calling:
 ```java
 sectionHeaderLayout.detach();
 ```
-Note, that you should NOT update header view contents manually (e.g. while handling click event), because when header is pinned to the top, its view is duplicated and these changes won't affect the original item in the RecyclerView. You should call `notifyHeaderChanged()` instead to guarantee that your changes will be applied to both views while binding.
+Note, that you should NOT update header view contents manually (e.g., while handling click event), because when header is pinned to the top, its view is duplicated and these changes won't affect the original item in the RecyclerView. You should call `notifyHeaderChanged()` instead to guarantee that your changes will be applied to both views while binding.
 #### Swiping behavior
 You can customize item swiping behavior for each section individually. To enable this feature, create ItemTouchHelper initialized with SectionDataManager's callback and attach it to your RecyclerView:
 ```java
@@ -190,7 +190,7 @@ Note, that section headers are unswipeable.
 * Any ViewHolder can call `getGlobalAdapterPosition()` or `getGlobalLayoutPosition()` to access its positions in the global RecyclerView adapter among items of all sections including their headers. It also can get the index of the section it belongs to, which is calculated based on the adapter position, calling `getSection()`.
 * ItemViewHolder can retrieve its position in the corresponding adapter by calling `getSectionAdapterPosition()`.
 The methods above can return -1 when the ViewHolder is not used in any RecyclerView.
-* For compatibility with future Android RecyclerView APIs and other libraries you can use `PositionConverter` interface to convert positions (e.g. retrieved from real ViewHolders) yourself.
+* For compatibility with future Android RecyclerView APIs and other libraries you can use `PositionConverter` interface to convert positions (e.g., retrieved from real ViewHolders) yourself.
 ---
 Made with :heart: by Elizabeth Popova
 
