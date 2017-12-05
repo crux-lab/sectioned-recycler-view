@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2017 Cruxlab, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.cruxlab.sectionedrecyclerview.lib;
 
 
@@ -25,9 +49,9 @@ import java.util.Set;
  * corresponding ViewHolder should be recreated. Each BaseSectionAdapter also can use short values
  * to distinguish own items.
  * <p>
- * Each section with header specifies a header type when added. It is used to make RecyclerView reuse
- * HeaderViewHolders for different sections. {@link HeaderManager} also uses it to cache and store
- * duplicated HeaderViewHolder, that are created only once for any header type.
+ * Each section with header can be added only with a specified header type. It is used to make
+ * RecyclerView reuse HeaderViewHolders for different sections. {@link HeaderManager} also uses it
+ * to cache and store duplicated HeaderViewHolders, which are created only once for any header type.
  * <p>
  * The main task is to determine, which section corresponds to the given global adapter position and
  * whether it is a header or a regular item in it. To do it efficiently partial sum array is used
