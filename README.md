@@ -198,4 +198,4 @@ This project is licensed under the MIT License - see the LICENSE [file](https://
 Made with :heart: by Elizabeth Popova
 
 
-Contact me: elizaveta.popova@coderivium.com
+Contact me: elizaveta.popova@cruxlab.com
