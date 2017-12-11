@@ -106,7 +106,7 @@ sectionDataManager.insertSection(0, new AdapterWithDifferentHeader(true, false),
 #### Floating headers
 To use floating headers feature, you have to place your RecyclerView into SectionHeaderLayout in your xml file:
 ```xml
-<com.cruxlab.sectionedrecyclerview.SectionHeaderLayout
+<com.cruxlab.sectionedrecyclerview.lib.SectionHeaderLayout
         android:id="@+id/section_header_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -116,7 +116,7 @@ To use floating headers feature, you have to place your RecyclerView into Sectio
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
             
- </com.cruxlab.sectionedrecyclerview.SectionHeaderLayout>
+ </com.cruxlab.sectionedrecyclerview.lib.SectionHeaderLayout>
 ```
 To enable displaying pinned headers, attach SectionHeaderLayout to your RecyclerView and SectionDataManager:
 ```java

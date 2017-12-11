@@ -5,9 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.cruxlab.sectionedrecyclerview.MainActivity">
+    tools:context="com.cruxlab.sectionedrecyclerview.demo.MainActivity">
 
-    <com.cruxlab.sectionedrecyclerview.SectionHeaderLayout
+    <com.cruxlab.sectionedrecyclerview.lib.SectionHeaderLayout
         android:id="@+id/section_header_layout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -18,6 +18,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-    </com.cruxlab.sectionedrecyclerview.SectionHeaderLayout>
+    </com.cruxlab.sectionedrecyclerview.lib.SectionHeaderLayout>
 
 </LinearLayout>

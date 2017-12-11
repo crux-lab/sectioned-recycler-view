@@ -3,8 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/library/library.iml" filepath="$PROJECT_DIR$/library/library.iml" />
       <module fileurl="file://$PROJECT_DIR$/sectioned-recycler-view.iml" filepath="$PROJECT_DIR$/sectioned-recycler-view.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sectionedrecyclerview/sectionedrecyclerview.iml" filepath="$PROJECT_DIR$/sectionedrecyclerview/sectionedrecyclerview.iml" />
     </modules>
   </component>
 </project>
