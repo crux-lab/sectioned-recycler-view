@@ -129,7 +129,7 @@ public abstract class SectionItemSwipeCallback {
 
     /**
      * Called when the ViewHolder swiped or dragged by the ItemTouchHelper is changed.
-     * <p/>
+     * <p>
      * If you override this method, you should call super.
      * <p>
      * Similar to {@link ItemTouchHelper.Callback#onSelectedChanged(RecyclerView.ViewHolder, int)}.
