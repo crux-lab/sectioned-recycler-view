@@ -6,7 +6,6 @@ This library allows you to divide items in your RecyclerView into groups called 
 
 ![](https://thumbs.gfycat.com/FewDependableBassethound-size_restricted.gif)
 
-
 You can find demo project code [here](https://github.com/crux-lab/sectioned-recycler-view/tree/master/app/src/main/java/com/cruxlab/sectionedrecyclerview/demo). 
 
 ## Advantages
@@ -19,7 +18,15 @@ You can find demo project code [here](https://github.com/crux-lab/sectioned-recy
 
 ## Usage
 
-#### Initialization
+### Setup
+
+The Gradle dependency is available via [jCenter](https://bintray.com/cruxlab/SectionedRecyclerView/SectionedRecyclerView). Add this to your module's `build.gradle` file:
+
+```gradle
+compile 'com.cruxlab:sectionedrecyclerview:1.0.0'
+```
+
+### Initialization
 
 Initialize your RecyclerView with vertical LinearLayoutManager:
 
@@ -46,7 +53,7 @@ int cnt = sectionDataManager.getSectionCount();
 sectionDataManager.removeSection(cnt - 1);
 ```  
 
-#### Adapters
+### Adapters
 
 This is an example of an adapter for a simple section without header:
 
@@ -55,7 +62,7 @@ public class MySimpleAdapter extends SimpleSectionAdapter<MyItemViewHolder> {
 
     private ArrayList<String> items = new ArrayList<>(Arrays.asList("First", "Second", "Third"));
     
-     @Override
+    @Override
     public int getItemCount() {
         return items.size();
     }
@@ -126,7 +133,7 @@ sectionDataManager.addSection(new AdapterWithTheSameHeader(false, false), HEADER
 sectionDataManager.insertSection(0, new AdapterWithDifferentHeader(true, false), ANOTHER_HEADER_TYPE);
 ```
 
-#### Floating headers
+### Floating headers
 
 To use floating headers feature, you have to place your RecyclerView into SectionHeaderLayout in your xml file:
 
@@ -165,7 +172,7 @@ sectionHeaderLayout.detach();
 
 Note, that you should NOT update header view contents manually (e.g., while handling click event), because when header is pinned to the top, its view is duplicated and these changes won't affect the original item in the RecyclerView. You should call `notifyHeaderChanged()` instead to guarantee that your changes will be applied to both views while binding.
 
-#### Swiping behavior
+### Swiping behavior
 
 You can customize item swiping behavior for each section individually. To enable this feature, create ItemTouchHelper initialized with SectionDataManager's callback and attach it to your RecyclerView:
 
@@ -225,7 +232,7 @@ sectionDataManager.removeSwipeCallback(0);
 
 Note, that section headers are unswipeable.
 
-#### Extra
+### Extra
 
 * The number of sections you can add to the SectionDataManager during its lifetime is limited to 32,767.
 * Sections added via SectionDataManager are indexed beginning with the zero subscript and can be accessed by their index later.
@@ -241,6 +248,5 @@ This project is licensed under the MIT License - see the LICENSE [file](https://
 ---
 
 Made with :heart: by Elizabeth Popova
-
 
 Contact me: elizaveta.popova@cruxlab.com
