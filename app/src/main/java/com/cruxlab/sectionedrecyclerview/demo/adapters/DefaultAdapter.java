@@ -60,7 +60,7 @@ public class DefaultAdapter extends BaseAdapter<HeaderVH> {
 
     @Override
     public HeaderVH onCreateHeaderViewHolder(ViewGroup parent) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.default_header_vh1, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.default_header_vh, parent, false);
         return new HeaderVH(view);
     }
 

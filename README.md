@@ -23,7 +23,7 @@ You can find demo project code [here](https://github.com/crux-lab/sectioned-recy
 The Gradle dependency is available via [jCenter](https://bintray.com/cruxlab/SectionedRecyclerView/SectionedRecyclerView). Add this to your module's `build.gradle` file:
 
 ```gradle
-compile 'com.cruxlab:sectionedrecyclerview:1.0.0'
+compile 'com.cruxlab:sectionedrecyclerview:1.0.1'
 ```
 
 ### Initialization
