@@ -173,4 +173,17 @@ public abstract class SectionItemSwipeCallback {
         return true;
     }
 
+    /**
+     * Returns the fraction that the user should move the View to be considered as swiped.
+     * The fraction is calculated with respect to RecyclerView's bounds.
+     * <p>
+     * Similar to {@link ItemTouchHelper.Callback#getSwipeThreshold(RecyclerView.ViewHolder)}.
+     *
+     * @param viewHolder The ViewHolder that is being dragged.
+     * @return A float value that denotes the fraction of the View size. Default value is .5f.
+     */
+    public float getSwipeThreshold(BaseSectionAdapter.ItemViewHolder viewHolder) {
+        return .5f;
+    }
+
 }

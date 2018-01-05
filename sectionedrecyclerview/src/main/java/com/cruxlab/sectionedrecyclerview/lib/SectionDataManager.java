@@ -70,7 +70,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
     private SparseArray<SectionAdapterWrapper> typeToAdapter;
     private SparseArray<SectionItemSwipeCallback> typeToCallback;
     private SparseArray<Set<Short>> headerTypeToSectionTypes;
-
+    private GeneralTouchCallback generalTouchCallback;
     private HeaderManager headerManager;
 
     public SectionDataManager() {
@@ -79,6 +79,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
         typeToAdapter = new SparseArray<>();
         typeToCallback = new SparseArray<>();
         headerTypeToSectionTypes = new SparseArray<>();
+        generalTouchCallback = new GeneralTouchCallback();
     }
 
     /**
@@ -99,6 +100,20 @@ public class SectionDataManager implements SectionManager, PositionConverter {
      */
     public ItemTouchHelper.Callback getSwipeCallback() {
         return swipeCallback;
+    }
+
+    /**
+     * Sets the given instance as an implementation for some intersectional methods of {@link #swipeCallback}.
+     * You can reset to default implementation passing null.
+     *
+     * @param callback GeneralTouchCallback to use instead of default.
+     */
+    public void setGeneralTouchCallback(GeneralTouchCallback callback) {
+        if (callback != null) {
+            generalTouchCallback = callback;
+        } else {
+            generalTouchCallback = new GeneralTouchCallback();
+        }
     }
 
     /**
@@ -425,24 +440,6 @@ public class SectionDataManager implements SectionManager, PositionConverter {
             return ItemTouchHelper.Callback.makeMovementFlags(0, swipeFlags);
         }
 
-        @Override
-        public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder,
-                              RecyclerView.ViewHolder target) {
-            return false;
-        }
-
-        /**
-         * Passes the corresponding call to the {@link SectionItemSwipeCallback}.
-         */
-        @Override
-        public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-            SectionItemSwipeCallback swipeCallback = getSwipeCallback(viewHolder);
-            if (swipeCallback != null) {
-                ViewHolderWrapper viewHolderWrapper = (ViewHolderWrapper) viewHolder;
-                swipeCallback.onSwiped((BaseSectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder, direction);
-            }
-        }
-
         /**
          * Passes the corresponding call to the {@link SectionItemSwipeCallback}.
          */
@@ -514,6 +511,71 @@ public class SectionDataManager implements SectionManager, PositionConverter {
             } else {
                 super.onSelectedChanged(viewHolder, actionState);
             }
+        }
+
+        /**
+         * Passes the corresponding call to the {@link SectionItemSwipeCallback}.
+         */
+        @Override
+        public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+            SectionItemSwipeCallback swipeCallback = getSwipeCallback(viewHolder);
+            if (swipeCallback != null) {
+                ViewHolderWrapper viewHolderWrapper = (ViewHolderWrapper) viewHolder;
+                swipeCallback.onSwiped((BaseSectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder, direction);
+            }
+        }
+
+        /**
+         * Passes the corresponding call to the {@link SectionItemSwipeCallback}.
+         */
+        @Override
+        public float getSwipeThreshold(RecyclerView.ViewHolder viewHolder) {
+            SectionItemSwipeCallback swipeCallback = getSwipeCallback(viewHolder);
+            if (swipeCallback != null) {
+                ViewHolderWrapper viewHolderWrapper = (ViewHolderWrapper) viewHolder;
+                return swipeCallback.getSwipeThreshold((BaseSectionAdapter.ItemViewHolder) viewHolderWrapper.viewHolder);
+            }
+            return super.getSwipeThreshold(viewHolder);
+        }
+
+        @Override
+        public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder,
+                              RecyclerView.ViewHolder target) {
+            return false;
+        }
+
+        @Override
+        public int getBoundingBoxMargin() {
+            return generalTouchCallback.getBoundingBoxMargin();
+        }
+
+        @Override
+        public float getSwipeEscapeVelocity(float defaultValue) {
+            return generalTouchCallback.getSwipeEscapeVelocity(defaultValue);
+        }
+
+        @Override
+        public float getSwipeVelocityThreshold(float defaultValue) {
+            return generalTouchCallback.getSwipeVelocityThreshold(defaultValue);
+        }
+
+        @Override
+        public RecyclerView.ViewHolder chooseDropTarget(RecyclerView.ViewHolder selected, List<RecyclerView.ViewHolder> dropTargets, int curX, int curY) {
+            ArrayList<BaseSectionAdapter.ViewHolder> targets = new ArrayList<>();
+            for (RecyclerView.ViewHolder target : dropTargets) {
+                targets.add(((ViewHolderWrapper) target).viewHolder);
+            }
+            return generalTouchCallback.chooseDropTarget(((ViewHolderWrapper) selected).viewHolder, targets, curX, curY).viewHolderWrapper;
+        }
+
+        @Override
+        public long getAnimationDuration(RecyclerView recyclerView, int animationType, float animateDx, float animateDy) {
+            return generalTouchCallback.getAnimationDuration(recyclerView, animationType, animateDx, animateDy);
+        }
+
+        @Override
+        public int interpolateOutOfBoundsScroll(RecyclerView recyclerView, int viewSize, int viewSizeOutOfBounds, int totalSize, long msSinceStartScroll) {
+            return generalTouchCallback.interpolateOutOfBoundsScroll(recyclerView, viewSize, viewSizeOutOfBounds, totalSize, msSinceStartScroll);
         }
 
     };

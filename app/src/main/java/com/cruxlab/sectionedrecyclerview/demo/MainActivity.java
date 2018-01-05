@@ -31,13 +31,14 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 
-import com.cruxlab.sectionedrecyclerview.lib.SectionDataManager;
-import com.cruxlab.sectionedrecyclerview.lib.SectionHeaderLayout;
 import com.cruxlab.sectionedrecyclerview.demo.adapters.BaseAdapter;
 import com.cruxlab.sectionedrecyclerview.demo.adapters.DefaultAdapter;
 import com.cruxlab.sectionedrecyclerview.demo.adapters.HeaderlessAdapter;
 import com.cruxlab.sectionedrecyclerview.demo.adapters.SimpleAdapter;
 import com.cruxlab.sectionedrecyclerview.demo.adapters.SmartAdapter;
+import com.cruxlab.sectionedrecyclerview.lib.GeneralTouchCallback;
+import com.cruxlab.sectionedrecyclerview.lib.SectionDataManager;
+import com.cruxlab.sectionedrecyclerview.lib.SectionHeaderLayout;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -69,6 +70,19 @@ public class MainActivity extends AppCompatActivity {
         ItemTouchHelper.Callback callback = sectionDataManager.getSwipeCallback();
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);
         itemTouchHelper.attachToRecyclerView(recyclerView);
+
+        // You can customize some intersectional methods of library's ItemTouchHelper.Callback
+        // implementing GeneralTouchCallback.
+        // This feature is not available in current jсenter version!
+        sectionDataManager.setGeneralTouchCallback(new GeneralTouchCallback() {
+            @Override
+            public long getAnimationDuration(RecyclerView recyclerView, int animationType, float animateDx, float animateDy) {
+                return super.getAnimationDuration(recyclerView, animationType, animateDx, animateDy) * 10;
+            }
+        });
+        // You can reset to default passing null.
+        // This feature is not available in current jсenter version!
+        sectionDataManager.setGeneralTouchCallback(null);
 
         // To enable displaying pinned headers, attach SectionHeaderLayout to your RecyclerView and
         // SectionDataManager. After this you can manage header pinned state with your adapter.

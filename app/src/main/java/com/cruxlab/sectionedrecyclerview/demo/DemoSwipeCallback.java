@@ -80,4 +80,9 @@ public class DemoSwipeCallback extends SectionItemSwipeCallback {
         super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
     }
 
+    @Override
+    public float getSwipeThreshold(BaseSectionAdapter.ItemViewHolder viewHolder) {
+        return 0.75f;
+    }
+
 }
