@@ -35,8 +35,7 @@ import android.view.ViewGroup;
  * @param <IVH> A class that extends ItemViewHolder that will be used by the adapter to manage item views.
  * @param <HVH> A class that extends ViewHolder that will be used by the adapter to manage header view.
  */
-
-public abstract class SectionAdapter<IVH extends BaseSectionAdapter.ItemViewHolder, HVH extends BaseSectionAdapter.HeaderViewHolder> extends BaseSectionAdapter<IVH> {
+public abstract class SectionAdapter<IVH extends ItemViewHolder, HVH extends HeaderViewHolder> extends BaseSectionAdapter<IVH> {
 
     public static short NO_HEADER_TYPE = -1;
 
@@ -50,7 +49,7 @@ public abstract class SectionAdapter<IVH extends BaseSectionAdapter.ItemViewHold
     }
 
     /**
-     * Called when SectionDataManager needs a new {@link BaseSectionAdapter.HeaderViewHolder} of the given
+     * Called when SectionDataManager needs a new {@link HeaderViewHolder} of the given
      * type to represent a header in this section.
      * <p>
      * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#onCreateViewHolder(ViewGroup, int)}.
@@ -62,7 +61,7 @@ public abstract class SectionAdapter<IVH extends BaseSectionAdapter.ItemViewHold
 
     /**
      * Called by SectionDataManager to display header data. This method should update the contents
-     * of the header {@link BaseSectionAdapter.HeaderViewHolder#itemView}.
+     * of the header {@link HeaderViewHolder#itemView}.
      * <p>
      * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#onBindViewHolder(RecyclerView.ViewHolder, int)}.
      *

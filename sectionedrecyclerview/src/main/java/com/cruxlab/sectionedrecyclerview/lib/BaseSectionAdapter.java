@@ -26,7 +26,6 @@ package com.cruxlab.sectionedrecyclerview.lib;
 
 
 import android.support.v7.widget.RecyclerView;
-import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.List;
@@ -41,7 +40,7 @@ import java.util.List;
  *
  * @param <IVH> A class that extends ItemViewHolder that will be used by the adapter to manage item views.
  */
-public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemViewHolder> {
+public abstract class BaseSectionAdapter<IVH extends ItemViewHolder> {
 
     int section = -1;
     SectionItemManager itemManager;
@@ -54,7 +53,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
     public abstract int getItemCount();
 
     /**
-     * Called when SectionDataManager needs a new {@link BaseSectionAdapter.ItemViewHolder} of the given
+     * Called when SectionDataManager needs a new {@link ItemViewHolder} of the given
      * type to represent an item in this section.
      * <p>
      * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#onCreateViewHolder(ViewGroup, int)}.
@@ -67,7 +66,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
 
     /**
      * Called by SectionDataManager to display the data at the specified section position. This
-     * method should update the contents of the {@link BaseSectionAdapter.ItemViewHolder#itemView}
+     * method should update the contents of the {@link ItemViewHolder#itemView}
      * to reflect the item at the given position.
      * <p>
      * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#onBindViewHolder(RecyclerView.ViewHolder, int)}.
@@ -278,115 +277,6 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
 
     void setItemManager(SectionItemManager itemManager) {
         this.itemManager = itemManager;
-    }
-
-    /**
-     * Base ViewHolder class for BaseSectionAdapter.
-     * <p>
-     * Describes a view and metadata about its place within the RecyclerView.
-     * <p>
-     * Similar to {@link android.support.v7.widget.RecyclerView.ViewHolder}.
-     */
-    public abstract static class ViewHolder {
-
-        public final View itemView;
-        PositionConverter positionConverter;
-        ViewHolderWrapper viewHolderWrapper;
-
-        public ViewHolder(View itemView) {
-            if (itemView == null) {
-                throw new IllegalArgumentException("ItemView cannot be null when creating ViewHolder.");
-            }
-            this.itemView = itemView;
-        }
-
-        /**
-         * Returns the global adapter position in the {@link RecyclerView.Adapter} represented by
-         * this ViewHolder or -1, if this ViewHolder hasn't been used in any RecyclerView.
-         * <p>
-         * Similar to {@link RecyclerView.ViewHolder#getAdapterPosition()}.
-         *
-         * @return Global adapter position or -1.
-         */
-        public int getGlobalAdapterPosition() {
-            return viewHolderWrapper != null ? viewHolderWrapper.getAdapterPosition() : -1;
-        }
-
-        /**
-         * Returns the global layout position represented by this ViewHolder or -1, if this ViewHolder
-         * hasn't been used in any RecyclerView (e.g. for pinned HeaderViewHolder).
-         * <p>
-         * Similar to {@link RecyclerView.ViewHolder#getLayoutPosition()}.
-         *
-         * @return Global layout position or -1.
-         */
-        public int getGlobalLayoutPosition() {
-            return viewHolderWrapper != null ? viewHolderWrapper.getLayoutPosition() : -1;
-        }
-
-        /**
-         * Returns the section index that corresponds to this ViewHolder or -1, if this ViewHolder
-         * hasn't been used in any RecyclerView.
-         *
-         * @return Index of the section or -1.
-         */
-        public final int getSection() {
-            int adapterPos = getGlobalAdapterPosition();
-            return positionConverter != null ? positionConverter.calcSection(adapterPos) : -1;
-        }
-
-    }
-
-    /**
-     * Base ViewHolder class for item view in BaseSectionAdapter.
-     * <p>
-     * Describes an item view and metadata about its place within the RecyclerView and
-     * BaseSectionAdapter. Provides item view position within its section.
-     */
-    public abstract static class ItemViewHolder extends BaseSectionAdapter.ViewHolder {
-
-        public ItemViewHolder(View itemView) {
-            super(itemView);
-        }
-
-        /**
-         * Returns the position in the corresponding BaseSectionAdapter represented by this ViewHolder
-         * or -1, if this ViewHolder hasn't been used in any RecyclerView.
-         *
-         * @return Section adapter position.
-         */
-        public final int getSectionAdapterPosition() {
-            int adapterPos = getGlobalAdapterPosition();
-            return positionConverter != null ? positionConverter.calcPosInSection(adapterPos) : -1;
-        }
-
-    }
-
-    /**
-     * Base ViewHolder class for header view in SimpleSectionAdapter.
-     * <p>
-     * Describes a header view and metadata about its place within the RecyclerView. When
-     * the corresponding header is duplicated, it uses {@link #sourcePositionProvider} to obtain
-     * the global adapter position.
-     */
-    public abstract static class HeaderViewHolder extends BaseSectionAdapter.ViewHolder {
-
-        short sectionType;
-        HeaderPosProvider sourcePositionProvider;
-
-        public HeaderViewHolder(View itemView) {
-            super(itemView);
-        }
-
-        @Override
-        public final int getGlobalAdapterPosition() {
-            if (sourcePositionProvider != null) {
-                return sourcePositionProvider.getHeaderAdapterPos(sectionType);
-            } else {
-                return super.getGlobalAdapterPosition();
-            }
-        }
-
     }
 
 }

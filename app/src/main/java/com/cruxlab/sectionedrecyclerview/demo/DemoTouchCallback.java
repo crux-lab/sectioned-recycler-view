@@ -31,31 +31,31 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 
-import com.cruxlab.sectionedrecyclerview.lib.BaseSectionAdapter;
-import com.cruxlab.sectionedrecyclerview.lib.SectionItemSwipeCallback;
 import com.cruxlab.sectionedrecyclerview.demo.view_holders.ItemVH;
+import com.cruxlab.sectionedrecyclerview.lib.ItemViewHolder;
+import com.cruxlab.sectionedrecyclerview.lib.SectionItemTouchCallback;
 
-public class DemoSwipeCallback extends SectionItemSwipeCallback {
+public class DemoTouchCallback extends SectionItemTouchCallback {
 
     public int color;
     public Drawable deleteIcon;
     private ColorDrawable background;
 
-    public DemoSwipeCallback(int color, Drawable deleteIcon) {
+    public DemoTouchCallback(int color, Drawable deleteIcon) {
         this.color = color;
         this.background = new ColorDrawable();
         this.deleteIcon = deleteIcon;
     }
 
     @Override
-    public int getSwipeDirFlags(RecyclerView recyclerView, BaseSectionAdapter.ItemViewHolder viewHolder) {
+    public int getSwipeDirFlags(RecyclerView recyclerView, ItemViewHolder viewHolder) {
         return ItemTouchHelper.LEFT;
     }
 
     @Override
-    public void onSwiped(BaseSectionAdapter.ItemViewHolder viewHolder, int direction) {
+    public void onSwiped(ItemViewHolder viewHolder, int direction) {
         ItemVH itemViewHolder = (ItemVH) viewHolder;
-        int sectionPos = itemViewHolder.getSectionAdapterPosition();
+        int sectionPos = itemViewHolder.getPosInSection();
         // This method can return -1 when getAdapterPosition() of the corresponding
         // RecyclerView.ViewHolder returns -1 or when this ViewHolder isn't used
         // in any RecyclerView.
@@ -64,25 +64,43 @@ public class DemoSwipeCallback extends SectionItemSwipeCallback {
     }
 
     @Override
-    public void onChildDraw(Canvas c, RecyclerView recyclerView, BaseSectionAdapter.ItemViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
-        View itemView = viewHolder.itemView;
-        int itemHeight = itemView.getBottom() - itemView.getTop();
-        background.setColor(color);
-        background.setBounds((int) (itemView.getRight() + dX), itemView.getTop(), itemView.getRight(), itemView.getBottom());
-        background.draw(c);
-        int deleteIconTop = itemView.getTop() + (itemHeight - deleteIcon.getIntrinsicHeight()) / 2;
-        int deleteIconMargin = (itemHeight - deleteIcon.getIntrinsicHeight()) / 2;
-        int deleteIconLeft = itemView.getRight() - deleteIconMargin - deleteIcon.getIntrinsicWidth();
-        int deleteIconRight = itemView.getRight() - deleteIconMargin;
-        int deleteIconBottom = deleteIconTop + deleteIcon.getIntrinsicHeight();
-        deleteIcon.setBounds(deleteIconLeft, deleteIconTop, deleteIconRight, deleteIconBottom);
-        deleteIcon.draw(c);
+    public void onChildDraw(Canvas c, RecyclerView recyclerView, ItemViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+        if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+            View itemView = viewHolder.itemView;
+            int itemHeight = itemView.getBottom() - itemView.getTop();
+            background.setColor(color);
+            background.setBounds((int) (itemView.getRight() + dX), itemView.getTop(), itemView.getRight(), itemView.getBottom());
+            background.draw(c);
+            int deleteIconTop = itemView.getTop() + (itemHeight - deleteIcon.getIntrinsicHeight()) / 2;
+            int deleteIconMargin = (itemHeight - deleteIcon.getIntrinsicHeight()) / 2;
+            int deleteIconLeft = itemView.getRight() - deleteIconMargin - deleteIcon.getIntrinsicWidth();
+            int deleteIconRight = itemView.getRight() - deleteIconMargin;
+            int deleteIconBottom = deleteIconTop + deleteIcon.getIntrinsicHeight();
+            deleteIcon.setBounds(deleteIconLeft, deleteIconTop, deleteIconRight, deleteIconBottom);
+            deleteIcon.draw(c);
+        }
         super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
     }
 
+    // Methods below are not available in current jсenter version!
+
     @Override
-    public float getSwipeThreshold(BaseSectionAdapter.ItemViewHolder viewHolder) {
+    public int getDragDirFlags(RecyclerView recyclerView, ItemViewHolder viewHolder) {
+        return ItemTouchHelper.UP | ItemTouchHelper.DOWN;
+    }
+
+    @Override
+    public float getSwipeThreshold(ItemViewHolder viewHolder) {
         return 0.75f;
+    }
+
+    @Override
+    public boolean onMove(RecyclerView recyclerView, ItemViewHolder viewHolder, ItemViewHolder target) {
+        ItemVH itemViewHolder = (ItemVH) viewHolder;
+        int fromPos = viewHolder.getPosInSection();
+        int toPos = target.getPosInSection();
+        itemViewHolder.move(fromPos, toPos);
+        return true;
     }
 
 }

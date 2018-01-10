@@ -27,12 +27,12 @@ package com.cruxlab.sectionedrecyclerview.demo.view_holders;
 import android.view.View;
 import android.widget.ImageButton;
 
-import com.cruxlab.sectionedrecyclerview.lib.BaseSectionAdapter;
 import com.cruxlab.sectionedrecyclerview.demo.R;
-import com.cruxlab.sectionedrecyclerview.lib.SectionItemSwipeCallback;
 import com.cruxlab.sectionedrecyclerview.demo.adapters.BaseAdapter;
+import com.cruxlab.sectionedrecyclerview.lib.HeaderViewHolder;
+import com.cruxlab.sectionedrecyclerview.lib.SectionItemTouchCallback;
 
-public class HeaderVH extends BaseSectionAdapter.HeaderViewHolder {
+public class HeaderVH extends HeaderViewHolder {
 
     private ImageButton ibtnDuplicate, ibtnChange, btnRemove, btnPin;
 
@@ -61,12 +61,12 @@ public class HeaderVH extends BaseSectionAdapter.HeaderViewHolder {
                 if (section < 0) return;
 
                 BaseAdapter duplicatedAdapter = adapter.getCopy();
-                SectionItemSwipeCallback swipeCallback = adapter.sectionManager.getSwipeCallback(section);
+                SectionItemTouchCallback touchCallback = adapter.sectionManager.getTouchCallback(section);
 
                 // We add the duplicated section to the RecyclerView using SectionManager.
                 // Note, that we pass the header type, that is used to determine, that sections have
                 // the same HeaderViewHolders for further caching and reusing.
-                adapter.sectionManager.insertSection(section + 1, duplicatedAdapter, swipeCallback, adapter.type);
+                adapter.sectionManager.insertSection(section + 1, duplicatedAdapter, touchCallback, adapter.type);
             }
         });
         ibtnChange.setOnClickListener(new View.OnClickListener() {
@@ -84,12 +84,12 @@ public class HeaderVH extends BaseSectionAdapter.HeaderViewHolder {
                 if (section < 0) return;
 
                 BaseAdapter newAdapter = adapter.getNext();
-                SectionItemSwipeCallback swipeCallback = adapter.sectionManager.getSwipeCallback(section);
+                SectionItemTouchCallback touchCallback = adapter.sectionManager.getTouchCallback(section);
 
                 // We replace this section with another one using SectionManager.
                 // Note, that we pass the header type, that is used to determine, that sections have
                 // the same HeaderViewHolders for further caching and reusing.
-                adapter.sectionManager.replaceSection(section, newAdapter, swipeCallback, newAdapter.type);
+                adapter.sectionManager.replaceSection(section, newAdapter, touchCallback, newAdapter.type);
             }
         });
         btnRemove.setOnClickListener(new View.OnClickListener() {

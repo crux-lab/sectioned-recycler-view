@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * Using this class you can customize some intersectional methods of library's ItemTouchHelper.Callback
- * {@link SectionDataManager#swipeCallback}. Implementations provided by default are default
+ * {@link SectionDataManager#touchCallback}. Implementations provided by default are default
  * implementations in ItemTouchHelper.Callback, so that you should override only methods you want to
  * change.
  *
@@ -68,14 +68,15 @@ public class GeneralTouchCallback {
      *
      * @return A ViewHolder to whose position the dragged ViewHolder should be moved to.
      */
-    public BaseSectionAdapter.ViewHolder chooseDropTarget(BaseSectionAdapter.ViewHolder selected,
-                                                    List<BaseSectionAdapter.ViewHolder> dropTargets,
+    public ViewHolder chooseDropTarget(ViewHolder selected,
+                                                    List<ViewHolder> dropTargets,
                                                     int curX, int curY) {
         List<RecyclerView.ViewHolder> targets = new ArrayList<>();
-        for (BaseSectionAdapter.ViewHolder viewHolder : dropTargets) {
+        for (ViewHolder viewHolder : dropTargets) {
             targets.add(viewHolder.viewHolderWrapper);
         }
-        return ((ViewHolderWrapper) defaultCallback.chooseDropTarget(selected.viewHolderWrapper, targets, curX, curY)).viewHolder;
+        RecyclerView.ViewHolder winner = defaultCallback.chooseDropTarget(selected.viewHolderWrapper, targets, curX, curY);
+        return winner == null ? null : ((ViewHolderWrapper) winner).viewHolder;
     }
 
     /**
@@ -90,7 +91,6 @@ public class GeneralTouchCallback {
 
     /**
      * Similar to {@link ItemTouchHelper.Callback#interpolateOutOfBoundsScroll(RecyclerView, int, int, int, long)}.
-     * Default implementation
      *
      * @return The amount that RecyclerView should scroll.
      */

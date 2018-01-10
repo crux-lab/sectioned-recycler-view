@@ -70,6 +70,12 @@ public abstract class BaseAdapter<HVH extends HeaderVH> extends SectionAdapter<I
         notifyItemChanged(pos);
     }
 
+    // Moving an item to another position.
+    public void move(int fromPos, int toPos) {
+        strings.add(toPos, strings.remove(fromPos));
+        notifyItemMoved(fromPos, toPos);
+    }
+
     @Override
     public ItemVH onCreateItemViewHolder(ViewGroup parent, short type) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_vh, parent, false);

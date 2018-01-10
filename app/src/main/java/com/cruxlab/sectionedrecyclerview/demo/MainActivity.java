@@ -43,7 +43,7 @@ import com.cruxlab.sectionedrecyclerview.lib.SectionHeaderLayout;
 public class MainActivity extends AppCompatActivity {
 
     private int[] colors;
-    private DemoSwipeCallback[] callbacks;
+    private DemoTouchCallback[] callbacks;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,12 +64,13 @@ public class MainActivity extends AppCompatActivity {
         RecyclerView.Adapter adapter = sectionDataManager.getAdapter();
         recyclerView.setAdapter(adapter);
 
-        // You can customize item swiping behaviour for each section individually.
+        // You can customize item swipe/drag and drop behavior for each section individually.
         // To enable this feature, create ItemTouchHelper initialized with SectionDataManager's callback
         // and attach it to your RecyclerView:
-        ItemTouchHelper.Callback callback = sectionDataManager.getSwipeCallback();
+        ItemTouchHelper.Callback callback = sectionDataManager.getTouchCallback();
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);
         itemTouchHelper.attachToRecyclerView(recyclerView);
+        // Drag and drop feature is not available in current jсenter version!
 
         // You can customize some intersectional methods of library's ItemTouchHelper.Callback
         // implementing GeneralTouchCallback.
@@ -105,12 +106,12 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 sectionAdapter = new SmartAdapter(color, sectionDataManager, true, true);
             }
-            DemoSwipeCallback swipeCallback = callbacks[i / 4 % 3];
+            DemoTouchCallback touchCallback = callbacks[i / 4 % 3];
             // Adding a section with header to the end of the list, passing SectionAdapter,
-            // DemoSwipeCallback to customize swiping behavior for items in this section and
+            // DemoTouchCallback to customize swiping behavior for items in this section and
             // a header type, that is used to determine, that sections have the same HeaderViewHolder
             // for further caching and reusing.
-            sectionDataManager.addSection(sectionAdapter, swipeCallback, sectionAdapter.type);
+            sectionDataManager.addSection(sectionAdapter, touchCallback, sectionAdapter.type);
         }
     }
 
@@ -120,10 +121,10 @@ public class MainActivity extends AppCompatActivity {
         colors[1] = getResources().getColor(R.color.headerColorYellow);
         colors[2] = getResources().getColor(R.color.headerColorRed);
         Drawable deleteIcon = getResources().getDrawable(R.drawable.ic_remove);
-        callbacks = new DemoSwipeCallback[3];
-        callbacks[0] = new DemoSwipeCallback(colors[0], deleteIcon);
-        callbacks[1] = new DemoSwipeCallback(colors[1], deleteIcon);
-        callbacks[2] = new DemoSwipeCallback(colors[2], deleteIcon);
+        callbacks = new DemoTouchCallback[3];
+        callbacks[0] = new DemoTouchCallback(colors[0], deleteIcon);
+        callbacks[1] = new DemoTouchCallback(colors[1], deleteIcon);
+        callbacks[2] = new DemoTouchCallback(colors[2], deleteIcon);
     }
 
 }

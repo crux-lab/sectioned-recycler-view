@@ -28,14 +28,14 @@ import android.support.v7.widget.RecyclerView;
 
 /**
  * RecyclerView.ViewHolder implementation to work with RecyclerView.Adapter in
- * {@link SectionDataManager}. Contains the corresponding {@link BaseSectionAdapter.ViewHolder} and
+ * {@link SectionDataManager}. Contains the corresponding {@link ViewHolder} and
  * refers to the same View.
  */
 class ViewHolderWrapper extends RecyclerView.ViewHolder {
 
-    final BaseSectionAdapter.ViewHolder viewHolder;
+    final ViewHolder viewHolder;
 
-    ViewHolderWrapper(BaseSectionAdapter.ViewHolder viewHolder) {
+    ViewHolderWrapper(ViewHolder viewHolder) {
         super(viewHolder.itemView);
         this.viewHolder = viewHolder;
     }

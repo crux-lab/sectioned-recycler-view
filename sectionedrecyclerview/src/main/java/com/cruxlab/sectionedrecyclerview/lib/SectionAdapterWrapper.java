@@ -52,7 +52,7 @@ class SectionAdapterWrapper {
         this.simpleSectionAdapter = null;
     }
 
-    BaseSectionAdapter.ItemViewHolder onCreateViewHolder(ViewGroup parent, short type) {
+    ItemViewHolder onCreateViewHolder(ViewGroup parent, short type) {
         if (sectionAdapter != null) {
             return sectionAdapter.onCreateItemViewHolder(parent, type);
         } else {
@@ -60,7 +60,7 @@ class SectionAdapterWrapper {
         }
     }
 
-    BaseSectionAdapter.HeaderViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
+    HeaderViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
         if (sectionAdapter != null) {
             return sectionAdapter.onCreateHeaderViewHolder(parent);
         } else {
@@ -68,7 +68,7 @@ class SectionAdapterWrapper {
         }
     }
     @SuppressWarnings("unchecked")
-    void onBindViewHolder(BaseSectionAdapter.ItemViewHolder holder, int position) {
+    void onBindViewHolder(ItemViewHolder holder, int position) {
         if (sectionAdapter != null) {
             sectionAdapter.onBindItemViewHolder(holder, position);
         } else {
@@ -77,7 +77,7 @@ class SectionAdapterWrapper {
     }
 
     @SuppressWarnings("unchecked")
-    void onBindHeaderViewHolder(BaseSectionAdapter.HeaderViewHolder holder) {
+    void onBindHeaderViewHolder(HeaderViewHolder holder) {
         if (sectionAdapter != null) {
             sectionAdapter.onBindHeaderViewHolder(holder);
         }

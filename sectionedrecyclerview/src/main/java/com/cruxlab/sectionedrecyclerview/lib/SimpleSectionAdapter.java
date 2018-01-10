@@ -31,6 +31,6 @@ package com.cruxlab.sectionedrecyclerview.lib;
  *
  * @param <IVH> A class that extends ItemViewHolder that will be used by the adapter to manage item views.
  */
-public abstract class SimpleSectionAdapter<IVH extends BaseSectionAdapter.ItemViewHolder> extends BaseSectionAdapter<IVH> {
+public abstract class SimpleSectionAdapter<IVH extends ItemViewHolder> extends BaseSectionAdapter<IVH> {
 
 }

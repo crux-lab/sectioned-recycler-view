@@ -28,11 +28,11 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.cruxlab.sectionedrecyclerview.lib.BaseSectionAdapter;
 import com.cruxlab.sectionedrecyclerview.demo.R;
 import com.cruxlab.sectionedrecyclerview.demo.adapters.HeaderlessAdapter;
+import com.cruxlab.sectionedrecyclerview.lib.ItemViewHolder;
 
-public class SimpleItemVH extends BaseSectionAdapter.ItemViewHolder {
+public class SimpleItemVH extends ItemViewHolder {
 
     private ImageButton btnDuplicate, btnChange, btnRemove;
     private TextView tvText;
@@ -55,7 +55,7 @@ public class SimpleItemVH extends BaseSectionAdapter.ItemViewHolder {
                 // RecyclerView.
                 // In our case it can happen when we click on a delete button of the view whose removal
                 // animation is still in progress.
-                int sectionPos = getSectionAdapterPosition();
+                int sectionPos = getPosInSection();
                 if (sectionPos == -1) return;
 
                 adapter.duplicateItems(sectionPos);
@@ -70,7 +70,7 @@ public class SimpleItemVH extends BaseSectionAdapter.ItemViewHolder {
                 // RecyclerView.
                 // In our case it can happen when we click on a delete button of the view whose removal
                 // animation is still in progress.
-                int sectionPos = getSectionAdapterPosition();
+                int sectionPos = getPosInSection();
                 if (sectionPos == -1) return;
 
                 adapter.changeItems(sectionPos);
@@ -84,7 +84,7 @@ public class SimpleItemVH extends BaseSectionAdapter.ItemViewHolder {
                 // RecyclerView.
                 // In our case it can happen when we click on a delete button of the view whose removal
                 // animation is still in progress.
-                int sectionPos = getSectionAdapterPosition();
+                int sectionPos = getPosInSection();
                 if (sectionPos == -1) return;
 
                 adapter.removeItems(sectionPos);

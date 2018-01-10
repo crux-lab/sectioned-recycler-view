@@ -28,11 +28,11 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.cruxlab.sectionedrecyclerview.lib.BaseSectionAdapter;
 import com.cruxlab.sectionedrecyclerview.demo.R;
 import com.cruxlab.sectionedrecyclerview.demo.adapters.BaseAdapter;
+import com.cruxlab.sectionedrecyclerview.lib.ItemViewHolder;
 
-public class ItemVH extends BaseSectionAdapter.ItemViewHolder {
+public class ItemVH extends ItemViewHolder {
 
     private BaseAdapter adapter;
     private ImageButton btnDuplicate, btnChange, btnRemove, btnHeader;
@@ -58,7 +58,7 @@ public class ItemVH extends BaseSectionAdapter.ItemViewHolder {
                 // RecyclerView.
                 // In our case it can happen when we click on a delete button of the view whose removal
                 // animation is still in progress.
-                int sectionPos = getSectionAdapterPosition();
+                int sectionPos = getPosInSection();
                 if (sectionPos == -1) return;
 
                 adapter.duplicateItem(sectionPos);
@@ -73,7 +73,7 @@ public class ItemVH extends BaseSectionAdapter.ItemViewHolder {
                 // RecyclerView.
                 // In our case it can happen when we click on a delete button of the view whose removal
                 // animation is still in progress.
-                int sectionPos = getSectionAdapterPosition();
+                int sectionPos = getPosInSection();
                 if (sectionPos == -1) return;
 
                 adapter.changeItem(sectionPos);
@@ -87,7 +87,7 @@ public class ItemVH extends BaseSectionAdapter.ItemViewHolder {
                 // RecyclerView.
                 // In our case it can happen when we click on a delete button of the view whose removal
                 // animation is still in progress.
-                int sectionPos = getSectionAdapterPosition();
+                int sectionPos = getPosInSection();
                 if (sectionPos == -1) return;
 
                 adapter.removeItem(sectionPos);
@@ -118,6 +118,10 @@ public class ItemVH extends BaseSectionAdapter.ItemViewHolder {
 
     public void removeItem(int pos) {
         adapter.removeItem(pos);
+    }
+
+    public void move(int fromPos, int toPos) {
+        adapter.move(fromPos, toPos);
     }
 
 }
