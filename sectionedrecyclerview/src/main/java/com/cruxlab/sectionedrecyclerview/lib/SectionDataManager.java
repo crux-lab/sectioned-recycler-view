@@ -58,7 +58,7 @@ import java.util.Set;
  * {@link #sectionToPosSum}, where on the i-th position is the number of items in RecyclerView in all
  * sections before i-th inclusive, and binary search (e.g. {@link #calcSection(int)}).
  * For details on how RecyclerView interacts with sections see the RecyclerView.Adapter {@link #adapter}
- * and ItemTouchHelper.Callback {@link #touchCallback} implementations.
+ * and ItemTouchHelper.Callback {@link #itemTouchCallback} implementations.
  */
 public class SectionDataManager implements SectionManager, PositionConverter {
 
@@ -72,6 +72,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
     private SparseArray<Set<Short>> headerTypeToSectionTypes;
     private GeneralTouchCallback generalTouchCallback;
     private HeaderManager headerManager;
+    private ItemTouchCallback itemTouchCallback;
 
     public SectionDataManager() {
         sectionToPosSum = new ArrayList<>();
@@ -79,7 +80,9 @@ public class SectionDataManager implements SectionManager, PositionConverter {
         typeToAdapter = new SparseArray<>();
         typeToCallback = new SparseArray<>();
         headerTypeToSectionTypes = new SparseArray<>();
+        itemTouchCallback = new ItemTouchCallback();
         generalTouchCallback = new GeneralTouchCallback();
+        generalTouchCallback.defaultCallback = itemTouchCallback;
     }
 
     /**
@@ -99,21 +102,23 @@ public class SectionDataManager implements SectionManager, PositionConverter {
      * @return ItemTouchHelper.Callback implementation.
      */
     public ItemTouchHelper.Callback getTouchCallback() {
-        return touchCallback;
+        return itemTouchCallback;
     }
 
     /**
-     * Sets the given instance as an implementation for some intersectional methods of {@link #touchCallback}.
+     * Sets the given instance as an implementation for some intersectional methods of {@link #itemTouchCallback}.
      * You can reset to default implementation passing null.
      *
      * @param callback GeneralTouchCallback to use instead of default.
      */
     public void setGeneralTouchCallback(GeneralTouchCallback callback) {
+        generalTouchCallback.defaultCallback = null;
         if (callback != null) {
             generalTouchCallback = callback;
         } else {
             generalTouchCallback = new GeneralTouchCallback();
         }
+        generalTouchCallback.defaultCallback = itemTouchCallback;
     }
 
     /**
@@ -163,6 +168,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
         int posSum = getTotalItemCount() + cnt;
         typeToAdapter.put(freeType, adapterWrapper);
         if (touchCallback != null) {
+            touchCallback.defaultCallback = itemTouchCallback;
             typeToCallback.put(freeType, touchCallback);
         }
         sectionToType.add(freeType);
@@ -206,6 +212,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
         int posSum = (section > 0 ? sectionToPosSum.get(section - 1) : 0) + cnt;
         typeToAdapter.put(freeType, adapterWrapper);
         if (touchCallback != null) {
+            touchCallback.defaultCallback = itemTouchCallback;
             typeToCallback.put(freeType, touchCallback);
         }
         sectionToType.add(section, freeType);
@@ -262,7 +269,9 @@ public class SectionDataManager implements SectionManager, PositionConverter {
         }
         adapterWrapper.resetAdapter();
         typeToAdapter.remove(sectionType);
+        SectionItemTouchCallback touchCallback = typeToCallback.get(sectionType);
         typeToCallback.remove(sectionType);
+        touchCallback.defaultCallback = null;
         sectionToType.remove(section);
         sectionToPosSum.remove(section);
         updatePosSum(section, -cnt, true);
@@ -286,6 +295,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
     public void setTouchCallback(int section, @NonNull SectionItemTouchCallback touchCallback) {
         checkSectionIndex(section);
         short sectionType = sectionToType.get(section);
+        touchCallback.defaultCallback = itemTouchCallback;
         typeToCallback.put(sectionType, touchCallback);
     }
 
@@ -293,7 +303,9 @@ public class SectionDataManager implements SectionManager, PositionConverter {
     public void removeTouchCallback(int section) {
         checkSectionIndex(section);
         short sectionType = sectionToType.get(section);
+        SectionItemTouchCallback touchCallback = typeToCallback.get(sectionType);
         typeToCallback.remove(sectionType);
+        touchCallback.defaultCallback = null;
     }
 
     @Override
@@ -412,14 +424,14 @@ public class SectionDataManager implements SectionManager, PositionConverter {
     /* TOUCH CALLBACK */
 
     /**
-     * ItemTouchHelper.Callback implementation provides interaction between RecyclerView and
+     * ItemTouchHelper.Callback extension provides interaction between RecyclerView and
      * SectionItemTouchCallbacks.
      * <p>
      * Can be obtained by calling {@link #getTouchCallback()}.
      *
      * @see SectionItemTouchCallback
      */
-    private ItemTouchHelper.Callback touchCallback = new ItemTouchHelper.Callback() {
+    private class ItemTouchCallback extends ItemTouchHelper.Callback implements DefaultTouchCallback {
 
         /**
          * Restricts dragging and swiping for section headers. Returns swipe and drag flags
@@ -434,10 +446,16 @@ public class SectionDataManager implements SectionManager, PositionConverter {
                 if (touchCallback != null) {
                     ViewHolderWrapper wrapper = (ViewHolderWrapper) viewHolder;
                     ItemViewHolder itemViewHolder = (ItemViewHolder) wrapper.viewHolder;
+
+                    //TODO: Handle behavior when reusing callback/adapter
+                    if (touchCallback.defaultCallback == null) {
+                        touchCallback.defaultCallback = this;
+                    }
+
                     if (touchCallback.isSwipeEnabled()) {
                         swipeFlags = touchCallback.getSwipeDirFlags(recyclerView, itemViewHolder);
                     }
-                    if (touchCallback.isLongPressDragEnabled()) {
+                    if (touchCallback.defaultCallback != null && touchCallback.isLongPressDragEnabled()) {
                         dragFlags = touchCallback.getDragDirFlags(recyclerView, itemViewHolder);
                     }
                 }
@@ -571,11 +589,10 @@ public class SectionDataManager implements SectionManager, PositionConverter {
         }
 
         /**
-         * Calls super and passes the corresponding call to the {@link SectionItemTouchCallback}.
+         * Passes the corresponding call to the {@link SectionItemTouchCallback}.
          */
         @Override
         public void onMoved(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int fromPos, RecyclerView.ViewHolder target, int toPos, int x, int y) {
-            super.onMoved(recyclerView, viewHolder, fromPos, target, toPos, x, y);
             SectionItemTouchCallback touchCallback = getTouchCallback(viewHolder);
             if (touchCallback != null) {
                 ViewHolderWrapper wrapper = (ViewHolderWrapper) viewHolder;
@@ -585,6 +602,8 @@ public class SectionDataManager implements SectionManager, PositionConverter {
                 int fromSectionPos = calcPosInSection(fromPos);
                 int toSectionPos = calcPosInSection(toPos);
                 touchCallback.onMoved(recyclerView, itemViewHolder, fromSectionPos, targetItemViewHolder, toSectionPos, x, y);
+            } else {
+                super.onMoved(recyclerView, viewHolder, fromPos, target, toPos, x, y);
             }
         }
 
@@ -653,6 +672,75 @@ public class SectionDataManager implements SectionManager, PositionConverter {
         public int interpolateOutOfBoundsScroll(RecyclerView recyclerView, int viewSize, int viewSizeOutOfBounds, int totalSize, long msSinceStartScroll) {
             return generalTouchCallback.interpolateOutOfBoundsScroll(recyclerView, viewSize, viewSizeOutOfBounds, totalSize, msSinceStartScroll);
         }
+
+        /* DEFAULT TOUCH CALLBACK */
+
+        @Override
+        public int getDefaultBoundingBoxMargin() {
+            return super.getBoundingBoxMargin();
+        }
+
+        @Override
+        public float getDefaultSwipeEscapeVelocity(float defaultValue) {
+            return super.getSwipeEscapeVelocity(defaultValue);
+        }
+
+        @Override
+        public float getDefaultSwipeVelocityThreshold(float defaultValue) {
+            return super.getSwipeVelocityThreshold(defaultValue);
+        }
+
+        @Override
+        public ViewHolder chooseDropTargetByDefault(ViewHolder selected, List<ViewHolder> dropTargets, int curX, int curY) {
+            List<RecyclerView.ViewHolder> targets = new ArrayList<>();
+            for (ViewHolder viewHolder : dropTargets) {
+                targets.add(viewHolder.viewHolderWrapper);
+            }
+            ViewHolderWrapper winner = (ViewHolderWrapper) super.chooseDropTarget(selected.viewHolderWrapper, targets, curX, curY);
+            return winner == null ? null : winner.viewHolder;
+        }
+
+        @Override
+        public long getDefaultAnimationDuration(RecyclerView recyclerView, int animationType, float animateDx, float animateDy) {
+            return super.getAnimationDuration(recyclerView, animationType, animateDx, animateDy);
+        }
+
+        @Override
+        public int interpolateOutOfBoundsScrollByDefault(RecyclerView recyclerView, int viewSize, int viewSizeOutOfBounds, int totalSize, long msSinceStartScroll) {
+            return super.interpolateOutOfBoundsScroll(recyclerView, viewSize, viewSizeOutOfBounds, totalSize, msSinceStartScroll);
+        }
+
+        @Override
+        public void onMovedByDefault(RecyclerView recyclerView, ItemViewHolder viewHolder, int fromPos, ItemViewHolder target, int toPos, int x, int y) {
+            super.onMoved(recyclerView, viewHolder.viewHolderWrapper, viewHolder.getGlobalAdapterPosition(), target.viewHolderWrapper, target.getGlobalAdapterPosition(), x, y);
+        }
+
+        @Override
+        public boolean canDropOverByDefault(RecyclerView recyclerView, ViewHolder current, ViewHolder target) {
+            return super.canDropOver(recyclerView, current.viewHolderWrapper, target.viewHolderWrapper);
+        }
+
+        @Override
+        public float getDefaultMoveThreshold(ItemViewHolder viewHolder) {
+            return super.getMoveThreshold(viewHolder.viewHolderWrapper);
+        }
+
+        @Override
+        public boolean isLongPressDragEnabledByDefault() {
+            return super.isLongPressDragEnabled();
+        }
+
+        @Override
+        public float getDefaultSwipeThreshold(ItemViewHolder viewHolder) {
+            return super.getSwipeThreshold(viewHolder.viewHolderWrapper);
+        }
+
+        @Override
+        public boolean isSwipeEnabledByDefault() {
+            return super.isItemViewSwipeEnabled();
+        }
+
+        /* END DEFAULT TOUCH CALLBACK */
 
     };
 
@@ -1240,7 +1328,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
         int found = adapterWrapper.getItemCount();
         if (shouldBe != found) {
             throw new RuntimeException("Inconsistency detected. Section item count should be "
-                    + shouldBe + ", but BaseSectionAdapter returned " + found + ".");
+                    + shouldBe + ", but SectionAdapter returned " + found + ".");
         }
     }
 

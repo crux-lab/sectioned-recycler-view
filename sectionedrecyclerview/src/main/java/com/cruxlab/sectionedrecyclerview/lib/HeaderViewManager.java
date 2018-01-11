@@ -33,9 +33,14 @@ import android.view.ViewGroup;
 interface HeaderViewManager {
 
     int getFirstVisiblePos();
+
     void checkFirstVisiblePos();
+
     void addHeaderView(View headerView, int nextHeaderPos);
+
     void removeHeaderView();
+
     void translateHeaderView(int nextHeaderPos);
+
     ViewGroup getHeaderViewParent();
 }

@@ -60,9 +60,10 @@ import java.util.List;
  * {@link SectionDataManager#setGeneralTouchCallback(GeneralTouchCallback)}.
  * Note, that new behavior will be applied to all sections.
  * <p>
- * Similar to {@link ItemTouchHelper.Callback}.
+ * Similar to {@link ItemTouchHelper.Callback} and uses its default implementations using
+ * {@link #defaultCallback}.
  */
-public abstract class SectionItemTouchCallback {
+public abstract class SectionItemTouchCallback extends PartialTouchCallback {
 
     /**
      * Returns set of swipe direction flags for each item view combining
@@ -72,7 +73,6 @@ public abstract class SectionItemTouchCallback {
      *
      * @param recyclerView The RecyclerView to which the ItemTouchHelper is attached to.
      * @param viewHolder   The ViewHolder for which the swipe direction is required.
-     *
      * @return A binary OR of swipe direction flags.
      */
     public abstract int getSwipeDirFlags(RecyclerView recyclerView,
@@ -86,11 +86,11 @@ public abstract class SectionItemTouchCallback {
      *
      * @param recyclerView The RecyclerView to which the ItemTouchHelper is attached to.
      * @param viewHolder   The ViewHolder for which the drag direction is required.
-     *
      * @return A binary OR of drag direction flags.
      */
     public abstract int getDragDirFlags(RecyclerView recyclerView,
                                         ItemViewHolder viewHolder);
+
     /**
      * Called when a ViewHolder is swiped by the user.
      * <p>
@@ -194,10 +194,11 @@ public abstract class SectionItemTouchCallback {
      * Similar to {@link ItemTouchHelper.Callback#isItemViewSwipeEnabled()}.
      *
      * @return True if ItemTouchHelper should start swiping an item when user swipes a pointer
-     *         over the View, false otherwise. Default value is <code>true</code>.
+     * over the View, false otherwise. Default value is <code>true</code>.
      */
     public boolean isSwipeEnabled() {
-        return true;
+        checkDefaultCallback();
+        return defaultCallback.isSwipeEnabledByDefault();
     }
 
     /**
@@ -210,7 +211,8 @@ public abstract class SectionItemTouchCallback {
      * @return A float value that denotes the fraction of the View size. Default value is .5f .
      */
     public float getSwipeThreshold(ItemViewHolder viewHolder) {
-        return .5f;
+        checkDefaultCallback();
+        return defaultCallback.getDefaultSwipeThreshold(viewHolder);
     }
 
     /**
@@ -223,7 +225,8 @@ public abstract class SectionItemTouchCallback {
      * false otherwise. Default value is <code>true</code>.
      */
     public boolean isLongPressDragEnabled() {
-        return true;
+        checkDefaultCallback();
+        return defaultCallback.isLongPressDragEnabledByDefault();
     }
 
     /**
@@ -237,7 +240,8 @@ public abstract class SectionItemTouchCallback {
      * @return A float value that denotes the fraction of the View size. Default value is .5f .
      */
     public float getMoveThreshold(ItemViewHolder viewHolder) {
-        return .5f;
+        checkDefaultCallback();
+        return defaultCallback.getDefaultMoveThreshold(viewHolder);
     }
 
     /**
@@ -249,11 +253,11 @@ public abstract class SectionItemTouchCallback {
      * @param current      The ViewHolder that user is dragging.
      * @param target       The ViewHolder which is below the dragged ViewHolder.
      * @return True if the dragged ViewHolder can be replaced with the target ViewHolder, false
-     *         otherwise.
+     * otherwise. Default value is <code>true</code>.
      */
-    public boolean canDropOver(RecyclerView recyclerView, ViewHolder current,
-                               ViewHolder target) {
-        return true;
+    public boolean canDropOver(RecyclerView recyclerView, ViewHolder current, ViewHolder target) {
+        checkDefaultCallback();
+        return defaultCallback.canDropOverByDefault(recyclerView, current, target);
     }
 
     /**
@@ -274,7 +278,7 @@ public abstract class SectionItemTouchCallback {
     /**
      * Called when {@link #onMove(RecyclerView, ItemViewHolder, ItemViewHolder)} returns true.
      * <p>
-     * Similar to {@link ItemTouchHelper.Callback#onMoved(RecyclerView, RecyclerView.ViewHolder, int, RecyclerView.ViewHolder, int, int, int)}.
+     * Default implementation is {@link ItemTouchHelper.Callback#onMoved(RecyclerView, RecyclerView.ViewHolder, int, RecyclerView.ViewHolder, int, int, int)}.
      *
      * @param recyclerView The RecyclerView controlled by the ItemTouchHelper.
      * @param viewHolder   The ViewHolder under user's control.
@@ -290,7 +294,8 @@ public abstract class SectionItemTouchCallback {
      *                     {@link RecyclerView.ItemDecoration}s.
      */
     public void onMoved(RecyclerView recyclerView, ItemViewHolder viewHolder, int fromPos, ItemViewHolder target, int toPos, int x, int y) {
-        // This method is called after the default ItemTouchHelper.Callback implementation is called.
+        checkDefaultCallback();
+        defaultCallback.onMovedByDefault(recyclerView, viewHolder, fromPos, target, toPos, x, y);
     }
 
 }
