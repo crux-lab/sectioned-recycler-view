@@ -27,10 +27,12 @@ package com.cruxlab.sectionedrecyclerview.demo;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 
+import com.cruxlab.sectionedrecyclerview.lib.PositionManager;
 import com.cruxlab.sectionedrecyclerview.lib.SectionDataManager;
 import com.cruxlab.sectionedrecyclerview.lib.SectionHeaderLayout;
 import com.cruxlab.sectionedrecyclerview.demo.adapters.BaseAdapter;
@@ -50,9 +52,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         initFields();
 
-        // Initialize your RecyclerView with vertical LinearLayoutManager:
+        // Initialize your RecyclerView with a successor of LinearLayoutManager:
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setHasFixedSize(false);
 
@@ -98,6 +100,23 @@ public class MainActivity extends AppCompatActivity {
             // for further caching and reusing.
             sectionDataManager.addSection(sectionAdapter, swipeCallback, sectionAdapter.type);
         }
+
+        // When using GridLayoutManager set SpanSizeLookup as follows to display full width
+        // section headers. It uses SectionDataManager's implementation of PositionManager
+        // to determine whether the item at the given position is a header:
+        // final GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 3);
+        // recyclerView.setLayoutManager(gridLayoutManager);
+        // final PositionManager posManager = sectionDataManager;
+        // gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+        //    @Override
+        //    public int getSpanSize(int position) {
+        //        if (posManager.isHeader(position)) {
+        //            return gridLayoutManager.getSpanCount();
+        //        } else {
+        //            return 1;
+        //        }
+        //    }
+        // });
     }
 
     private void initFields() {

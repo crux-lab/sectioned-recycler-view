@@ -60,7 +60,7 @@ import java.util.Set;
  * For details on how RecyclerView interacts with sections see the RecyclerView.Adapter {@link #adapter}
  * and ItemTouchHelper.Callback {@link #swipeCallback} implementations.
  */
-public class SectionDataManager implements SectionManager, PositionConverter {
+public class SectionDataManager implements SectionManager, PositionManager {
 
     private static final short NO_SECTION_TYPE = 0;
 
@@ -337,7 +337,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
             }
             ViewHolderWrapper viewHolderWrapper = new ViewHolderWrapper(viewHolder);
             viewHolder.viewHolderWrapper = viewHolderWrapper;
-            viewHolder.positionConverter = SectionDataManager.this;
+            viewHolder.posManager = SectionDataManager.this;
             return viewHolderWrapper;
         }
 
@@ -654,7 +654,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
     };
 
     /* END SECTION ITEM MANAGER */
-    /* POSITION CONVERTER */
+    /* POSITION MANAGER */
 
     @Override
     public int calcAdapterPos(int section, int pos) {
@@ -687,7 +687,12 @@ public class SectionDataManager implements SectionManager, PositionConverter {
                 - adapterWrapper.getHeaderVisibilityInt();
     }
 
-    /* END POSITION CONVERTER */
+    @Override
+    public boolean isHeader(int adapterPos) {
+        return checkIndex(adapterPos, getTotalItemCount()) && isTypeHeader(adapter.getItemViewType(adapterPos));
+    }
+
+    /* END POSITION MANAGER */
     /* HEADER MANAGER */
 
     /**
@@ -837,7 +842,7 @@ public class SectionDataManager implements SectionManager, PositionConverter {
                 ViewGroup parent = headerViewManager.getHeaderViewParent();
                 headerViewHolder = adapterWrapper.onCreateHeaderViewHolder(parent);
                 headerViewHolder.sourcePositionProvider = this;
-                headerViewHolder.positionConverter = SectionDataManager.this;
+                headerViewHolder.posManager = SectionDataManager.this;
                 typeToHeader.put(headerType, headerViewHolder);
             }
             return headerViewHolder;

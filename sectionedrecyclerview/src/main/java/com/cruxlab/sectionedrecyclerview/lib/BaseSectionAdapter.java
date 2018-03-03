@@ -290,7 +290,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
     public abstract static class ViewHolder {
 
         public final View itemView;
-        PositionConverter positionConverter;
+        PositionManager posManager;
         ViewHolderWrapper viewHolderWrapper;
 
         public ViewHolder(View itemView) {
@@ -332,7 +332,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
          */
         public final int getSection() {
             int adapterPos = getGlobalAdapterPosition();
-            return positionConverter != null ? positionConverter.calcSection(adapterPos) : -1;
+            return posManager != null ? posManager.calcSection(adapterPos) : -1;
         }
 
     }
@@ -357,7 +357,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
          */
         public final int getSectionAdapterPosition() {
             int adapterPos = getGlobalAdapterPosition();
-            return positionConverter != null ? positionConverter.calcPosInSection(adapterPos) : -1;
+            return posManager != null ? posManager.calcPosInSection(adapterPos) : -1;
         }
 
     }

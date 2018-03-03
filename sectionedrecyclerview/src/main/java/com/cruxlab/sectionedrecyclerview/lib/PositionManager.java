@@ -27,7 +27,7 @@ package com.cruxlab.sectionedrecyclerview.lib;
 /**
  * Interface for conversion between section and adapter positions.
  */
-public interface PositionConverter {
+public interface PositionManager {
 
     /**
      * Returns the global adapter position that corresponds to the given section and item position
@@ -57,5 +57,15 @@ public interface PositionConverter {
      * @return Position in section or -1.
      */
     int calcPosInSection(int adapterPos);
+
+
+    /**
+     * Checks whether the given global adapter position of an item corresponds to a header.
+     * If <code>adapterPos</code> is invalid, returns <code>false</code>.
+     *
+     * @param adapterPos Global position in adapter.
+     * @return Whether an item is a header.
+     */
+    boolean isHeader(int adapterPos);
 
 }
