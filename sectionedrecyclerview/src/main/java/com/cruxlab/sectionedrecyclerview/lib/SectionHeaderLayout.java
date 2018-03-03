@@ -24,7 +24,9 @@
 
 package com.cruxlab.sectionedrecyclerview.lib;
 
+import android.annotation.TargetApi;
 import android.content.Context;
+import android.os.Build;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
@@ -47,7 +49,6 @@ import android.widget.RelativeLayout;
 public class SectionHeaderLayout extends RelativeLayout {
 
     private RecyclerView recyclerView;
-    private LinearLayoutManager layoutManager;
     private SectionDataManager.HeaderManager headerManager;
 
     public SectionHeaderLayout(Context context) {
@@ -62,21 +63,21 @@ public class SectionHeaderLayout extends RelativeLayout {
         super(context, attrs, defStyleAttr);
     }
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public SectionHeaderLayout(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
 
     /**
      * Attaches to the given RecyclerView and SectionDataManager. Adds {@link #onScrollListener} to
-     * the given RecyclerView to manage header view while scrolling. RecyclerView should have
-     * vertical LinearLayoutManager.
+     * the given RecyclerView to manage header view while scrolling. RecyclerView's layout manager
+     * should be a successor of LinearLayoutManager.
      *
      * @param recyclerView       RecyclerView to attach to.
      * @param sectionDataManager SectionDataManager to attach to.
      */
     public void attachTo(RecyclerView recyclerView, SectionDataManager sectionDataManager) {
         this.recyclerView = recyclerView;
-        layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
         headerManager = sectionDataManager.createHeaderManager(headerViewManager);
         recyclerView.addOnScrollListener(onScrollListener);
         headerManager.checkIsHeaderViewChanged();
@@ -104,7 +105,6 @@ public class SectionHeaderLayout extends RelativeLayout {
         headerManager.removeSelf();
         headerViewManager.removeHeaderView();
         recyclerView = null;
-        layoutManager = null;
         headerManager = null;
     }
 
@@ -116,7 +116,7 @@ public class SectionHeaderLayout extends RelativeLayout {
 
         @Override
         public int getFirstVisiblePos() {
-            return layoutManager.findFirstVisibleItemPosition();
+            return ((LinearLayoutManager)recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
         }
 
         @Override
@@ -232,7 +232,7 @@ public class SectionHeaderLayout extends RelativeLayout {
      * @return Calculated yTranslation for the header view.
      */
     private int calcTranslation(int headerHeight, int nextHeaderPos) {
-        View nextHeaderView = layoutManager.findViewByPosition(nextHeaderPos);
+        View nextHeaderView = recyclerView.getLayoutManager().findViewByPosition(nextHeaderPos);
         if (nextHeaderView != null) {
             int topOffset = nextHeaderView.getTop();
             int offset = headerHeight - topOffset;
