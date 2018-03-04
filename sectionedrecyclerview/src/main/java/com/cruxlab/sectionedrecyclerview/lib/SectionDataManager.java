@@ -129,34 +129,14 @@ public class SectionDataManager implements SectionManager, PositionManager {
 
     @Override
     public void addSection(@NonNull SimpleSectionAdapter simpleSectionAdapter, SectionItemSwipeCallback swipeCallback) {
-        addSection(new SectionAdapterWrapper(simpleSectionAdapter), swipeCallback);
+        insertSection(getSectionCount(), new SectionAdapterWrapper(simpleSectionAdapter), swipeCallback, true);
     }
 
     @Override
     public void addSection(@NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback, short headerType) {
         checkHeaderType(headerType);
         addSectionWithHeaderType(headerType, freeType);
-        addSection(new SectionAdapterWrapper(sectionAdapter, headerType), swipeCallback);
-    }
-
-    private void addSection(SectionAdapterWrapper adapterWrapper, SectionItemSwipeCallback swipeCallback) {
-        checkFreeType();
-        adapterWrapper.setSection(getSectionCount());
-        adapterWrapper.setItemManager(sectionItemManager);
-        int start = getTotalItemCount();
-        int cnt = adapterWrapper.getItemCount() + adapterWrapper.getHeaderVisibilityInt();
-        int posSum = getTotalItemCount() + cnt;
-        typeToAdapter.put(freeType, adapterWrapper);
-        if (swipeCallback != null) {
-            typeToCallback.put(freeType, swipeCallback);
-        }
-        sectionToType.add(freeType);
-        sectionToPosSum.add(posSum);
-        freeType++;
-        adapter.notifyItemRangeInserted(start, cnt);
-        if (headerManager != null) {
-            headerManager.checkFirstVisiblePos();
-        }
+        insertSection(getSectionCount(), new SectionAdapterWrapper(sectionAdapter, headerType), swipeCallback, true);
     }
 
     @Override
@@ -171,17 +151,17 @@ public class SectionDataManager implements SectionManager, PositionManager {
 
     @Override
     public void insertSection(int section, @NonNull SimpleSectionAdapter simpleSectionAdapter, SectionItemSwipeCallback swipeCallback) {
-        insertSection(section, new SectionAdapterWrapper(simpleSectionAdapter), swipeCallback);
+        insertSection(section, new SectionAdapterWrapper(simpleSectionAdapter), swipeCallback, true);
     }
 
     @Override
     public void insertSection(int section, @NonNull SectionAdapter sectionAdapter, SectionItemSwipeCallback swipeCallback, short headerType) {
         checkHeaderType(headerType);
         addSectionWithHeaderType(headerType, freeType);
-        insertSection(section, new SectionAdapterWrapper(sectionAdapter, headerType), swipeCallback);
+        insertSection(section, new SectionAdapterWrapper(sectionAdapter, headerType), swipeCallback, true);
     }
 
-    private void insertSection(int section, SectionAdapterWrapper adapterWrapper, SectionItemSwipeCallback swipeCallback) {
+    private void insertSection(int section, SectionAdapterWrapper adapterWrapper, SectionItemSwipeCallback swipeCallback, boolean notify) {
         checkFreeType();
         checkSectionIndex(section, true);
         adapterWrapper.setSection(section);
@@ -197,9 +177,11 @@ public class SectionDataManager implements SectionManager, PositionManager {
         sectionToPosSum.add(section, posSum);
         freeType++;
         updatePosSum(section + 1, cnt, true);
-        adapter.notifyItemRangeInserted(start, cnt);
-        if (headerManager != null) {
-            headerManager.checkFirstVisiblePos();
+        if (notify) {
+            adapter.notifyItemRangeInserted(start, cnt);
+            if (headerManager != null) {
+                headerManager.checkFirstVisiblePos();
+            }
         }
     }
 
@@ -227,16 +209,28 @@ public class SectionDataManager implements SectionManager, PositionManager {
 
     private void replaceSection(int section, SectionAdapterWrapper adapterWrapper, SectionItemSwipeCallback swipeCallback) {
         checkSectionIndex(section);
-        removeSection(section);
-        if (section == getSectionCount()) {
-            addSection(adapterWrapper, swipeCallback);
-        } else {
-            insertSection(section, adapterWrapper, swipeCallback);
+        int start = getSectionFirstPos(section);
+        int prevCnt = getSectionRealItemCount(section);
+        int newCnt = adapterWrapper.getItemCount() + adapterWrapper.getHeaderVisibilityInt();
+        removeSection(section, false);
+        insertSection(section, adapterWrapper, swipeCallback, false);
+        adapter.notifyItemRangeChanged(start, Math.min(newCnt, prevCnt));
+        if (newCnt < prevCnt) {
+            adapter.notifyItemRangeRemoved(start + newCnt, prevCnt - newCnt);
+        } else if (newCnt > prevCnt) {
+            adapter.notifyItemRangeInserted(start + prevCnt, newCnt - prevCnt);
+        }
+        if (headerManager != null) {
+            headerManager.checkFirstVisiblePos();
         }
     }
 
     @Override
     public void removeSection(int section) {
+       removeSection(section, true);
+    }
+
+    private void removeSection(int section, boolean notify) {
         checkSectionIndex(section);
         short sectionType = sectionToType.get(section);
         int cnt = getSectionRealItemCount(section);
@@ -251,9 +245,11 @@ public class SectionDataManager implements SectionManager, PositionManager {
         sectionToType.remove(section);
         sectionToPosSum.remove(section);
         updatePosSum(section, -cnt, true);
-        adapter.notifyItemRangeRemoved(start, cnt);
-        if (headerManager != null) {
-            headerManager.checkFirstVisiblePos();
+        if (notify) {
+            adapter.notifyItemRangeRemoved(start, cnt);
+            if (headerManager != null) {
+                headerManager.checkFirstVisiblePos();
+            }
         }
     }
 
