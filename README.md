@@ -23,21 +23,21 @@ You can find demo project code [here](https://github.com/crux-lab/sectioned-recy
 The Gradle dependency is available via [jCenter](https://bintray.com/cruxlab/SectionedRecyclerView/SectionedRecyclerView). Add this to your module's `build.gradle` file:
 
 ```gradle
-implementation 'com.cruxlab:sectionedrecyclerview:1.0.1'
+implementation 'com.cruxlab:sectionedrecyclerview:1.0.2'
 ```
 
 ### Initialization
 
-Initialize your RecyclerView with vertical LinearLayoutManager:
+Initialize your `RecyclerView` with a successor of `LinearLayoutManager`:
 
 ```java
 RecyclerView recyclerView = findViewById(R.id.recycler_view);
-RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
 recyclerView.setLayoutManager(layoutManager);
 recyclerView.setHasFixedSize(false);
 ```
 
-Create SectionDataManager and set its adapter to the RecyclerView:
+Create `SectionDataManager` and set its adapter to the `RecyclerView`:
 
 ```java
 SectionDataManager sectionDataManager = new SectionDataManager();
@@ -45,7 +45,7 @@ RecyclerView.Adapter adapter = sectionDataManager.getAdapter();
 recyclerView.setAdapter(adapter);
 ```  
 
-After that you can use SectionDataManager that implements SectionManager interface to add/remove/replace sections in your RecyclerView.
+After that you can use `SectionDataManager` that implements `SectionManager` interface to add/remove/replace sections in your `RecyclerView`.
 
 ```java
 sectionDataManager.addSection(new MySimpleAdapter());
@@ -80,7 +80,7 @@ public class MySimpleAdapter extends SimpleSectionAdapter<MyItemViewHolder> {
 }
 ```  
 
-It uses the following ItemViewHolder: 
+It uses the following `ItemViewHolder`: 
 
 ```java
 public class MyItemViewHolder extends BaseSectionAdapter.ItemViewHolder {
@@ -125,7 +125,7 @@ public class MyAdapter extends SectionAdapter<MyItemViewHolder, MyHeaderViewHold
 }
 ```
 
-When different sections have the same header (HeaderViewHolder and its view), it can be reused by the RecyclerView. To indicate it, you should pass equal header types to the SectionDataManager when adding your SectionAdapter and different ones otherwise:
+When different sections have the same header (`HeaderViewHolder` and its view), it can be reused by the `RecyclerView`. To indicate it, you should pass equal header types to the `SectionDataManager` when adding your `SectionAdapter` and different ones otherwise:
 
 ```java
 sectionDataManager.addSection(new MyAdapter(true, true), HEADER_TYPE);
@@ -135,7 +135,7 @@ sectionDataManager.insertSection(0, new AdapterWithDifferentHeader(true, false),
 
 ### Floating headers
 
-To use floating headers feature, you have to place your RecyclerView into SectionHeaderLayout in your xml file:
+To use floating headers feature, you have to place your `RecyclerView` into `SectionHeaderLayout` in your xml file:
 
 ```xml
 <com.cruxlab.sectionedrecyclerview.lib.SectionHeaderLayout
@@ -151,7 +151,7 @@ To use floating headers feature, you have to place your RecyclerView into Sectio
  </com.cruxlab.sectionedrecyclerview.lib.SectionHeaderLayout>
 ```
 
-To enable displaying pinned headers, attach SectionHeaderLayout to your RecyclerView and SectionDataManager:
+To enable displaying pinned headers, attach `SectionHeaderLayout` to your `RecyclerView` and `SectionDataManager`:
 
 ```java
 SectionHeaderLayout sectionHeaderLayout = findViewById(R.id.section_header_layout);
@@ -170,11 +170,11 @@ You can disable disaplying pinned headers any time by calling:
 sectionHeaderLayout.detach();
 ```
 
-Note, that you should NOT update header view contents manually (e.g., while handling click event), because when header is pinned to the top, its view is duplicated and these changes won't affect the original item in the RecyclerView. You should call `notifyHeaderChanged()` instead to guarantee that your changes will be applied to both views while binding.
+Note, that you should NOT update header view contents manually (e.g., while handling click event), because when header is pinned to the top, its view is duplicated and these changes won't affect the original item in the `RecyclerView`. You should call `notifyHeaderChanged()` instead to guarantee that your changes will be applied to both views while binding.
 
 ### Swiping behavior
 
-You can customize item swiping behavior for each section individually. To enable this feature, create ItemTouchHelper initialized with SectionDataManager's callback and attach it to your RecyclerView:
+You can customize item swiping behavior for each section individually. To enable this feature, create `ItemTouchHelper` initialized with `SectionDataManager`'s callback and attach it to your `RecyclerView`:
 
 ```java
 ItemTouchHelper.Callback callback = sectionDataManager.getSwipeCallback();
@@ -182,7 +182,7 @@ ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);
 itemTouchHelper.attachToRecyclerView(recyclerView);
 ```
 
-Implement SectionItemSwipeCallback, which is similar to Android's [ItemTouchHelper.Callback](https://developer.android.com/reference/android/support/v7/widget/helper/ItemTouchHelper.Callback.html):
+Implement `SectionItemSwipeCallback`, which is similar to Android's [ItemTouchHelper.Callback](https://developer.android.com/reference/android/support/v7/widget/helper/ItemTouchHelper.Callback.html):
 
 ```java
 public class MySwipeCallback extends SectionItemSwipeCallback {
@@ -223,7 +223,7 @@ public class MySwipeCallback extends SectionItemSwipeCallback {
 }
 ```
 
-You can specify it when adding a section or set/remove it later via SectionDataManager:
+You can specify it when adding a section or set/remove it later via `SectionDataManager`:
 
 ```java
 sectionDataManager.addSection(new MySimpleAdapter(), new MySwipeCallback());
@@ -232,14 +232,31 @@ sectionDataManager.removeSwipeCallback(0);
 
 Note, that section headers are unswipeable.
 
+### GridLayoutManager
+
+When using `GridLayoutManager` set `SpanSizeLookup` as follows to display full width section headers:
+```java
+gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+    @Override
+    public int getSpanSize(int position) {
+        if (posManager.isHeader(position)) {
+            return gridLayoutManager.getSpanCount();
+        } else {
+            return 1;
+        }
+    }
+ });
+```
+It uses `SectionDataManager`'s implementation of `PositionManager` to determine whether the item at the given position is a header.
+
 ### Extra
 
-* The number of sections you can add to the SectionDataManager during its lifetime is limited to 32,767.
-* Sections added via SectionDataManager are indexed beginning with the zero subscript and can be accessed by their index later.
-* Any ViewHolder can call `getGlobalAdapterPosition()` or `getGlobalLayoutPosition()` to access its positions in the global RecyclerView adapter among items of all sections including their headers. It also can get the index of the section it belongs to, which is calculated based on the adapter position, calling `getSection()`.
-* ItemViewHolder can retrieve its position in the corresponding adapter by calling `getSectionAdapterPosition()`.
-The methods above can return -1 when the ViewHolder is not used in any RecyclerView.
-* For compatibility with future Android RecyclerView APIs and other libraries you can use `PositionConverter` interface to convert positions (e.g., retrieved from real ViewHolders) yourself.
+* The number of sections you can add to the `SectionDataManager` during its lifetime is limited to 32,767.
+* Sections added via `SectionDataManager` are indexed beginning with the zero subscript and can be accessed by their index later.
+* Any `ViewHolder` can call `getGlobalAdapterPosition()` or `getGlobalLayoutPosition()` to access its positions in the global `RecyclerView` adapter among items of all sections including their headers. It also can get the index of the section it belongs to, which is calculated based on the adapter position, calling `getSection()`.
+* `ItemViewHolder` can retrieve its position in the corresponding adapter by calling `getSectionAdapterPosition()`.
+The methods above can return -1 when the `ViewHolder` is not used in any `RecyclerView`.
+* For compatibility with future Android `RecyclerView` APIs and other libraries you can use `PositionManager` interface to manage positions (e.g., retrieved from real `ViewHolder`) yourself.
 
 ## License
 
