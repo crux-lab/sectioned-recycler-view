@@ -35,6 +35,7 @@ interface SectionItemManager {
     void notifyRangeInserted(int section, int startPos, int cnt);
     void notifyRangeRemoved(int section, int startPos, int cnt);
     void notifyRangeChanged(int section, int startPos, int cnt);
+    void notifyDataSetChanged(int section);
     void notifyMoved(int section, int fromPos, int toPos);
     void notifyHeaderChanged(int section);
     void notifyHeaderVisibilityChanged(int section, boolean visible);

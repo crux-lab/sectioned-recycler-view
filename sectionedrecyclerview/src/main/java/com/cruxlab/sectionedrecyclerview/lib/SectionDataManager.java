@@ -600,6 +600,23 @@ public class SectionDataManager implements SectionManager, PositionManager {
         }
 
         @Override
+        public void notifyDataSetChanged(int section) {
+            short sectionType = sectionToType.get(section);
+            SectionAdapterWrapper sectionAdapter = typeToAdapter.get(sectionType);
+            int oldItemsCount = getSectionItemCount(section);
+            int newItemsCount = sectionAdapter.getItemCount();
+            if (oldItemsCount < newItemsCount) {
+                notifyRangeInserted(section, oldItemsCount, newItemsCount - oldItemsCount);
+            } else if (newItemsCount < oldItemsCount) {
+                notifyRangeRemoved(section, newItemsCount, oldItemsCount - newItemsCount);
+            }
+            int changedCnt = Math.min(oldItemsCount, newItemsCount);
+            if (changedCnt > 0) {
+                notifyRangeChanged(section, 0, changedCnt);
+            }
+        }
+
+        @Override
         public void notifyMoved(int section, int fromPos, int toPos) {
             checkSectionIndex(section);
             checkSectionItemIndex(section, fromPos);
