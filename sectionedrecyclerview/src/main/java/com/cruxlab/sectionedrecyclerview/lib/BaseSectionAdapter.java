@@ -267,6 +267,22 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
     }
 
     /**
+     * Notifies SectionDataManager that all items in this section were changed.
+     * <p>
+     * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#notifyDataSetChanged()}.
+     * <p>
+     * Note that this method does not notify about changes in the header, you can use
+     * {@link SectionManager#updateSection(int)} for complete section update.
+     * Also you can use {@link SectionAdapter#notifyHeaderChanged()} (int)} to update
+     * the header directly.
+     */
+    public final void notifyDataSetChanged() {
+        if (itemManager != null) {
+            itemManager.notifyDataSetChanged(section);
+        }
+    }
+
+    /**
      * Returns the 0-based index of the section currently represented by this BaseSectionAdapter in
      * RecyclerView.
      *

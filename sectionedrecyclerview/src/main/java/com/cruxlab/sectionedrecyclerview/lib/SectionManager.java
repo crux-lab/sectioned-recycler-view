@@ -200,6 +200,12 @@ public interface SectionManager {
 
     /**
      * Updates the section at the specified position in the RecyclerView.
+     * <p>
+     * In case section items count is changed, it will handle it as insert/remove of difference
+     * and update of intersection. For example, changing from 5 items to 3 triggers remove
+     * event for 4,5 and update event for 1, 2, 3.
+     * <p>
+     * Will also trigger header update, if section has one.
      *
      * @param section Index of the section to update.
      */

@@ -256,9 +256,23 @@ public class SectionDataManager implements SectionManager, PositionManager {
     @Override
     public void updateSection(int section) {
         checkSectionIndex(section);
-        adapter.notifyItemRangeChanged(getSectionFirstPos(section), getSectionRealItemCount(section));
+        short sectionType = sectionToType.get(section);
+        SectionAdapterWrapper sectionAdapter = typeToAdapter.get(sectionType);
+        int oldItemsCount = getSectionRealItemCount(section);
+        int newItemsCount = sectionAdapter.getItemCount() + sectionAdapter.getHeaderVisibilityInt();
+        updatePosSum(section, newItemsCount - oldItemsCount, false);
+        if (oldItemsCount < newItemsCount) {
+            adapter.notifyItemRangeInserted(getSectionFirstPos(section) + oldItemsCount,
+                    newItemsCount - oldItemsCount);
+        } else if (newItemsCount < oldItemsCount) {
+            adapter.notifyItemRangeRemoved(getSectionFirstPos(section) + newItemsCount,
+                    oldItemsCount - newItemsCount);
+        }
+        int changedCnt = Math.min(oldItemsCount, newItemsCount);
+        if (changedCnt > 0) {
+            adapter.notifyItemRangeChanged(getSectionFirstPos(section), changedCnt);
+        }
         if (headerManager != null) {
-            short sectionType = sectionToType.get(section);
             headerManager.updateHeaderView(sectionType);
         }
     }
@@ -596,6 +610,24 @@ public class SectionDataManager implements SectionManager, PositionManager {
             adapter.notifyItemRangeChanged(adapterStartPos, cnt);
             if (headerManager != null) {
                 headerManager.checkFirstVisiblePos();
+            }
+        }
+
+        @Override
+        public void notifyDataSetChanged(int section) {
+            checkSectionIndex(section);
+            short sectionType = sectionToType.get(section);
+            SectionAdapterWrapper sectionAdapter = typeToAdapter.get(sectionType);
+            int oldItemsCount = getSectionItemCount(section);
+            int newItemsCount = sectionAdapter.getItemCount();
+            if (oldItemsCount < newItemsCount) {
+                notifyRangeInserted(section, oldItemsCount, newItemsCount - oldItemsCount);
+            } else if (newItemsCount < oldItemsCount) {
+                notifyRangeRemoved(section, newItemsCount, oldItemsCount - newItemsCount);
+            }
+            int changedCnt = Math.min(oldItemsCount, newItemsCount);
+            if (changedCnt > 0) {
+                notifyRangeChanged(section, 0, changedCnt);
             }
         }
 
