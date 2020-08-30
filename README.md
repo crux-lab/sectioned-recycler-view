@@ -1,5 +1,9 @@
 # Sectioned RecyclerView with pinnable (floating/sticky) headers
 
+[![Bintray](https://img.shields.io/bintray/v/cruxlab/SectionedRecyclerView/SectionedRecyclerView?color=bright-green)](https://bintray.com/cruxlab/SectionedRecyclerView/SectionedRecyclerView/1.0.3)
+[![Nuget](https://img.shields.io/nuget/v/Karamunting.Android.CruxLab.SectionedRecyclerView?color=bright-green)](https://www.nuget.org/packages/Karamunting.Android.CruxLab.SectionedRecyclerView/1.0.2)
+[![API](https://img.shields.io/badge/API-16%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=16)
+
 This library allows you to divide items in your RecyclerView into groups called sections. Each section is represented by an adapter and can have a header. SectionAdapter is similar to Android’s [RecyclerView.Adapter](https://developer.android.com/reference/android/support/v7/widget/RecyclerView.Adapter.html), which creates and binds ViewHolders. The header can be pinned, which means, that it will be displayed at the top of the RecyclerView above the corresponding section items. Pinned headers change automatically while scrolling or after dataset changes. You can also customize item swiping behavior for each section individually.
 
 ## Demo
