@@ -24,8 +24,8 @@
 
 package com.cruxlab.sectionedrecyclerview.lib;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
  * Interface for interaction with RecyclerView and managing its sections.

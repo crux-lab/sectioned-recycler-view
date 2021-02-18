@@ -24,7 +24,7 @@
 
 package com.cruxlab.sectionedrecyclerview.lib;
 
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * RecyclerView.ViewHolder implementation to work with RecyclerView.Adapter in

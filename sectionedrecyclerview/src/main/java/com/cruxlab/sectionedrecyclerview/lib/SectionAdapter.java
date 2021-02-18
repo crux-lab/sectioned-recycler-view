@@ -24,7 +24,7 @@
 
 package com.cruxlab.sectionedrecyclerview.lib;
 
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.ViewGroup;
 
 /**
@@ -53,7 +53,7 @@ public abstract class SectionAdapter<IVH extends BaseSectionAdapter.ItemViewHold
      * Called when SectionDataManager needs a new {@link BaseSectionAdapter.HeaderViewHolder} of the given
      * type to represent a header in this section.
      * <p>
-     * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#onCreateViewHolder(ViewGroup, int)}.
+     * Similar to {@link RecyclerView.Adapter#onCreateViewHolder(ViewGroup, int)}.
      *
      * @param parent The ViewGroup into which the new header view will be added after it is bound to
      *               an adapter position.
@@ -64,7 +64,7 @@ public abstract class SectionAdapter<IVH extends BaseSectionAdapter.ItemViewHold
      * Called by SectionDataManager to display header data. This method should update the contents
      * of the header {@link BaseSectionAdapter.HeaderViewHolder#itemView}.
      * <p>
-     * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#onBindViewHolder(RecyclerView.ViewHolder, int)}.
+     * Similar to {@link RecyclerView.Adapter#onBindViewHolder(RecyclerView.ViewHolder, int)}.
      *
      * @param holder The ViewHolder which should be updated to represent the contents of the header.
      */
