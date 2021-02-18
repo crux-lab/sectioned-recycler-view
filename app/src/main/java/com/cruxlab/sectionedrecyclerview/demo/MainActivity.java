@@ -26,13 +26,11 @@ package com.cruxlab.sectionedrecyclerview.demo;
 
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.helper.ItemTouchHelper;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.ItemTouchHelper;
 
-import com.cruxlab.sectionedrecyclerview.lib.PositionManager;
 import com.cruxlab.sectionedrecyclerview.lib.SectionDataManager;
 import com.cruxlab.sectionedrecyclerview.lib.SectionHeaderLayout;
 import com.cruxlab.sectionedrecyclerview.demo.adapters.BaseAdapter;

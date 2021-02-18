@@ -25,7 +25,7 @@
 package com.cruxlab.sectionedrecyclerview.lib;
 
 
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -37,7 +37,7 @@ import java.util.List;
  * Provides a binding from an app-specific data set to views that are displayed within a RecyclerView
  * in an individual section.
  * <p>
- * Similar to {@link android.support.v7.widget.RecyclerView.Adapter}.
+ * Similar to {@link RecyclerView.Adapter}.
  *
  * @param <IVH> A class that extends ItemViewHolder that will be used by the adapter to manage item views.
  */
@@ -57,7 +57,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
      * Called when SectionDataManager needs a new {@link BaseSectionAdapter.ItemViewHolder} of the given
      * type to represent an item in this section.
      * <p>
-     * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#onCreateViewHolder(ViewGroup, int)}.
+     * Similar to {@link RecyclerView.Adapter#onCreateViewHolder(ViewGroup, int)}.
      *
      * @param parent The ViewGroup into which the new item view will be added after it is bound to
      *               an adapter position.
@@ -70,7 +70,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
      * method should update the contents of the {@link BaseSectionAdapter.ItemViewHolder#itemView}
      * to reflect the item at the given position.
      * <p>
-     * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#onBindViewHolder(RecyclerView.ViewHolder, int)}.
+     * Similar to {@link RecyclerView.Adapter#onBindViewHolder(RecyclerView.ViewHolder, int)}.
      *
      * @param holder   The ViewHolder which should be updated to represent the contents of the
      *                 item at the given position in the section data set.
@@ -82,7 +82,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
      * Return the view type of the item within this section at <code>position</code> for the purposes
      * of view recycling.
      * <p>
-     * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#getItemViewType(int)}.
+     * Similar to {@link RecyclerView.Adapter#getItemViewType(int)}.
      *
      * @param position Position to query.
      * @return Short value identifying the type of the view needed to represent the item at
@@ -96,7 +96,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
      * Notifies SectionDataManager that the item in this section at <code>pos</code> has been
      * inserted.
      * <p>
-     * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#notifyItemInserted(int)}.
+     * Similar to {@link RecyclerView.Adapter#notifyItemInserted(int)}.
      *
      * @param pos Inserted item position.
      */
@@ -134,7 +134,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
      * Notifies SectionDataManager that <code>cnt</code> items starting at <code>startPos</code>
      * in this section have been inserted.
      * <p>
-     * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#notifyItemRangeInserted(int, int)}.
+     * Similar to {@link RecyclerView.Adapter#notifyItemRangeInserted(int, int)}.
      *
      * @param startPos Position of the first item that was inserted.
      * @param cnt      Number of items inserted.
@@ -149,7 +149,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
      * Notifies SectionDataManager that the item in this section at <code>pos</code> has been
      * removed.
      * <p>
-     * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#notifyItemRemoved(int)}.
+     * Similar to {@link RecyclerView.Adapter#notifyItemRemoved(int)}.
      *
      * @param pos Removed item position.
      */
@@ -187,7 +187,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
      * Notifies SectionDataManager that <code>cnt</code> items starting at <code>startPos</code>
      * in this section have been removed.
      * <p>
-     * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#notifyItemRangeRemoved(int, int)}.
+     * Similar to {@link RecyclerView.Adapter#notifyItemRangeRemoved(int, int)}.
      *
      * @param startPos Position of the first item that was removed.
      * @param cnt      Number of items removed.
@@ -202,7 +202,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
      * Notifies SectionDataManager that the item in this section at <code>pos</code>
      * has been changed.
      * <p>
-     * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#notifyItemChanged(int)}.
+     * Similar to {@link RecyclerView.Adapter#notifyItemChanged(int)}.
      *
      * @param pos Changed item position.
      */
@@ -240,7 +240,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
      * Notifies SectionDataManager that <code>cnt</code> items starting at <code>startPos</code>
      * in this section have been changed.
      * <p>
-     * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#notifyItemRangeChanged(int, int)}.
+     * Similar to {@link RecyclerView.Adapter#notifyItemRangeChanged(int, int)}.
      *
      * @param startPos Position of the first item that was changed.
      * @param cnt      Number of items changed.
@@ -255,7 +255,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
      * Notifies SectionDataManager that the item at <code>fromPosition</code> has been moved
      * to <code>toPosition</code>.
      * <p>
-     * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#notifyItemMoved(int, int)}.
+     * Similar to {@link RecyclerView.Adapter#notifyItemMoved(int, int)}.
      *
      * @param fromPos Previous position of the item.
      * @param toPos   New position of the item.
@@ -269,7 +269,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
     /**
      * Notifies SectionDataManager that all items in this section were changed.
      * <p>
-     * Similar to {@link android.support.v7.widget.RecyclerView.Adapter#notifyDataSetChanged()}.
+     * Similar to {@link RecyclerView.Adapter#notifyDataSetChanged()}.
      * <p>
      * Note that this method does not notify about changes in the header, you can use
      * {@link SectionManager#updateSection(int)} for complete section update.
@@ -301,7 +301,7 @@ public abstract class BaseSectionAdapter<IVH extends BaseSectionAdapter.ItemView
      * <p>
      * Describes a view and metadata about its place within the RecyclerView.
      * <p>
-     * Similar to {@link android.support.v7.widget.RecyclerView.ViewHolder}.
+     * Similar to {@link RecyclerView.ViewHolder}.
      */
     public abstract static class ViewHolder {
 

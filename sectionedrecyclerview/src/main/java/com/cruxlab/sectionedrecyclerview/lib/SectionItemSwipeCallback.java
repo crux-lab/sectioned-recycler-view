@@ -25,9 +25,9 @@
 package com.cruxlab.sectionedrecyclerview.lib;
 
 import android.graphics.Canvas;
-import android.support.annotation.CallSuper;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.helper.ItemTouchHelper;
+import androidx.annotation.CallSuper;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.ItemTouchHelper;
 
 /**
  * This class lets you control swipe behavior of each item view in {@link BaseSectionAdapter}
