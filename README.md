@@ -1,10 +1,10 @@
 # Sectioned RecyclerView with pinnable (floating/sticky) headers
 
-[![Bintray](https://img.shields.io/bintray/v/cruxlab/SectionedRecyclerView/SectionedRecyclerView?color=bright-green)](https://bintray.com/cruxlab/SectionedRecyclerView/SectionedRecyclerView/1.0.3)
-[![Nuget](https://img.shields.io/nuget/v/Karamunting.Android.CruxLab.SectionedRecyclerView?color=bright-green)](https://www.nuget.org/packages/Karamunting.Android.CruxLab.SectionedRecyclerView/1.0.2)
+[![Bintray](https://img.shields.io/bintray/v/cruxlab/SectionedRecyclerView/SectionedRecyclerView?color=bright-green)](https://bintray.com/cruxlab/SectionedRecyclerView/SectionedRecyclerView/1.1.0)
+[![Nuget](https://img.shields.io/nuget/v/Karamunting.Android.CruxLab.SectionedRecyclerView?color=bright-green)](https://www.nuget.org/packages/Karamunting.Android.CruxLab.SectionedRecyclerView/1.0.3)
 [![API](https://img.shields.io/badge/API-16%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=16)
 
-This library allows you to divide items in your RecyclerView into groups called sections. Each section is represented by an adapter and can have a header. SectionAdapter is similar to Android’s [RecyclerView.Adapter](https://developer.android.com/reference/android/support/v7/widget/RecyclerView.Adapter.html), which creates and binds ViewHolders. The header can be pinned, which means, that it will be displayed at the top of the RecyclerView above the corresponding section items. Pinned headers change automatically while scrolling or after dataset changes. You can also customize item swiping behavior for each section individually.
+This library allows you to divide items in your RecyclerView into groups called sections. Each section is represented by an adapter and can have a header. SectionAdapter is similar to Android’s [RecyclerView.Adapter](https://developer.android.com/reference/androidx/recyclerview/widget/RecyclerView.Adapter), which creates and binds ViewHolders. The header can be pinned, which means, that it will be displayed at the top of the RecyclerView above the corresponding section items. Pinned headers change automatically while scrolling or after dataset changes. You can also customize item swiping behavior for each section individually.
 
 ## Demo
 
@@ -27,7 +27,7 @@ You can find demo project code [here](https://github.com/crux-lab/sectioned-recy
 The Gradle dependency is available via [jCenter](https://bintray.com/cruxlab/SectionedRecyclerView/SectionedRecyclerView). Add this to your module's `build.gradle` file:
 
 ```gradle
-implementation 'com.cruxlab:sectionedrecyclerview:1.0.3'
+implementation 'com.cruxlab:sectionedrecyclerview:1.1.0'
 ```
 
 ### Initialization
@@ -103,7 +103,7 @@ public class MyItemViewHolder extends BaseSectionAdapter.ItemViewHolder {
 }
 ```
 
-As you can see, these classes are similar to Android’s [RecyclerView.Adapter](https://developer.android.com/reference/android/support/v7/widget/RecyclerView.Adapter.html) and [RecyclerView.ViewHolder](https://developer.android.com/reference/android/support/v7/widget/RecyclerView.ViewHolder.html).
+As you can see, these classes are similar to Android’s [RecyclerView.Adapter](https://developer.android.com/reference/androidx/recyclerview/widget/RecyclerView.Adapter) and [RecyclerView.ViewHolder](https://developer.android.com/reference/androidx/recyclerview/widget/RecyclerView.ViewHolder).
 
 Adapter for a section with header has some additional methods to override:
 
@@ -147,7 +147,7 @@ To use floating headers feature, you have to place your `RecyclerView` into `Sec
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <android.support.v7.widget.RecyclerView
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
@@ -186,7 +186,7 @@ ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);
 itemTouchHelper.attachToRecyclerView(recyclerView);
 ```
 
-Implement `SectionItemSwipeCallback`, which is similar to Android's [ItemTouchHelper.Callback](https://developer.android.com/reference/android/support/v7/widget/helper/ItemTouchHelper.Callback.html):
+Implement `SectionItemSwipeCallback`, which is similar to Android's [ItemTouchHelper.Callback](https://developer.android.com/reference/androidx/recyclerview/widget/ItemTouchHelper.Callback):
 
 ```java
 public class MySwipeCallback extends SectionItemSwipeCallback {
