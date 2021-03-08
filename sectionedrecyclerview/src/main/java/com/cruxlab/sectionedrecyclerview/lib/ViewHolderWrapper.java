@@ -35,7 +35,7 @@ class ViewHolderWrapper extends RecyclerView.ViewHolder {
 
     final BaseSectionAdapter.ViewHolder viewHolder;
 
-    ViewHolderWrapper(BaseSectionAdapter.ViewHolder viewHolder) {
+    public ViewHolderWrapper(BaseSectionAdapter.ViewHolder viewHolder) {
         super(viewHolder.itemView);
         this.viewHolder = viewHolder;
     }
