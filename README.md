@@ -1,6 +1,6 @@
 # Sectioned RecyclerView with pinnable (floating/sticky) headers
 
-[![Bintray](https://img.shields.io/bintray/v/cruxlab/SectionedRecyclerView/SectionedRecyclerView?color=bright-green)](https://bintray.com/cruxlab/SectionedRecyclerView/SectionedRecyclerView/1.1.0)
+[![Jitpack](https://jitpack.io/v/crux-lab/sectioned-recycler-view.svg)](https://jitpack.io/#crux-lab/sectioned-recycler-view)
 [![Nuget](https://img.shields.io/nuget/v/Karamunting.Android.CruxLab.SectionedRecyclerView?color=bright-green)](https://www.nuget.org/packages/Karamunting.Android.CruxLab.SectionedRecyclerView/1.0.3)
 [![API](https://img.shields.io/badge/API-16%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=16)
 
@@ -23,12 +23,23 @@ You can find demo project code [here](https://github.com/crux-lab/sectioned-recy
 ## Usage
 
 ### Setup
-
-The Gradle dependency is available via [jCenter](https://bintray.com/cruxlab/SectionedRecyclerView/SectionedRecyclerView). Add this to your module's `build.gradle` file:
+1. Add the JitPack repository to your project's `build.gradle` file:
 
 ```gradle
-implementation 'com.cruxlab:sectionedrecyclerview:1.1.0'
+allprojects {
+    repositories {
+        ...
+        maven { url 'https://jitpack.io' }
+    }
+}
 ```
+
+2. Add the dependency to your module's `build.gradle` file:
+
+```gradle
+implementation 'com.github.crux-lab:sectioned-recycler-view:1.1.0'
+```
+Note: previously the library was available via jCenter as `com.cruxlab:sectionedrecyclerview:x.y.z`.
 
 ### Initialization
 
