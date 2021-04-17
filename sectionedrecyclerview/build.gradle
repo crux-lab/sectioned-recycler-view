@@ -1,4 +1,6 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.github.dcendents.android-maven'
+group = 'com.github.crux-lab'
 
 android {
     compileSdkVersion 30
@@ -21,5 +23,3 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
 }
-
-apply from: 'publish.gradle'
