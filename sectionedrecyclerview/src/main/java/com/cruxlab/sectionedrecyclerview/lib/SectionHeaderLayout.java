@@ -136,8 +136,18 @@ public class SectionHeaderLayout extends RelativeLayout {
                     headerView.requestLayout();
                 }
             });
-            addView(headerView);
-            removePrevHeaderView();
+            // Uses postponed runnable, because removeViewAt(int) should not be invoked from drawing
+            // related methods (e.g. {@link #onScrollListener} is invoked from RecyclerView's
+            // onLayout(boolean, int, int, int, int)).
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    if (getChildCount() > 1) {
+                        removeViewAt(1);
+                    }
+                    addView(headerView);
+                }
+            });
         }
 
         /* Uses postponed runnable, because removeViewAt(int) should not be invoked from drawing
@@ -203,24 +213,6 @@ public class SectionHeaderLayout extends RelativeLayout {
                 headerManager.checkIsHeaderViewChanged();
             }
         });
-    }
-
-    /**
-     * Removes previous header view if exists. Uses postponed runnable, because removeViewAt(int)
-     * should not be invoked from drawing related methods (e.g. {@link #onScrollListener} is invoked
-     * from RecyclerView's onLayout(boolean, int, int, int, int)).
-     */
-    private void removePrevHeaderView() {
-        if (getChildCount() > 2) {
-            post(new Runnable() {
-                @Override
-                public void run() {
-                    if (getChildCount() > 2) {
-                        removeViewAt(1);
-                    }
-                }
-            });
-        }
     }
 
     /**
