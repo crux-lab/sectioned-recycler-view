@@ -37,7 +37,7 @@ allprojects {
 2. Add the dependency to your module's `build.gradle` file:
 
 ```gradle
-implementation 'com.github.crux-lab:sectioned-recycler-view:1.1.0'
+implementation 'com.github.crux-lab:sectioned-recycler-view:1.1.1'
 ```
 Note: previously the library was available via jCenter as `com.cruxlab:sectionedrecyclerview:x.y.z`.
 
