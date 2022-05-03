@@ -31,9 +31,9 @@ import androidx.recyclerview.widget.RecyclerView;
  * {@link SectionDataManager}. Contains the corresponding {@link BaseSectionAdapter.ViewHolder} and
  * refers to the same View.
  */
-class ViewHolderWrapper extends RecyclerView.ViewHolder {
+public class ViewHolderWrapper extends RecyclerView.ViewHolder {
 
-    final BaseSectionAdapter.ViewHolder viewHolder;
+    public final BaseSectionAdapter.ViewHolder viewHolder;
 
     ViewHolderWrapper(BaseSectionAdapter.ViewHolder viewHolder) {
         super(viewHolder.itemView);
