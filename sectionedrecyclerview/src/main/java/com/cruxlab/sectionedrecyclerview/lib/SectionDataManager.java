@@ -70,6 +70,7 @@ public class SectionDataManager implements SectionManager, PositionManager {
     private SparseArray<SectionAdapterWrapper> typeToAdapter;
     private SparseArray<SectionItemSwipeCallback> typeToCallback;
     private SparseArray<Set<Short>> headerTypeToSectionTypes;
+    private List<OnHeaderViewStateChangeListener> onHeaderViewStateChangeListeners;
 
     private HeaderManager headerManager;
 
@@ -401,7 +402,6 @@ public class SectionDataManager implements SectionManager, PositionManager {
                 return (sectionType << 16) + itemType;
             }
         }
-
     };
 
     /* END ADAPTER */
@@ -721,6 +721,60 @@ public class SectionDataManager implements SectionManager, PositionManager {
     }
 
     /* END POSITION MANAGER */
+    /* HEADER VIEW STATE CHANGE LISTENER */
+
+    /**
+     * A Listener interface that can be attached to a SectionDataManager to get notified
+     * whenever a header view is attached to the top of the screen.
+     */
+    public interface OnHeaderViewStateChangeListener {
+
+        /**
+         * This method is called when new header has been attached to the top of the screen.
+         *
+         * @param section section id of the latest attached header
+         * */
+        void onHeaderViewAttached(int section);
+    }
+
+    /**
+     * Register a listener that will be notified whenever a header view is attached/pinned to the
+     * top of the screen.
+     *
+     * @param listener Listener to register
+     */
+    public void addOnHeaderViewStateChangeListener(
+            @NonNull OnHeaderViewStateChangeListener listener) {
+        if (onHeaderViewStateChangeListeners == null) {
+            onHeaderViewStateChangeListeners = new ArrayList<>();
+        }
+        onHeaderViewStateChangeListeners.add(listener);
+    }
+
+    /**
+     * Removes the provided listener from header view state change listeners list.
+     *
+     * @param listener Listener to unregister
+     */
+    public void removeOnHeaderViewStateChangeListener(
+            @NonNull OnHeaderViewStateChangeListener listener) {
+        if (onHeaderViewStateChangeListeners == null) {
+            return;
+        }
+        onHeaderViewStateChangeListeners.remove(listener);
+    }
+
+    /**
+     * Removes all listeners that were added via
+     * {@link #addOnHeaderViewStateChangeListener(OnHeaderViewStateChangeListener)}.
+     */
+    public void clearOnHeaderViewStateChangeListeners() {
+        if (onHeaderViewStateChangeListeners != null) {
+            onHeaderViewStateChangeListeners.clear();
+        }
+    }
+
+    /* END HEADER VIEW STATE CHANGE LISTENER */
     /* HEADER MANAGER */
 
     /**
@@ -797,9 +851,18 @@ public class SectionDataManager implements SectionManager, PositionManager {
                     } else {
                         addHeaderView(section);
                     }
+                    dispatchHeaderViewAttached(section);
                 }
             } else {
                 removeHeaderView();
+            }
+        }
+
+        private void dispatchHeaderViewAttached(int section) {
+            if (onHeaderViewStateChangeListeners != null) {
+                for (OnHeaderViewStateChangeListener listener : onHeaderViewStateChangeListeners) {
+                    listener.onHeaderViewAttached(section);
+                }
             }
         }
 
@@ -887,7 +950,7 @@ public class SectionDataManager implements SectionManager, PositionManager {
      * @param type Item view type.
      * @return True if the given type corresponds to header, false otherwise.
      */
-    private boolean isTypeHeader(int type) {
+    public boolean isTypeHeader(int type) {
         return (type >> 16) == NO_SECTION_TYPE;
     }
 
@@ -897,7 +960,7 @@ public class SectionDataManager implements SectionManager, PositionManager {
      *
      * @return Total number of items in RecyclerView.
      */
-    private int getTotalItemCount() {
+    public int getTotalItemCount() {
         return getSectionCount() > 0 ? sectionToPosSum.get(getSectionCount() - 1) : 0;
     }
 
@@ -908,7 +971,7 @@ public class SectionDataManager implements SectionManager, PositionManager {
      * @param viewHolder ViewHolder of the swiped view.
      * @return Corresponding SectionItemSwipeCallback if exists, or null.
      */
-    private SectionItemSwipeCallback getSwipeCallback(RecyclerView.ViewHolder viewHolder) {
+    public SectionItemSwipeCallback getSwipeCallback(RecyclerView.ViewHolder viewHolder) {
         int adapterPos = viewHolder.getAdapterPosition();
         if (!checkIndex(adapterPos, getTotalItemCount())) {
             return null;
@@ -927,7 +990,7 @@ public class SectionDataManager implements SectionManager, PositionManager {
      * @param pos     Item position.
      * @return Adapter position corresponding to the given section and position.
      */
-    private int getAdapterPos(int section, int pos) {
+    public int getAdapterPos(int section, int pos) {
         checkSectionIndex(section);
         short sectionType = sectionToType.get(section);
         SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
@@ -941,7 +1004,7 @@ public class SectionDataManager implements SectionManager, PositionManager {
      * @param section Index of the section.
      * @return First global adapter position.
      */
-    private int getSectionFirstPos(int section) {
+    public int getSectionFirstPos(int section) {
         checkSectionIndex(section, true);
         return section > 0 ? sectionToPosSum.get(section - 1) : 0;
     }
@@ -953,7 +1016,7 @@ public class SectionDataManager implements SectionManager, PositionManager {
      * @param section Index of the section.
      * @return Number of items.
      */
-    private int getSectionRealItemCount(int section) {
+    public int getSectionRealItemCount(int section) {
         checkSectionIndex(section);
         return sectionToPosSum.get(section) - (section > 0 ? sectionToPosSum.get(section - 1) : 0);
     }
@@ -965,7 +1028,7 @@ public class SectionDataManager implements SectionManager, PositionManager {
      * @param section Index of the section.
      * @return Number of items.
      */
-    private int getSectionItemCount(int section) {
+    public int getSectionItemCount(int section) {
         short sectionType = sectionToType.get(section);
         SectionAdapterWrapper adapterWrapper = typeToAdapter.get(sectionType);
         return getSectionRealItemCount(section) - adapterWrapper.getHeaderVisibilityInt();
