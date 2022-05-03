@@ -70,6 +70,7 @@ public class SectionDataManager implements SectionManager, PositionManager {
     private SparseArray<SectionAdapterWrapper> typeToAdapter;
     private SparseArray<SectionItemSwipeCallback> typeToCallback;
     private SparseArray<Set<Short>> headerTypeToSectionTypes;
+    private List<OnHeaderViewStateChangeListener> onHeaderViewStateChangeListeners;
 
     private HeaderManager headerManager;
 
@@ -401,7 +402,6 @@ public class SectionDataManager implements SectionManager, PositionManager {
                 return (sectionType << 16) + itemType;
             }
         }
-
     };
 
     /* END ADAPTER */
@@ -721,6 +721,65 @@ public class SectionDataManager implements SectionManager, PositionManager {
     }
 
     /* END POSITION MANAGER */
+    /* HEADER VIEW STATE CHANGE LISTENER */
+
+    /**
+     * A Listener interface that can be attached to a SectionDataManager to get notified
+     * whenever a header view is attached to the top of the screen.
+     */
+    public interface OnHeaderViewStateChangeListener {
+
+        /**
+         * This method is called when new header has been attached to the top of the screen.
+         *
+         * @param section section id of the latest attached header
+         * */
+        void onHeaderViewAttached(int section);
+    }
+
+    /**
+     * Register a listener that will be notified whenever a child view is attached to or detached
+     * from RecyclerView.
+     *
+     * <p>This listener will be called when a LayoutManager or the RecyclerView decides
+     * that a child view is no longer needed. If an application associates expensive
+     * or heavyweight data with item views, this may be a good place to release
+     * or free those resources.</p>
+     *
+     * @param listener Listener to register
+     */
+    public void addOnHeaderViewStateChangeListener(
+            @NonNull OnHeaderViewStateChangeListener listener) {
+        if (onHeaderViewStateChangeListeners == null) {
+            onHeaderViewStateChangeListeners = new ArrayList<>();
+        }
+        onHeaderViewStateChangeListeners.add(listener);
+    }
+
+    /**
+     * Removes the provided listener from header view state change listeners list.
+     *
+     * @param listener Listener to unregister
+     */
+    public void removeOnHeaderViewStateChangeListener(
+            @NonNull OnHeaderViewStateChangeListener listener) {
+        if (onHeaderViewStateChangeListeners == null) {
+            return;
+        }
+        onHeaderViewStateChangeListeners.remove(listener);
+    }
+
+    /**
+     * Removes all listeners that were added via
+     * {@link #addOnHeaderViewStateChangeListener(OnHeaderViewStateChangeListener)}.
+     */
+    public void clearOnHeaderViewStateChangeListeners() {
+        if (onHeaderViewStateChangeListeners != null) {
+            onHeaderViewStateChangeListeners.clear();
+        }
+    }
+
+    /* END HEADER VIEW STATE CHANGE LISTENER */
     /* HEADER MANAGER */
 
     /**
@@ -797,9 +856,18 @@ public class SectionDataManager implements SectionManager, PositionManager {
                     } else {
                         addHeaderView(section);
                     }
+                    dispatchHeaderViewAttached(section);
                 }
             } else {
                 removeHeaderView();
+            }
+        }
+
+        private void dispatchHeaderViewAttached(int section) {
+            if (onHeaderViewStateChangeListeners != null) {
+                for (OnHeaderViewStateChangeListener listener : onHeaderViewStateChangeListeners) {
+                    listener.onHeaderViewAttached(section);
+                }
             }
         }
 
