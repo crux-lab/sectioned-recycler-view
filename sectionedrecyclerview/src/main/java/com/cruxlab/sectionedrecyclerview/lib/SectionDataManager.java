@@ -738,13 +738,8 @@ public class SectionDataManager implements SectionManager, PositionManager {
     }
 
     /**
-     * Register a listener that will be notified whenever a child view is attached to or detached
-     * from RecyclerView.
-     *
-     * <p>This listener will be called when a LayoutManager or the RecyclerView decides
-     * that a child view is no longer needed. If an application associates expensive
-     * or heavyweight data with item views, this may be a good place to release
-     * or free those resources.</p>
+     * Register a listener that will be notified whenever a header view is attached/pinned to the
+     * top of the screen.
      *
      * @param listener Listener to register
      */
